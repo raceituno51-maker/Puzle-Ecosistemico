@@ -5,63 +5,189 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plataforma SIG Colaborativa RM</title>
 <meta name="description" content="Plataforma bidireccional de información geográfica para la Región Metropolitana: ciudadanos proponen lugares, empresas financian, municipios coordinan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   html, body {
     margin: 0; min-height: 100%;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     background: #f4f5f4; color: #1a2e22;
   }
-
-  .topbar {
-    display: flex; align-items: center; gap: 10px;
-    padding: 16px 20px;
+  a { color: inherit; }
+  button { font-family: inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2.5px solid #1a7f37; outline-offset: 2px; border-radius: 4px;
   }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeUp .7s ease both; }
+  .fade-in.d1 { animation-delay: .08s; }
+  .fade-in.d2 { animation-delay: .16s; }
+  .fade-in.d3 { animation-delay: .24s; }
+
+  /* ---------- Topbar ---------- */
+  .topbar-wrap {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244,245,244,.72);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom: 1px solid rgba(26,46,34,.06);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .topbar-wrap { background: #f4f5f4; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; max-width: 1120px; margin: 0 auto; position: relative;
+  }
+  .topbar .marca-grupo { display: flex; align-items: center; gap: 10px; }
   .topbar .logo-mark { flex-shrink: 0; }
-  .topbar .marca { font-weight: 700; font-size: 15px; }
-  .topbar .marca small { display: block; font-weight: 400; font-size: 11px; color: #666; }
+  .topbar .marca { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
+  .topbar .marca small { display: block; font-weight: 500; font-size: 11px; color: #666; }
+  .topbar .nav-links { display: flex; gap: 22px; font-size: 13.5px; }
+  .topbar .nav-links a {
+    text-decoration: none; color: #3a4a3f; font-weight: 600; position: relative; padding-bottom: 3px;
+  }
+  .topbar .nav-links a::after {
+    content: ''; position: absolute; left: 0; right: 100%; bottom: 0; height: 2px;
+    background: linear-gradient(90deg, #1a7f37, #70e000);
+    border-radius: 2px; transition: right .28s cubic-bezier(.16,1,.3,1);
+  }
+  .topbar .nav-links a:hover { color: #1a7f37; }
+  .topbar .nav-links a:hover::after { right: 0; }
+  @media (max-width: 560px) {
+    .topbar .marca small { display: none; }
+    .topbar .nav-links { gap: 12px; font-size: 12px; }
+  }
+
+  /* ---------- Hero + paisaje ilustrado ---------- */
+  .hero-wrap {
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(600px 300px at 15% -10%, rgba(112,224,0,.16), transparent 60%),
+      radial-gradient(500px 260px at 90% 0%, rgba(26,92,156,.10), transparent 60%),
+      linear-gradient(180deg, #eef2ee 0%, #f4f5f4 55%);
+  }
+  .paisaje {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 264px;
+    z-index: 0; pointer-events: none;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
+  }
+  .paisaje svg { width: 100%; height: 100%; display: block; }
+  .fauna-flotante { position: absolute; z-index: 0; pointer-events: none; }
+  @keyframes flotar { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  .fauna-flotante svg { animation: flotar 4.5s ease-in-out infinite; }
+  .fauna-flotante.f2 svg { animation-duration: 5.5s; animation-delay: .6s; }
+
+  /* ---------- Vida del paisaje: parallax suave, río, aves y fauna nativa ---------- */
+  @keyframes derivaLejana { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-14px); } }
+  @keyframes derivaCercana { 0%,100% { transform: translateX(0); } 50% { transform: translateX(9px); } }
+  @keyframes fluirRio { to { stroke-dashoffset: -160; } }
+  @keyframes planear { 0%,100% { transform: translate(0,0); } 50% { transform: translate(70px,-8px); } }
+  @keyframes picoteo { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+  @keyframes picoteoSuave { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .capa-lejana { animation: derivaLejana 26s ease-in-out infinite; }
+  .capa-cercana { animation: derivaCercana 22s ease-in-out infinite; }
+  .rio-brillo { animation: fluirRio 5s linear infinite; }
+  .ave-planeando { animation: planear 17s ease-in-out infinite; }
+  .tricahue { transform-origin: 4px -2px; animation: picoteo 3.4s ease-in-out infinite; }
+  .loica { animation: picoteoSuave 2.8s ease-in-out infinite; }
 
   .hero {
-    text-align: center; padding: 28px 20px 36px;
-    max-width: 640px; margin: 0 auto;
+    position: relative; z-index: 2; text-align: center; padding: 40px 20px 46px;
+    max-width: 680px; margin: 0 auto;
   }
-  .hero .logo-mark.grande { margin-bottom: 14px; }
-  .hero h1 { font-size: clamp(22px, 5vw, 30px); margin: 0 0 10px; line-height: 1.25; }
-  .hero p { font-size: 14px; line-height: 1.6; color: #444; margin: 0 auto 6px; max-width: 520px; }
-  .hero .region { display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 600; color: #1a7f37; background: #e3f3e6; padding: 5px 12px; border-radius: 20px; }
+  .hero .logo-mark.grande { margin-bottom: 16px; }
+  .hero h1 { font-size: clamp(24px, 5vw, 34px); margin: 0 0 12px; line-height: 1.22; letter-spacing: -0.01em; }
+  .hero h1 .resalte { color: #1a7f37; }
+  .hero p { font-size: 14.5px; line-height: 1.65; color: #444; margin: 0 auto 8px; max-width: 540px; }
+  .hero .region {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 16px; font-size: 12px; font-weight: 600; color: #1a7f37;
+    background: #e3f3e6; padding: 6px 14px; border-radius: 20px;
+    border: 1px solid rgba(26,127,55,.15);
+  }
+  .hero .region .dot { width: 6px; height: 6px; border-radius: 50%; background: #1a7f37; }
 
+  /* ---------- Cómo funciona ---------- */
   .como-funciona {
-    max-width: 640px; margin: 0 auto 8px; padding: 0 20px;
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px;
-    font-size: 12px; color: #555;
+    position: relative; z-index: 2;
+    max-width: 780px; margin: 34px auto 0; padding: 0 20px;
+    display: flex; align-items: flex-start; justify-content: center; gap: 6px;
   }
-  .como-funciona span { white-space: nowrap; }
+  .paso { flex: 1; max-width: 190px; text-align: center; position: relative; padding: 0 6px; }
+  .paso .num {
+    width: 30px; height: 30px; border-radius: 50%; background: #1a2e22; color: #70e000;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+    margin: 0 auto 8px; position: relative; z-index: 1;
+  }
+  .paso p {
+    margin: 0; font-size: 12px; color: #2f3f36; line-height: 1.4;
+    background: rgba(255,255,255,.94); padding: 5px 10px; border-radius: 10px;
+    display: inline-block;
+  }
+  .paso-conector {
+    position: absolute; top: 15px; left: calc(50% + 25px); right: calc(-50% + 25px);
+    height: 2px; background: repeating-linear-gradient(90deg, #cfd8d1 0 6px, transparent 6px 11px);
+  }
+  @media (max-width: 620px) {
+    .como-funciona { flex-direction: column; align-items: stretch; gap: 14px; max-width: 320px; }
+    .paso { max-width: none; display: flex; align-items: center; gap: 10px; text-align: left; }
+    .paso .num { margin: 0; flex-shrink: 0; }
+    .paso-conector { display: none; }
+  }
 
-  main { max-width: 900px; margin: 0 auto; padding: 30px 20px 50px; }
-  main > h2 { text-align: center; font-size: 16px; margin: 0 0 4px; }
-  main > p.sub { text-align: center; font-size: 13px; color: #777; margin: 0 0 26px; }
+  /* ---------- Capas oficiales strip ---------- */
+  .capas-strip {
+    position: relative; z-index: 2;
+    max-width: 780px; margin: 30px auto 0; padding: 0 20px 6px;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  }
+  .capas-strip span {
+    font-size: 11.5px; color: #3a4a3f; background: #fff; border: 1px solid #e2e6e2;
+    padding: 5px 11px; border-radius: 20px; white-space: nowrap;
+  }
+
+  /* ---------- Roles ---------- */
+  main { max-width: 960px; margin: 0 auto; padding: 44px 20px 56px; position: relative; }
+  main > h2 { text-align: center; font-size: 18px; margin: 0 0 4px; }
+  main > p.sub { text-align: center; font-size: 13px; color: #6b6b6b; margin: 0 0 28px; }
 
   .roles {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 16px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
   }
   .card-rol {
-    background: #fff; border-radius: 12px; padding: 22px 20px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    background: #fff; border-radius: 14px; padding: 24px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 8px 20px rgba(20,30,20,.05);
+    border: 1px solid rgba(0,0,0,.04);
     display: flex; flex-direction: column; text-align: left;
+    transition: transform .22s ease, box-shadow .22s ease;
   }
+  .card-rol:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,.06), 0 16px 30px rgba(20,30,20,.09); }
   .card-rol .icono {
-    width: 42px; height: 42px; border-radius: 10px;
+    width: 44px; height: 44px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
-  .card-rol h3 { font-size: 15px; margin: 0 0 6px; }
-  .card-rol p { font-size: 12.5px; color: #666; line-height: 1.5; margin: 0 0 16px; flex: 1; }
+  .card-rol h3 { font-size: 15.5px; margin: 0 0 6px; }
+  .card-rol p { font-size: 12.5px; color: #666; line-height: 1.55; margin: 0 0 18px; flex: 1; }
   .card-rol a {
-    display: inline-block; text-align: center; text-decoration: none;
-    font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 8px;
-    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 14px; border-radius: 9px;
+    color: #fff; transition: gap .18s ease, filter .18s ease;
   }
+  .card-rol a:hover { gap: 10px; filter: brightness(1.06); }
+  .card-rol a svg { transition: transform .18s ease; }
+  .card-rol a:hover svg { transform: translateX(2px); }
+
   .card-rol.ciudadano .icono { background: #e3f3e6; }
   .card-rol.ciudadano a { background: #1a7f37; }
   .card-rol.empresa .icono { background: #e6ecf7; }
@@ -70,69 +196,404 @@
   .card-rol.municipio a { background: #5a189a; }
 
   footer {
-    text-align: center; font-size: 11px; color: #999;
-    padding: 20px; border-top: 1px solid #e5e5e5;
+    text-align: center; font-size: 11px; color: #767676;
+    padding: 22px 20px; border-top: 1px solid #e5e5e5;
+    max-width: 960px; margin: 0 auto;
   }
 
   @media (max-width: 480px) {
-    .hero { padding: 20px 16px 28px; }
-    .card-rol { padding: 18px 16px; }
+    .hero { padding: 28px 16px 30px; }
+    .card-rol { padding: 20px 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in, .fade-in.d1, .fade-in.d2, .fade-in.d3 { animation: none; opacity: 1; transform: none; }
+    .capa-lejana, .capa-cercana, .rio-brillo, .ave-planeando, .tricahue, .loica,
+    .fauna-flotante svg, .colibri-svg, .colibri-svg .ala-izq, .colibri-svg .ala-der {
+      animation: none !important;
+    }
+    #colibri-guia, #burbuja-dialogo { transition: opacity .2s ease; }
+  }
+
+  /* ================================================================
+   * COLIBRÍ — mascota / guía / disparador de chat
+   * ================================================================ */
+  @keyframes aleteo {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-26deg); }
+  }
+  @keyframes aleteoDer {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(26deg); }
+  }
+  @keyframes chiriFlota { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .colibri-svg { animation: chiriFlota 3.2s ease-in-out infinite; }
+  .colibri-svg .ala-izq { transform-origin: 35px 33px; animation: aleteo .18s ease-in-out infinite; }
+  .colibri-svg .ala-der { transform-origin: 55px 33px; animation: aleteoDer .18s ease-in-out infinite; }
+
+  #colibri-guia {
+    position: fixed; top: 0; left: 0; z-index: 1200;
+    width: 74px; height: 74px; pointer-events: none;
+    transform: translate(-200px, 40px);
+    transition: transform .6s cubic-bezier(.16,1,.3,1);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.25));
+    opacity: 0; visibility: hidden;
+  }
+  #colibri-guia.visible { opacity: 1; visibility: visible; }
+
+  #burbuja-dialogo {
+    position: fixed; top: 0; left: 0; z-index: 1201; max-width: 260px;
+    background: #fff; border-radius: 18px 18px 18px 4px; padding: 14px 16px 12px;
+    box-shadow: 0 8px 26px rgba(0,0,0,.18); border: 1px solid #e5e5e5;
+    font-size: 13px; line-height: 1.5; color: #1a2e22;
+    transform: translate(-200px, 40px);
+    transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+    opacity: 0; visibility: hidden;
+  }
+  #burbuja-dialogo.visible { opacity: 1; visibility: visible; }
+  #burbuja-dialogo .fila-botones { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
+  #burbuja-dialogo button {
+    border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+    min-height: 36px; padding: 9px 14px;
+  }
+  #burbuja-dialogo .btn-siguiente { background: #1a7f37; color: #fff; }
+  #burbuja-dialogo .btn-saltar { background: transparent; color: #666; padding: 7px 4px; }
+
+  /* Botón flotante permanente (idle) */
+  #colibri-fab {
+    position: fixed; bottom: 20px; right: 20px; z-index: 1100;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: #1a2e22; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,.28);
+    transition: transform .2s ease;
+  }
+  #colibri-fab:hover { transform: scale(1.06); }
+  #colibri-fab .colibri-svg .ala-izq, #colibri-fab .colibri-svg .ala-der { animation-duration: .35s; }
+
+  /* Botón de música */
+  #audio-toggle {
+    position: fixed; bottom: 20px; left: 20px; z-index: 1100;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #fff; border: 1px solid #e0e0e0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.12);
+    transition: transform .2s ease;
+  }
+  #audio-toggle:hover { transform: scale(1.06); }
+
+  /* ---------- Panel de chat ---------- */
+  #chat-panel {
+    position: fixed; bottom: 88px; right: 20px; z-index: 1150;
+    width: 320px; max-width: 90vw; height: 430px; max-height: 70vh;
+    background: #fff; border-radius: 16px; box-shadow: 0 12px 36px rgba(0,0,0,.22);
+    display: flex; flex-direction: column; overflow: hidden;
+    transform: translateY(16px) scale(.97); opacity: 0; visibility: hidden; pointer-events: none;
+    transition: transform .22s ease, opacity .22s ease;
+    border: 1px solid #e5e5e5;
+  }
+  #chat-panel.abierto { transform: translateY(0) scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
+  #chat-panel header {
+    background: #1a2e22; color: #fff; padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #chat-panel header .titulo { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
+  #chat-panel header .acciones-header { display: flex; gap: 6px; }
+  #chat-panel header button {
+    background: transparent; border: none; color: #fff; opacity: .85; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 6px;
+  }
+  #chat-panel header button:hover { opacity: 1; background: rgba(255,255,255,.12); }
+  #chat-mensajes { flex: 1; overflow-y: auto; padding: 12px 12px 6px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 85%; padding: 8px 11px; border-radius: 12px; font-size: 12.5px; line-height: 1.45; }
+  .msg.bot { background: #f0f4f0; color: #1a2e22; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.user { background: #1a7f37; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .msg.error { background: #fbe4e4; color: #7a1a1a; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.escribiendo { font-style: italic; color: #888; }
+  #chat-form { display: flex; gap: 6px; padding: 10px; border-top: 1px solid #eee; }
+  #chat-input {
+    flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 12.5px;
+    font-family: inherit; resize: none;
+  }
+  #chat-form button {
+    background: #1a7f37; color: #fff; border: none; border-radius: 8px; padding: 0 14px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  #chat-form button:disabled { opacity: .5; cursor: default; }
+
+  @media (max-width: 480px) {
+    #chat-panel { right: 12px; bottom: 82px; width: calc(100vw - 24px); }
+    #colibri-fab { right: 14px; bottom: 14px; }
+    #audio-toggle { left: 14px; bottom: 14px; }
   }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <span class="logo-mark">
-    <svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
-      <rect width="64" height="64" rx="14" fill="#1a2e22"/>
-      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
-      <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
-      <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-      <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-      <circle cx="32" cy="22" r="3.4" fill="#ffffff"/>
-      <circle cx="25" cy="31" r="3.4" fill="#ffffff"/>
-      <circle cx="39" cy="31" r="3.4" fill="#ffffff"/>
-    </svg>
+  <span class="marca-grupo">
+    <span class="logo-mark">
+      <svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
+        <rect width="64" height="64" rx="14" fill="#1a2e22"/>
+        <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
+        <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
+        <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+        <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+        <circle cx="32" cy="22" r="3.4" fill="#ffffff"/>
+        <circle cx="25" cy="31" r="3.4" fill="#ffffff"/>
+        <circle cx="39" cy="31" r="3.4" fill="#ffffff"/>
+      </svg>
+    </span>
+    <span class="marca">SIG Colaborativo RM<small>Piloto — Región Metropolitana</small></span>
   </span>
-  <span class="marca">SIG Colaborativo RM<small>Piloto — Región Metropolitana</small></span>
+  <nav class="nav-links">
+    <a href="#roles">Roles</a>
+    <a href="visor.html">Visor</a>
+    <a href="panel.html">Panel</a>
+  </nav>
 </div>
 
-<section class="hero">
-  <span class="logo-mark grande">
-    <svg viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
-      <rect width="64" height="64" rx="16" fill="#1a2e22"/>
-      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
-      <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
-      <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-      <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-      <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
-      <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
-      <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
-    </svg>
-  </span>
-  <h1>Cruzamos información geográfica para transformar espacios en la Región Metropolitana</h1>
-  <p>
-    Una plataforma que conecta a tres actores: personas y organizaciones que proponen lugares para
-    intervenir (una plaza, un sitio eriazo, una sede social), empresas que quieren financiar proyectos,
-    y municipios que buscan socios y datos para decidir mejor. Cruzamos cada propuesta con capas oficiales
-    (vulnerabilidad social, áreas verdes, islas de calor, corredores biológicos) para priorizar dónde
-    intervenir primero.
-  </p>
-  <span class="region">Toda la Región Metropolitana · Piloto sin costo</span>
-  <div class="como-funciona">
-    <span>📍 1. Propones un lugar</span>
-    <span>📊 2. Se prioriza con datos oficiales</span>
-    <span>🤝 3. Empresas y municipios lo hacen realidad</span>
-  </div>
-</section>
+<div class="hero-wrap">
 
-<main>
-  <h2>¿Cómo quieres participar?</h2>
-  <p class="sub">Elige tu rol para entrar directo a lo que te sirve.</p>
+  <!-- Paisaje ilustrado: cordillera + río + flora y fauna nativa de la Región Metropolitana -->
+  <div class="paisaje" aria-hidden="true">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gradLejana" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#5c6f62"/>
+          <stop offset="100%" stop-color="#4c5d52"/>
+        </linearGradient>
+        <linearGradient id="gradCercana" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#3f5245"/>
+          <stop offset="100%" stop-color="#2f3f36"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Un ave planeando (aguilucho) sobre la cordillera -->
+      <g class="ave-planeando" opacity="0.5">
+        <path d="M985 44 Q1000 30 1015 44" stroke="#2c3b2f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <path d="M990 44 Q1000 37 1010 44" stroke="#2c3b2f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <!-- Cordillera, capa lejana -->
+      <g class="capa-lejana">
+        <polygon points="0,220 140,90 260,190 380,60 520,200 640,110 760,210 900,70 1040,190 1160,100 1300,200 1440,140 1440,320 0,320"
+          fill="url(#gradLejana)" opacity="0.55"/>
+      </g>
+
+      <!-- Cordillera, capa cercana con nieve -->
+      <g class="capa-cercana">
+        <polygon points="0,260 120,160 220,240 340,120 470,250 600,150 740,245 860,130 1000,240 1140,160 1260,235 1440,190 1440,320 0,320"
+          fill="url(#gradCercana)"/>
+        <polygon points="120,160 140,178 100,178" fill="#eef2ee"/>
+        <polygon points="340,120 362,140 316,140" fill="#eef2ee"/>
+        <polygon points="600,150 620,168 578,168" fill="#eef2ee"/>
+        <polygon points="860,130 882,150 838,150" fill="#eef2ee"/>
+        <polygon points="1140,160 1160,178 1118,178" fill="#eef2ee"/>
+      </g>
+
+      <!-- Río -->
+      <path d="M760 40 C 700 110, 820 150, 740 210 S 640 300, 700 320"
+        fill="none" stroke="#79c2e6" stroke-width="30" stroke-linecap="round" opacity="0.65"/>
+      <path d="M760 40 C 700 110, 820 150, 740 210 S 640 300, 700 320"
+        fill="none" stroke="#a9dcf2" stroke-width="12" stroke-linecap="round" opacity="0.8"/>
+      <path class="rio-brillo" d="M760 40 C 700 110, 820 150, 740 210 S 640 300, 700 320"
+        fill="none" stroke="#eef8fb" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 16" opacity="0.85"/>
+
+      <!-- Flora y fauna en primer plano -->
+      <g opacity="0.97">
+        <!-- pasto / matorral corrido -->
+        <path d="M0 300 Q 60 280 120 300 T 260 300 T 420 296 T 600 302 T 800 296 T 1000 300 T 1200 294 T 1440 300 V320 H0 Z" fill="#215c33"/>
+
+        <!-- Quillay (izquierda) con un tricahue posado -->
+        <rect x="94" y="255" width="6" height="30" fill="#2c3b2f"/>
+        <circle cx="97" cy="248" r="26" fill="#1a7f37"/>
+        <circle cx="78" cy="260" r="18" fill="#22994a"/>
+        <circle cx="118" cy="262" r="18" fill="#22994a"/>
+
+        <!-- Arbolito -->
+        <rect x="228" y="262" width="5" height="24" fill="#2c3b2f"/>
+        <circle cx="230" cy="256" r="20" fill="#22994a"/>
+
+        <!-- Zorro culpeo asomado tras un matorral -->
+        <g transform="translate(850,300)">
+          <g class="zorro">
+            <path d="M-6 10 C -10 0 -6 -10 4 -12 C 14 -10 16 0 10 10 Z" fill="#b5622b"/>
+            <path d="M-4 -10 L-9 -20 L0 -12 Z" fill="#b5622b"/>
+            <path d="M8 -12 L13 -21 L15 -10 Z" fill="#b5622b"/>
+            <path d="M-4 -10 L-8 -18 L-1 -11 Z" fill="#e0b088"/>
+            <path d="M9 -11 L12 -19 L14 -10 Z" fill="#e0b088"/>
+            <circle cx="0" cy="0" r="1.5" fill="#111"/>
+            <circle cx="8" cy="1" r="1.5" fill="#111"/>
+            <path d="M2 8 Q6 12 10 8" stroke="#7a3f18" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          </g>
+          <ellipse cx="4" cy="14" rx="22" ry="12" fill="#215c33"/>
+          <ellipse cx="-10" cy="16" rx="14" ry="9" fill="#22994a"/>
+          <ellipse cx="18" cy="16" rx="14" ry="9" fill="#1a7f37"/>
+        </g>
+
+        <!-- Palma chilena -->
+        <g transform="translate(520,0)">
+          <path d="M0 286 C -4 260 4 230 0 205" stroke="#5c4a3a" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <g stroke="#1a7f37" stroke-width="4" stroke-linecap="round">
+            <path d="M0 205 L -26 178"/>
+            <path d="M0 205 L -15 172"/>
+            <path d="M0 205 L 0 168"/>
+            <path d="M0 205 L 15 172"/>
+            <path d="M0 205 L 28 178"/>
+            <path d="M0 205 L 36 190"/>
+            <path d="M0 205 L -34 192"/>
+          </g>
+        </g>
+
+        <!-- Puya chilensis (rosetas espinosas con vara florida) -->
+        <g transform="translate(170,300)">
+          <path d="M0 0 L -14 -8 L -2 -2 Z" fill="#3a6b52"/>
+          <path d="M0 0 L 14 -8 L 2 -2 Z" fill="#3a6b52"/>
+          <path d="M0 0 L -10 -16 L -1 -4 Z" fill="#4c8c68"/>
+          <path d="M0 0 L 10 -16 L 1 -4 Z" fill="#4c8c68"/>
+          <line x1="0" y1="-4" x2="0" y2="-46" stroke="#4c8c68" stroke-width="2.5"/>
+          <circle cx="0" cy="-46" r="3" fill="#c9d94a"/>
+          <circle cx="-4" cy="-40" r="2.4" fill="#c9d94a"/>
+          <circle cx="4" cy="-40" r="2.4" fill="#c9d94a"/>
+        </g>
+
+        <!-- Loica en el pastizal -->
+        <g transform="translate(360,300) scale(0.95)">
+          <g class="loica">
+            <ellipse cx="0" cy="0" rx="10" ry="6.5" fill="#3a3a2e"/>
+            <path d="M-7 -2 C -3 -6 3 -6 6 -2 C 2 1 -3 1 -7 -2 Z" fill="#e0592a"/>
+            <circle cx="7" cy="-4" r="3.6" fill="#3a3a2e"/>
+            <path d="M10 -4 L15 -3 L10 -2 Z" fill="#2c2c22"/>
+            <line x1="-2" y1="5" x2="-2" y2="10" stroke="#2c2c22" stroke-width="1.6"/>
+            <line x1="2" y1="5" x2="2" y2="10" stroke="#2c2c22" stroke-width="1.6"/>
+          </g>
+        </g>
+
+        <!-- Quillay (derecha) con un tricahue posado -->
+        <rect x="1180" y="252" width="6" height="32" fill="#2c3b2f"/>
+        <circle cx="1183" cy="244" r="27" fill="#1a7f37"/>
+        <circle cx="1160" cy="258" r="17" fill="#22994a"/>
+        <circle cx="1206" cy="258" r="17" fill="#22994a"/>
+        <g transform="translate(1150,236)">
+          <g class="tricahue">
+            <ellipse cx="0" cy="0" rx="9" ry="7" fill="#4a7c3f"/>
+            <path d="M-9 2 C -14 4 -16 10 -12 14 C -9 10 -8 6 -6 3 Z" fill="#c0392b" opacity="0.85"/>
+            <circle cx="6" cy="-3" r="4.2" fill="#4a7c3f"/>
+            <path d="M9 -3 L15 -1 L9 1 Z" fill="#e0592a"/>
+            <circle cx="8" cy="-4" r="1" fill="#111"/>
+            <path d="M-9 0 Q-16 4 -18 12" stroke="#3a6b52" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <!-- Puya chilensis (derecha) -->
+        <g transform="translate(1260,296) scale(0.85)">
+          <path d="M0 0 L -14 -8 L -2 -2 Z" fill="#3a6b52"/>
+          <path d="M0 0 L 14 -8 L 2 -2 Z" fill="#3a6b52"/>
+          <path d="M0 0 L -10 -16 L -1 -4 Z" fill="#4c8c68"/>
+          <path d="M0 0 L 10 -16 L 1 -4 Z" fill="#4c8c68"/>
+          <line x1="0" y1="-4" x2="0" y2="-46" stroke="#4c8c68" stroke-width="2.5"/>
+          <circle cx="0" cy="-46" r="3" fill="#c9d94a"/>
+          <circle cx="-4" cy="-40" r="2.4" fill="#c9d94a"/>
+          <circle cx="4" cy="-40" r="2.4" fill="#c9d94a"/>
+        </g>
+
+        <!-- Palma chilena (derecha) -->
+        <g transform="translate(980,0)">
+          <path d="M0 286 C 4 260 -4 230 0 205" stroke="#5c4a3a" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <g stroke="#1a7f37" stroke-width="4" stroke-linecap="round">
+            <path d="M0 205 L -26 178"/>
+            <path d="M0 205 L -15 172"/>
+            <path d="M0 205 L 0 168"/>
+            <path d="M0 205 L 15 172"/>
+            <path d="M0 205 L 28 178"/>
+            <path d="M0 205 L 36 190"/>
+            <path d="M0 205 L -34 192"/>
+          </g>
+        </g>
+
+        <!-- Arbolito final -->
+        <rect x="1320" y="260" width="5" height="26" fill="#2c3b2f"/>
+        <circle cx="1322" cy="252" r="21" fill="#1a7f37"/>
+      </g>
+
+      <!-- Florecillas de acento (colores de marca) -->
+      <circle cx="230" cy="298" r="3.4" fill="#5a189a"/>
+      <circle cx="980" cy="294" r="4" fill="#1a5c9c"/>
+      <circle cx="90" cy="298" r="3" fill="#5a189a"/>
+    </svg>
+  </div>
+
+  <!-- fauna decorativa: mariposas revoloteando -->
+  <div class="fauna-flotante f1" style="left:8%; top:14%;" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+      <path d="M12 12c-2-5-8-6-9-2s3 6 9 4z" fill="#5a189a" opacity="0.75"/>
+      <path d="M12 12c2-5 8-6 9-2s-3 6-9 4z" fill="#1a5c9c" opacity="0.75"/>
+      <line x1="12" y1="9" x2="12" y2="15" stroke="#2c3b2f" stroke-width="1.4"/>
+    </svg>
+  </div>
+  <div class="fauna-flotante f2" style="right:12%; top:22%;" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 12c-2-5-8-6-9-2s3 6 9 4z" fill="#70e000" opacity="0.7"/>
+      <path d="M12 12c2-5 8-6 9-2s-3 6-9 4z" fill="#1a7f37" opacity="0.7"/>
+      <line x1="12" y1="9" x2="12" y2="15" stroke="#2c3b2f" stroke-width="1.2"/>
+    </svg>
+  </div>
+
+  <section class="hero fade-in">
+    <span class="logo-mark grande">
+      <svg viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
+        <rect width="64" height="64" rx="16" fill="#1a2e22"/>
+        <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
+        <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
+        <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+        <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+        <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
+        <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
+        <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
+      </svg>
+    </span>
+    <h1>Cruzamos información geográfica para <span class="resalte">transformar espacios</span> en la Región Metropolitana</h1>
+    <p>
+      Una plataforma que conecta a tres actores: personas y organizaciones que proponen lugares para
+      intervenir (una plaza, un sitio eriazo, una sede social), empresas que quieren financiar proyectos,
+      y municipios que buscan socios y datos para decidir mejor. Cruzamos cada propuesta con capas oficiales
+      para priorizar dónde intervenir primero.
+    </p>
+    <span class="region"><span class="dot"></span>Toda la Región Metropolitana · Piloto sin costo</span>
+  </section>
+
+  <div class="como-funciona fade-in d1">
+    <div class="paso">
+      <div class="num">1</div>
+      <p>📍 Propones un lugar en el visor</p>
+      <div class="paso-conector"></div>
+    </div>
+    <div class="paso">
+      <div class="num">2</div>
+      <p>📊 Se prioriza con datos oficiales</p>
+      <div class="paso-conector"></div>
+    </div>
+    <div class="paso">
+      <div class="num">3</div>
+      <p>🤝 Empresas y municipios lo hacen realidad</p>
+    </div>
+  </div>
+
+  <div class="capas-strip fade-in d2">
+    <span>Vulnerabilidad social</span>
+    <span>Áreas verdes</span>
+    <span>Islas de calor</span>
+    <span>Corredores biológicos</span>
+  </div>
+</div>
+
+<main id="roles">
+  <h2 class="fade-in">¿Cómo quieres participar?</h2>
+  <p class="sub fade-in">Elige tu rol para entrar directo a lo que te sirve.</p>
 
   <div class="roles">
-    <div class="card-rol ciudadano">
+    <div class="card-rol ciudadano fade-in d1">
       <span class="icono">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="8" r="3.4" stroke="#1a7f37" stroke-width="1.8"/>
@@ -141,10 +602,12 @@
       </span>
       <h3>Ciudadano u organización</h3>
       <p>Mira las capas oficiales de tu comuna, marca un punto o dibuja un área, y propón dónde debería haber una plaza, una sede social o una intervención.</p>
-      <a href='/visor'>Entrar al visor →</a>
+      <a href="visor.html">Entrar al visor
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </div>
 
-    <div class="card-rol empresa">
+    <div class="card-rol empresa fade-in d2">
       <span class="icono">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="4" y="9" width="16" height="10" rx="1.6" stroke="#1a5c9c" stroke-width="1.8"/>
@@ -153,10 +616,12 @@
       </span>
       <h3>Empresa</h3>
       <p>Descubre propuestas ya verificadas, ordenadas por prioridad, y muestra interés en financiar la que más se alinee con tu estrategia de impacto.</p>
-      <a href='/panel?vista=empresa'>Ver oportunidades →</a>
+      <a href="panel.html?vista=empresa">Ver oportunidades
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </div>
 
-    <div class="card-rol municipio">
+    <div class="card-rol municipio fade-in d3">
       <span class="icono">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M4 20h16M6 20v-8m4 8v-8m4 8v-8m4 8v-8M4 12l8-6 8 6" stroke="#5a189a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -164,7 +629,9 @@
       </span>
       <h3>Municipio / institución pública</h3>
       <p>Revisa las propuestas de tu comuna, verifícalas oficialmente y encuentra empresas y organizaciones dispuestas a colaborar.</p>
-      <a href='/panel?vista=municipio'>Entrar al panel →</a>
+      <a href="panel.html?vista=municipio">Entrar al panel
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </div>
   </div>
 </main>
@@ -172,6 +639,382 @@
 <footer>
   Piloto sin costo — Región Metropolitana · Los datos oficiales se cargan progresivamente a medida que las instituciones los entregan.
 </footer>
+
+<!-- ================================================================
+   COLIBRÍ — degradados compartidos, definidos una sola vez para evitar
+   ids duplicados cuando la plantilla de abajo se clona dos veces
+   (en #colibri-guia y en #colibri-fab).
+   ================================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="cuerpoGradColibri" x1="30" y1="18" x2="66" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8ef000"/>
+      <stop offset="100%" stop-color="#186b30"/>
+    </linearGradient>
+    <linearGradient id="alaGradColibri" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2f77bd"/>
+      <stop offset="100%" stop-color="#8fd3f4"/>
+    </linearGradient>
+    <linearGradient id="gorjeraGradColibri" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#70e000"/>
+      <stop offset="55%" stop-color="#1a5c9c"/>
+      <stop offset="100%" stop-color="#5a189a"/>
+    </linearGradient>
+    <radialGradient id="brilloColibri" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#a6ff4d"/>
+      <stop offset="100%" stop-color="#1a7f37" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<template id="tpl-colibri">
+  <svg class="colibri-svg" viewBox="0 0 90 66" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <!-- cola en abanico: cuñas sólidas, no líneas (para que no se lea como patas) -->
+    <g opacity="0.92">
+      <path d="M38 43 Q29 48 32 57 Q39 52 40 44 Z" fill="#5a189a"/>
+      <path d="M45 45 Q43 53 45 59 Q47 53 46 45 Z" fill="#5a189a"/>
+      <path d="M52 43 Q61 48 58 57 Q51 52 50 44 Z" fill="#5a189a"/>
+    </g>
+
+    <!-- alas: base más ancha y aleteo más corto para que nunca desaparezcan por completo -->
+    <path class="ala-izq" d="M35 33 C 20 23, 9 27, 12 40 C 21 40, 30 38, 35 33 Z" fill="url(#alaGradColibri)" stroke="#12325c" stroke-width="0.5" opacity="0.95"/>
+    <path class="ala-der" d="M55 33 C 70 23, 81 27, 78 40 C 69 40, 60 38, 55 33 Z" fill="url(#alaGradColibri)" stroke="#12325c" stroke-width="0.5" opacity="0.95"/>
+
+    <!-- cuerpo y cabeza como una sola silueta continua (mismo espacio de degradado, sin costura) -->
+    <path d="M31 40 C 29 30, 37 22, 47 22 C 55 22, 62 25, 66 28 C 62 30, 57 31, 53 33 C 55 40, 52 48, 43 49 C 35 49, 31 45, 31 40 Z"
+      fill="url(#cuerpoGradColibri)" stroke="#123a1c" stroke-width="0.6" stroke-opacity="0.35"/>
+    <ellipse cx="42" cy="30" rx="12" ry="8" fill="url(#brilloColibri)" opacity="0.5"/>
+
+    <!-- garganta iridiscente: guiño a los tres roles que conecta -->
+    <ellipse cx="55" cy="30" rx="5" ry="3.4" fill="url(#gorjeraGradColibri)" opacity="0.92"/>
+
+    <!-- pico -->
+    <path d="M65 27 Q78 24 82 22" stroke="#e0592a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+
+    <!-- ojo expresivo -->
+    <circle cx="60" cy="24" r="2.5" fill="#fff"/>
+    <circle cx="60.9" cy="24" r="1.4" fill="#111"/>
+    <circle cx="60.3" cy="23.3" r="0.55" fill="#fff"/>
+  </svg>
+</template>
+
+<div id="colibri-guia" aria-hidden="true"></div>
+<div id="burbuja-dialogo" role="status" aria-live="polite">
+  <div id="burbuja-texto"></div>
+  <div class="fila-botones">
+    <button class="btn-saltar" id="btn-saltar-recorrido" type="button">Saltar</button>
+    <button class="btn-siguiente" id="btn-siguiente-recorrido" type="button">Siguiente</button>
+  </div>
+</div>
+
+<button id="audio-toggle" type="button" aria-label="Activar o silenciar música ambiental" title="Música ambiental">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M4 9v6h4l5 4V5L8 9H4z" fill="#1a2e22"/>
+    <line x1="16" y1="9" x2="21" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="21" y1="9" x2="16" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>
+</button>
+<audio id="audio-naturaleza" loop preload="none">
+  <!-- Reemplaza esta ruta por tu archivo real (Fase 4 de la guía): un mp3 corto de río/aves en loop -->
+  <source src="audio/naturaleza-rm.mp3" type="audio/mpeg">
+</audio>
+
+<button id="colibri-fab" type="button" aria-label="Abrir chat con el colibrí guía" title="Chatea con Chiri, el colibrí guía"></button>
+
+<div id="chat-panel">
+  <header>
+    <span class="titulo">🐦 Chiri — guía de la plataforma</span>
+    <span class="acciones-header">
+      <button id="btn-repetir-recorrido" type="button" title="Repetir el recorrido guiado" aria-label="Repetir el recorrido guiado">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 12a8 8 0 1 1 2.6 5.9" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M4 17v-5h5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </button>
+      <button id="btn-cerrar-chat" type="button" title="Cerrar" aria-label="Cerrar chat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </span>
+  </header>
+  <div id="chat-mensajes" role="log" aria-live="polite"></div>
+  <form id="chat-form">
+    <textarea id="chat-input" rows="1" placeholder="Pregúntale algo a Chiri…" maxlength="500"></textarea>
+    <button type="submit">Enviar</button>
+  </form>
+</div>
+
+<script>
+/* ============================================================
+ * CONFIG
+ * ============================================================ */
+// Pega aquí la URL de tu Supabase Edge Function "chat-colibri" una vez
+// desplegada (ver /supabase-chat-colibri/DEPLOY.md). Mientras esté vacía,
+// el chat muestra un mensaje explicando que falta configurarlo.
+const CHAT_API_URL = "";
+
+/* ============================================================
+ * Insertar el SVG del colibrí en sus dos contenedores
+ * ============================================================ */
+const tplColibri = document.getElementById('tpl-colibri');
+document.getElementById('colibri-guia').appendChild(tplColibri.content.cloneNode(true));
+document.getElementById('colibri-fab').appendChild(tplColibri.content.cloneNode(true));
+
+/* ============================================================
+ * RECORRIDO GUIADO
+ * ============================================================ */
+const colibriGuia = document.getElementById('colibri-guia');
+const burbuja = document.getElementById('burbuja-dialogo');
+const burbujaTexto = document.getElementById('burbuja-texto');
+const btnSiguiente = document.getElementById('btn-siguiente-recorrido');
+const btnSaltar = document.getElementById('btn-saltar-recorrido');
+
+const recorrido = [
+  { selector: '.hero', mensajes: [
+      '¡Hola! Soy Chiri, el colibrí guía de esta plataforma 🌿',
+      'Cruzamos propuestas ciudadanas con datos oficiales para priorizar dónde intervenir en la Región Metropolitana.',
+      '¿Te muestro cómo funciona? Vamos a dar una vuelta rápida.'
+    ] },
+  { selector: '.como-funciona', mensajes: [ 'Así de simple: propones un lugar, lo priorizamos con datos, y empresas o municipios lo hacen realidad.' ] },
+  { selector: '.card-rol.ciudadano', mensajes: [ 'Si eres ciudadano u organización, aquí entras al visor para proponer un lugar en tu comuna.' ] },
+  { selector: '.card-rol.empresa', mensajes: [ 'Si representas una empresa, aquí ves oportunidades ya verificadas, listas para financiar.' ] },
+  { selector: '.card-rol.municipio', mensajes: [ 'Y si eres municipio, aquí revisas y verificas oficialmente las propuestas de tu comuna. ¡Eso es todo! Puedes preguntarme lo que quieras cuando quieras.' ] },
+];
+
+let pasoActual = 0;
+let subMensajeActual = 0;
+let recorridoActivo = false;
+
+function posicionarEn(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return null;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  return el;
+}
+
+// Espera a que el scroll suave se estabilice (deja de moverse), con un tope de
+// seguridad. No usamos el evento scrollend porque su soporte y su temporización
+// son inconsistentes entre navegadores; el sondeo de scrollY es más confiable.
+function esperarFinDeScroll() {
+  const inicioY = window.scrollY;
+  return new Promise((resolve) => {
+    let seMovio = false;
+    let ultimoY = inicioY;
+    let quieto = 0;
+    let ticks = 0;
+    const intervalo = window.setInterval(() => {
+      ticks++;
+      const actual = window.scrollY;
+      if (!seMovio && Math.abs(actual - inicioY) > 1) seMovio = true;
+      quieto = Math.abs(actual - ultimoY) < 1 ? quieto + 1 : 0;
+      ultimoY = actual;
+      // Si nunca se movió y ya dimos tiempo de sobra, asumimos que no hacía falta scroll.
+      const sinMovimientoTrasEsperar = !seMovio && ticks >= 4;
+      const seEstabilizoTrasMoverse = seMovio && quieto >= 3;
+      if (sinMovimientoTrasEsperar || seEstabilizoTrasMoverse) {
+        window.clearInterval(intervalo);
+        resolve();
+      }
+    }, 50);
+    window.setTimeout(() => { window.clearInterval(intervalo); resolve(); }, 1500);
+  });
+}
+
+async function mostrarPaso() {
+  const paso = recorrido[pasoActual];
+  const el = posicionarEn(paso.selector);
+  await esperarFinDeScroll();
+
+  const rect = el ? el.getBoundingClientRect() : { left: window.innerWidth / 2 - 30, top: 80, width: 60 };
+  const xColibri = Math.min(window.innerWidth - 80, Math.max(10, rect.left + rect.width - 30));
+  const yColibri = Math.min(window.innerHeight - 150, Math.max(70, rect.top - 10));
+  colibriGuia.style.transform = `translate(${xColibri}px, ${yColibri}px)`;
+  colibriGuia.classList.add('visible');
+
+  const xBurbuja = Math.min(window.innerWidth - 276, Math.max(10, xColibri - 90));
+  const alturaBurbujaEstimada = 150;
+  let yBurbuja = yColibri + 66;
+  if (yBurbuja + alturaBurbujaEstimada > window.innerHeight - 10) {
+    yBurbuja = Math.max(10, yColibri - alturaBurbujaEstimada);
+  }
+  burbuja.style.transform = `translate(${xBurbuja}px, ${yBurbuja}px)`;
+  burbuja.classList.add('visible');
+  burbujaTexto.textContent = paso.mensajes[subMensajeActual];
+
+  const esUltimoMensajeGlobal = pasoActual === recorrido.length - 1 && subMensajeActual === paso.mensajes.length - 1;
+  btnSiguiente.textContent = esUltimoMensajeGlobal ? 'Empezar' : 'Siguiente';
+}
+
+function avanzarRecorrido() {
+  const paso = recorrido[pasoActual];
+  if (subMensajeActual < paso.mensajes.length - 1) {
+    subMensajeActual++;
+    burbujaTexto.textContent = paso.mensajes[subMensajeActual];
+    const esUltimoMensajeGlobal = pasoActual === recorrido.length - 1 && subMensajeActual === paso.mensajes.length - 1;
+    btnSiguiente.textContent = esUltimoMensajeGlobal ? 'Empezar' : 'Siguiente';
+    return;
+  }
+  if (pasoActual < recorrido.length - 1) {
+    pasoActual++;
+    subMensajeActual = 0;
+    mostrarPaso();
+  } else {
+    terminarRecorrido();
+  }
+}
+
+function iniciarRecorrido() {
+  pasoActual = 0;
+  subMensajeActual = 0;
+  recorridoActivo = true;
+  mostrarPaso();
+}
+
+function terminarRecorrido() {
+  recorridoActivo = false;
+  colibriGuia.classList.remove('visible');
+  burbuja.classList.remove('visible');
+  try { localStorage.setItem('sigrm_recorrido_visto', '1'); } catch (e) {}
+}
+
+btnSiguiente.addEventListener('click', avanzarRecorrido);
+btnSaltar.addEventListener('click', terminarRecorrido);
+
+// Recorrido automático solo en la primera visita
+let yaVistoRecorrido = false;
+try { yaVistoRecorrido = localStorage.getItem('sigrm_recorrido_visto') === '1'; } catch (e) {}
+if (!yaVistoRecorrido) {
+  window.setTimeout(iniciarRecorrido, 900);
+} else {
+  colibriGuia.classList.remove('visible');
+}
+
+/* ============================================================
+ * MÚSICA AMBIENTAL
+ * ============================================================ */
+const audioEl = document.getElementById('audio-naturaleza');
+const audioBtn = document.getElementById('audio-toggle');
+let audioActivo = false;
+try { audioActivo = localStorage.getItem('sigrm_audio_activo') === '1'; } catch (e) {}
+
+const iconoAudioOn = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#1a2e22"/><path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/><path d="M19.3 6a9 9 0 0 1 0 12" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/></svg>';
+const iconoAudioOff = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#1a2e22"/><line x1="16" y1="9" x2="21" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/><line x1="21" y1="9" x2="16" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/></svg>';
+function actualizarBotonAudio() {
+  audioBtn.innerHTML = audioActivo ? iconoAudioOn : iconoAudioOff;
+}
+actualizarBotonAudio();
+
+audioBtn.addEventListener('click', () => {
+  audioActivo = !audioActivo;
+  if (audioActivo) {
+    audioEl.play().catch(() => {
+      // Si el navegador bloquea la reproducción (o falta el archivo de audio real), no rompemos la página.
+      console.warn('No se pudo reproducir el audio ambiental. ¿Ya agregaste el archivo en /audio?');
+    });
+  } else {
+    audioEl.pause();
+  }
+  try { localStorage.setItem('sigrm_audio_activo', audioActivo ? '1' : '0'); } catch (e) {}
+  actualizarBotonAudio();
+});
+// Nota: nunca se reproduce automáticamente al cargar la página (política de autoplay de los navegadores
+// y buena práctica): el usuario siempre activa el sonido con este botón.
+
+/* ============================================================
+ * CHAT DEL COLIBRÍ
+ * ============================================================ */
+const colibriFab = document.getElementById('colibri-fab');
+const chatPanel = document.getElementById('chat-panel');
+const chatMensajes = document.getElementById('chat-mensajes');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+const btnCerrarChat = document.getElementById('btn-cerrar-chat');
+const btnRepetirRecorrido = document.getElementById('btn-repetir-recorrido');
+
+let historialChat = [];
+let chatIniciado = false;
+
+function agregarMensaje(texto, tipo) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + tipo;
+  div.textContent = texto;
+  chatMensajes.appendChild(div);
+  chatMensajes.scrollTop = chatMensajes.scrollHeight;
+  return div;
+}
+
+function abrirChat() {
+  if (recorridoActivo) terminarRecorrido();
+  chatPanel.classList.add('abierto');
+  if (!chatIniciado) {
+    chatIniciado = true;
+    agregarMensaje('¡Hola! Soy Chiri 🐦 Pregúntame sobre cómo proponer un lugar, cómo financiar un proyecto o cómo funciona la verificación municipal.', 'bot');
+  }
+  chatInput.focus();
+}
+
+colibriFab.addEventListener('click', () => {
+  if (chatPanel.classList.contains('abierto')) {
+    chatPanel.classList.remove('abierto');
+  } else {
+    abrirChat();
+  }
+});
+btnCerrarChat.addEventListener('click', () => chatPanel.classList.remove('abierto'));
+btnRepetirRecorrido.addEventListener('click', () => {
+  chatPanel.classList.remove('abierto');
+  iniciarRecorrido();
+});
+
+chatForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const pregunta = chatInput.value.trim();
+  if (!pregunta) return;
+  chatInput.value = '';
+  agregarMensaje(pregunta, 'user');
+  historialChat.push({ role: 'user', content: pregunta });
+
+  if (!CHAT_API_URL) {
+    agregarMensaje('Todavía estoy despertando por aquí. Muy pronto voy a poder responderte, mientras tanto explora el visor o el panel desde el menú de arriba.', 'error');
+    return;
+  }
+
+  const elEscribiendo = agregarMensaje('escribiendo…', 'bot escribiendo');
+  const botonEnviar = chatForm.querySelector('button[type="submit"]');
+  botonEnviar.disabled = true;
+
+  try {
+    const resp = await fetch(CHAT_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pregunta, historial: historialChat.slice(-8) })
+    });
+    const data = await resp.json();
+    elEscribiendo.remove();
+
+    if (!resp.ok || data.error) {
+      agregarMensaje(data.error || 'El colibrí está descansando, intenta de nuevo en un momento.', 'error');
+      return;
+    }
+    agregarMensaje(data.respuesta || 'No tengo una respuesta por ahora.', 'bot');
+    historialChat.push({ role: 'assistant', content: data.respuesta || '' });
+  } catch (err) {
+    elEscribiendo.remove();
+    agregarMensaje('No pude conectarme en este momento. Revisa tu conexión e intenta de nuevo.', 'error');
+    console.error(err);
+  } finally {
+    botonEnviar.disabled = false;
+  }
+});
+
+chatInput.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter' && !ev.shiftKey) {
+    ev.preventDefault();
+    chatForm.requestSubmit();
+  }
+});
+</script>
 
 </body>
 </html>
