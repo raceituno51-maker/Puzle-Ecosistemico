@@ -174,11 +174,26 @@
   }
   #modal h2 { margin-top: 0; font-size: 16px; }
   #modal label { display: block; font-size: 13px; margin: 10px 0 4px; font-weight: 600; }
-  #modal input[type=text], #modal input[type=email], #modal select, #modal textarea {
+  #modal input[type=text], #modal input[type=email], #modal input[type=tel],
+  #modal input[type=number], #modal select, #modal textarea {
     width: 100%; padding: 7px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px;
     background: var(--surface-1); color: var(--text-primary);
   }
+  #modal input[type=file] { width: 100%; font-size: 12.5px; padding: 4px 0; }
   #modal textarea { resize: vertical; min-height: 50px; }
+  .modal-seccion-titulo {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+    color: var(--text-secondary); margin: 18px 0 6px; padding-top: 12px; border-top: 1px solid var(--border-color);
+  }
+  .modal-seccion-titulo:first-of-type { margin-top: 12px; padding-top: 0; border-top: none; }
+  .campo-opcional { font-weight: 400; text-transform: none; color: var(--text-secondary); font-size: 11px; }
+  .modal-radio-row { display: flex; gap: 16px; margin-top: 4px; }
+  .radio-inline, .checkbox-inline {
+    display: flex; align-items: flex-start; gap: 6px; font-size: 12.5px; font-weight: 400; cursor: pointer;
+  }
+  .checkbox-inline input { margin-top: 2px; }
+  .modal-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; min-height: 14px; }
+  #f-org-tipo-otro.oculto { display: none; }
   .modal-row { display: flex; gap: 8px; margin-top: 10px; }
   .modal-row button {
     flex: 1; padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-1);
@@ -350,8 +365,50 @@
   <div id="modal">
     <span id="modal-close">&times;</span>
     <h2>Proponer un lugar</h2>
-    <p style="font-size:12px; color:#666; margin-top:-4px;">Tu nombre y correo quedan asociados automáticamente a tu sesión iniciada.</p>
+    <p style="font-size:12px; color:#666; margin-top:-4px;">Formulario para organizaciones sociales (territoriales o funcionales) de la Región Metropolitana.</p>
 
+    <div class="modal-seccion-titulo">1. Identificación de la organización</div>
+    <label for="f-org-nombre">Nombre de la organización</label>
+    <input type="text" id="f-org-nombre">
+
+    <label for="f-org-rut">RUT de la organización <span class="campo-opcional">(opcional)</span></label>
+    <input type="text" id="f-org-rut" placeholder="Ej: 65.123.456-7">
+
+    <label for="f-org-tipo">Tipo de organización</label>
+    <select id="f-org-tipo">
+      <option value="junta_vecinos">Junta de vecinos</option>
+      <option value="club_deportivo">Club deportivo</option>
+      <option value="club_adulto_mayor">Club de adulto mayor</option>
+      <option value="centro_madres">Centro de madres</option>
+      <option value="agrupacion_cultural">Agrupación cultural</option>
+      <option value="comite_vivienda">Comité de vivienda</option>
+      <option value="agrupacion_ambiental">Agrupación medioambiental</option>
+      <option value="ong_fundacion">ONG / Fundación</option>
+      <option value="cooperativa">Cooperativa</option>
+      <option value="otro">Otro</option>
+    </select>
+    <input type="text" id="f-org-tipo-otro" class="oculto" placeholder="Especifica el tipo de organización" style="margin-top:6px;">
+
+    <label>¿Cuenta con personalidad jurídica vigente?</label>
+    <div class="modal-radio-row">
+      <label class="radio-inline"><input type="radio" name="f-personalidad" value="si"> Sí</label>
+      <label class="radio-inline"><input type="radio" name="f-personalidad" value="no"> No</label>
+    </div>
+
+    <div class="modal-seccion-titulo">2. Representante</div>
+    <label for="f-rep-nombre">Nombre completo</label>
+    <input type="text" id="f-rep-nombre">
+
+    <label for="f-rep-rut">RUT</label>
+    <input type="text" id="f-rep-rut" placeholder="Ej: 12.345.678-9">
+
+    <label for="f-rep-email">Correo electrónico</label>
+    <input type="email" id="f-rep-email" placeholder="Para notificaciones de seguimiento">
+
+    <label for="f-rep-telefono">Teléfono de contacto</label>
+    <input type="tel" id="f-rep-telefono" placeholder="Ej: +56 9 1234 5678">
+
+    <div class="modal-seccion-titulo">3. Nuestra Idea</div>
     <label for="f-tipo">Tipo de intervención</label>
     <select id="f-tipo">
       <option value="plaza">Plaza</option>
@@ -361,8 +418,11 @@
       <option value="otro">Otro</option>
     </select>
 
-    <label for="f-desc">Descripción breve</label>
-    <textarea id="f-desc" placeholder="¿Qué te gustaría que pasara en este lugar?"></textarea>
+    <label for="f-desc">¿Qué te gustaría que pasara en este lugar?</label>
+    <textarea id="f-desc"></textarea>
+
+    <label for="f-motivo">¿Por qué es importante para tu organización/barrio?</label>
+    <textarea id="f-motivo"></textarea>
 
     <label>Ubicación</label>
     <div class="modal-row" style="flex-wrap:wrap;">
@@ -373,10 +433,34 @@
     <div id="ubicacion-status">Aún no se ha definido una ubicación.</div>
 
     <div id="contexto-territorial" class="oculto">
-      <div class="contexto-titulo">Contexto territorial <span class="contexto-score" id="contexto-score"></span></div>
+      <div class="contexto-titulo">4. Descripción del territorio <span class="contexto-score" id="contexto-score"></span></div>
       <div id="contexto-texto"></div>
       <div class="contexto-nota">Generado automáticamente a partir de las capas disponibles. Es un apoyo informativo: no reemplaza la evaluación técnica ni la decisión final.</div>
     </div>
+
+    <div class="modal-seccion-titulo">5. Fotos del lugar</div>
+    <label for="f-fotos">Adjunta de 1 a 3 fotos (máx. 5MB c/u)</label>
+    <input type="file" id="f-fotos" accept="image/*" multiple>
+    <div id="fotos-status" class="modal-hint"></div>
+
+    <div class="modal-seccion-titulo">6. Aporte de la organización <span class="campo-opcional">(opcional)</span></div>
+    <select id="f-aporte">
+      <option value="">Selecciona una opción</option>
+      <option value="terreno_propio">Terreno propio</option>
+      <option value="mano_obra">Mano de obra</option>
+      <option value="gestion_vecinos">Gestión con vecinos</option>
+      <option value="otro">Aún no definido / Otro</option>
+    </select>
+
+    <div class="modal-seccion-titulo">7. Beneficiarios estimados <span class="campo-opcional">(opcional)</span></div>
+    <label for="f-beneficiarios">Número aproximado de personas beneficiadas</label>
+    <input type="number" id="f-beneficiarios" min="0" step="1">
+
+    <div class="modal-seccion-titulo">8. Consentimiento de datos</div>
+    <label class="checkbox-inline">
+      <input type="checkbox" id="f-consentimiento">
+      Autorizo el uso de esta información (incluyendo RUT y datos de contacto) para los fines de esta plataforma, conforme a la Ley 19.628 sobre protección de datos personales.
+    </label>
 
     <div class="modal-row">
       <button id="btn-cancelar" type="button">Cancelar</button>
@@ -2062,6 +2146,31 @@ let drawControl = null;
 let drawControlPoligono = null;
 let drawnItems = new L.FeatureGroup().addTo(map);
 
+const FOTO_MAX_BYTES = 5 * 1024 * 1024;
+
+document.getElementById('f-org-tipo').addEventListener('change', (e) => {
+  document.getElementById('f-org-tipo-otro').classList.toggle('oculto', e.target.value !== 'otro');
+});
+
+document.getElementById('f-fotos').addEventListener('change', (e) => {
+  const fotosStatus = document.getElementById('fotos-status');
+  const archivos = Array.from(e.target.files);
+  if (archivos.length > 3) {
+    fotosStatus.textContent = 'Máximo 3 fotos. Vuelve a seleccionar.';
+    e.target.value = '';
+    return;
+  }
+  const pesada = archivos.find(f => f.size > FOTO_MAX_BYTES);
+  if (pesada) {
+    fotosStatus.textContent = `"${pesada.name}" supera los 5MB. Vuelve a seleccionar.`;
+    e.target.value = '';
+    return;
+  }
+  fotosStatus.textContent = archivos.length
+    ? `${archivos.length} foto${archivos.length > 1 ? 's' : ''} lista${archivos.length > 1 ? 's' : ''} para enviar.`
+    : '';
+});
+
 document.getElementById('proponer-btn').addEventListener('click', () => {
   overlay.style.display = 'flex';
 });
@@ -2152,25 +2261,120 @@ map.on(L.Draw.Event.CREATED, (e) => {
 });
 
 document.getElementById('btn-enviar').addEventListener('click', async () => {
-  const tipo = document.getElementById('f-tipo').value;
-  const descripcion = document.getElementById('f-desc').value.trim();
+  const campo = (id) => document.getElementById(id).value.trim();
 
+  const orgNombre = campo('f-org-nombre');
+  const orgRut = campo('f-org-rut');
+  const orgTipo = document.getElementById('f-org-tipo').value;
+  const orgTipoOtro = campo('f-org-tipo-otro');
+  const personalidadEl = document.querySelector('input[name="f-personalidad"]:checked');
+  const repNombre = campo('f-rep-nombre');
+  const repRut = campo('f-rep-rut');
+  const repEmail = campo('f-rep-email');
+  const repTelefono = campo('f-rep-telefono');
+  const tipo = document.getElementById('f-tipo').value;
+  const descripcion = campo('f-desc');
+  const motivoImportancia = campo('f-motivo');
+  const aporte = document.getElementById('f-aporte').value || null;
+  const beneficiariosRaw = campo('f-beneficiarios');
+  const beneficiarios = beneficiariosRaw ? parseInt(beneficiariosRaw, 10) : null;
+  const fotos = Array.from(document.getElementById('f-fotos').files);
+  const consentimiento = document.getElementById('f-consentimiento').checked;
+
+  if (!orgNombre) { alert('Falta el nombre de la organización.'); return; }
+  if (!personalidadEl) { alert('Indica si la organización cuenta con personalidad jurídica vigente.'); return; }
+  if (!repNombre || !repRut || !repEmail || !repTelefono) {
+    alert('Faltan datos del representante (nombre, RUT, correo y teléfono son obligatorios).');
+    return;
+  }
+  if (!descripcion || !motivoImportancia) {
+    alert('Completa ambas preguntas de "Nuestra Idea".');
+    return;
+  }
   if (!geomPropuesta) {
     alert('Falta indicar la ubicación (GPS o marcar en el mapa).');
     return;
   }
+  if (fotos.length < 1) {
+    alert('Adjunta al menos 1 foto del lugar (máximo 3).');
+    return;
+  }
+  if (!consentimiento) {
+    alert('Debes autorizar el uso de la información para poder enviar la propuesta.');
+    return;
+  }
 
-  await guardarPropuesta({
-    tipo_intervencion: tipo,
-    descripcion,
-    geom: geomPropuesta,
-    ubicacion_dispositivo: ubicacionDispositivo,
-    comuna: comunaDetectada,
-    contexto_territorial: contextoTerritorialActual ? contextoTerritorialActual.texto : null,
-    score: contextoTerritorialActual ? contextoTerritorialActual.score : null
-  });
+  const btnEnviar = document.getElementById('btn-enviar');
+  btnEnviar.disabled = true;
+  btnEnviar.textContent = 'Enviando...';
 
-  cerrarModal();
+  try {
+    const fotosUrls = await subirFotos(fotos);
+
+    await guardarPropuesta({
+      tipo_intervencion: tipo,
+      descripcion,
+      motivo_importancia: motivoImportancia,
+      geom: geomPropuesta,
+      ubicacion_dispositivo: ubicacionDispositivo,
+      comuna: comunaDetectada,
+      contexto_territorial: contextoTerritorialActual ? contextoTerritorialActual.texto : null,
+      score: contextoTerritorialActual ? contextoTerritorialActual.score : null,
+      fotos: fotosUrls,
+      nombre_organizacion: orgNombre,
+      tipo_organizacion: orgTipo,
+      tipo_organizacion_otro: orgTipo === 'otro' ? orgTipoOtro : null,
+      personalidad_juridica: personalidadEl.value === 'si',
+      aporte_organizacion: aporte,
+      beneficiarios_estimados: Number.isInteger(beneficiarios) ? beneficiarios : null,
+      rut_organizacion: orgRut || null,
+      representante_nombre: repNombre,
+      representante_rut: repRut,
+      representante_email: repEmail,
+      representante_telefono: repTelefono,
+      consentimiento_datos: consentimiento
+    });
+  } finally {
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = 'Enviar propuesta';
+  }
+});
+
+// Sube cada foto al bucket público "fotos-propuestas" con un nombre
+// aleatorio y devuelve las URLs públicas resultantes, en el mismo
+// orden que los archivos recibidos.
+async function subirFotos(archivos) {
+  const urls = [];
+  for (const archivo of archivos) {
+    const ext = (archivo.name.split('.').pop() || 'jpg').toLowerCase();
+    const ruta = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await sb.storage.from('fotos-propuestas').upload(ruta, archivo);
+    if (error) throw new Error('No se pudo subir una foto: ' + error.message);
+    urls.push(sb.storage.from('fotos-propuestas').getPublicUrl(ruta).data.publicUrl);
+  }
+  return urls;
+}
+
+function limpiarFormularioPropuesta() {
+  document.getElementById('f-org-nombre').value = '';
+  document.getElementById('f-org-rut').value = '';
+  document.getElementById('f-org-tipo').value = 'junta_vecinos';
+  document.getElementById('f-org-tipo-otro').value = '';
+  document.getElementById('f-org-tipo-otro').classList.add('oculto');
+  document.querySelectorAll('input[name="f-personalidad"]').forEach(r => r.checked = false);
+  document.getElementById('f-rep-nombre').value = '';
+  document.getElementById('f-rep-rut').value = '';
+  document.getElementById('f-rep-email').value = '';
+  document.getElementById('f-rep-telefono').value = '';
+  document.getElementById('f-tipo').value = 'plaza';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-motivo').value = '';
+  document.getElementById('f-fotos').value = '';
+  document.getElementById('fotos-status').textContent = '';
+  document.getElementById('f-aporte').value = '';
+  document.getElementById('f-beneficiarios').value = '';
+  document.getElementById('f-consentimiento').checked = false;
+
   geomPropuesta = null;
   ubicacionDispositivo = null;
   comunaDetectada = null;
@@ -2179,7 +2383,7 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
   if (marcadorPropuesta) { map.removeLayer(marcadorPropuesta); marcadorPropuesta = null; }
   drawnItems.clearLayers();
   ubicacionStatus.textContent = 'Aún no se ha definido una ubicación.';
-});
+}
 
 // Convierte un geometry de GeoJSON (Point o Polygon, que es lo que
 // produce este formulario) a texto EWKT, que PostGIS acepta directo
@@ -2202,16 +2406,28 @@ function geoJSONaEWKT(geom) {
 }
 
 async function guardarPropuesta(propuesta) {
-  const { error } = await sb.from('propuestas').insert({
-    usuario_id: null,
-    tipo_intervencion: propuesta.tipo_intervencion,
-    geom: geoJSONaEWKT(propuesta.geom),
-    ubicacion_dispositivo: geoJSONaEWKT(propuesta.ubicacion_dispositivo),
-    descripcion: propuesta.descripcion,
-    comuna: propuesta.comuna || null,
-    contexto_territorial: propuesta.contexto_territorial || null,
-    score: propuesta.score,
-    estado: 'sin_verificar'
+  const { error } = await sb.rpc('crear_propuesta_organizacion', {
+    p_tipo_intervencion: propuesta.tipo_intervencion,
+    p_descripcion: propuesta.descripcion,
+    p_motivo_importancia: propuesta.motivo_importancia,
+    p_geom: geoJSONaEWKT(propuesta.geom),
+    p_ubicacion_dispositivo: geoJSONaEWKT(propuesta.ubicacion_dispositivo),
+    p_comuna: propuesta.comuna || null,
+    p_contexto_territorial: propuesta.contexto_territorial || null,
+    p_score: propuesta.score,
+    p_fotos: propuesta.fotos,
+    p_nombre_organizacion: propuesta.nombre_organizacion,
+    p_tipo_organizacion: propuesta.tipo_organizacion,
+    p_tipo_organizacion_otro: propuesta.tipo_organizacion_otro,
+    p_personalidad_juridica: propuesta.personalidad_juridica,
+    p_aporte_organizacion: propuesta.aporte_organizacion,
+    p_beneficiarios_estimados: propuesta.beneficiarios_estimados,
+    p_rut_organizacion: propuesta.rut_organizacion,
+    p_representante_nombre: propuesta.representante_nombre,
+    p_representante_rut: propuesta.representante_rut,
+    p_representante_email: propuesta.representante_email,
+    p_representante_telefono: propuesta.representante_telefono,
+    p_consentimiento_datos: propuesta.consentimiento_datos
   });
 
   if (error) {
@@ -2219,6 +2435,8 @@ async function guardarPropuesta(propuesta) {
     console.error(error);
     return;
   }
+  cerrarModal();
+  limpiarFormularioPropuesta();
   alert('¡Propuesta registrada! Quedará como "sin verificar" hasta que la comunidad o el municipio la validen.');
 }
 </script>
