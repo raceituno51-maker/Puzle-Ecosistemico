@@ -51,12 +51,6 @@
   #capas-contenido { overflow-y: auto; padding-right: 2px; }
   #capas-contenido.oculto { display: none; }
 
-  /* Panel lateral del filtro de subcuencas: vive a un costado del panel
-     de capas y solo aparece mientras esa capa está activa (ver
-     agregarCapaSubcuencas). */
-  #subcuencas-panel { top: 12px; right: 324px; width: 220px; max-width: 90vw; max-height: calc(100vh - 24px); overflow-y: auto; }
-  #subcuencas-panel .panel-titulo { font-size: 13px; font-weight: 600; }
-  #subcuencas-lista { margin-top: 6px; }
   .capas-seccion-titulo {
     font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--text-secondary, #6b7280); margin: 14px 0 4px; padding-top: 10px;
@@ -121,37 +115,35 @@
      dentro del panel de capas, que restringe todas las capas temáticas
      (no el límite comunal en sí, que en cambio se resalta con otro
      color) a las comunas elegidas, y hace zoom automático a su extensión. */
-  #filtro-comuna-fila, #filtro-sitios-fila { margin-bottom: 10px; position: relative; }
-  #filtro-comuna-fila > label, #filtro-sitios-fila > label {
+  #filtro-comuna-fila, #filtro-sitios-fila, #filtro-subcuencas-fila { margin-bottom: 10px; position: relative; }
+  #filtro-comuna-fila > label, #filtro-sitios-fila > label, #filtro-subcuencas-fila > label {
     display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: .3px; margin-bottom: 4px;
   }
-  #filtro-comuna-btn, #filtro-sitios-btn {
+  #filtro-comuna-btn, #filtro-sitios-btn, #filtro-subcuencas-btn {
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 6px;
     padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px;
     font-size: 13px; background: var(--surface-1); color: var(--text-primary); cursor: pointer;
     text-align: left;
   }
-  #filtro-comuna-btn:disabled, #filtro-sitios-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  #filtro-comuna-btn svg, #filtro-sitios-btn svg { flex-shrink: 0; transition: transform .15s; }
-  #filtro-comuna-btn.abierto svg, #filtro-sitios-btn.abierto svg { transform: rotate(180deg); }
-  #filtro-comuna-resumen, #filtro-sitios-resumen { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #filtro-comuna-btn:disabled, #filtro-sitios-btn:disabled, #filtro-subcuencas-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #filtro-comuna-btn svg, #filtro-sitios-btn svg, #filtro-subcuencas-btn svg { flex-shrink: 0; transition: transform .15s; }
+  #filtro-comuna-btn.abierto svg, #filtro-sitios-btn.abierto svg, #filtro-subcuencas-btn.abierto svg { transform: rotate(180deg); }
+  #filtro-comuna-resumen, #filtro-sitios-resumen, #filtro-subcuencas-resumen { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  #filtro-comuna-dropdown, #filtro-sitios-dropdown {
-    position: absolute; z-index: 20;
+  /* Todos los desplegables de filtro (comuna, sitios prioritarios,
+     subcuencas) abren hacia abajo, dentro del propio panel de capas: como
+     #capas-contenido ahora scrollea (para que ninguna capa quede oculta,
+     ver más arriba), un desplegable que se saliera del panel hacia un
+     costado quedaría recortado por ese mismo scroll. Abrir hacia abajo
+     evita el problema — el contenedor simplemente scrollea más para
+     mostrarlo completo. */
+  #filtro-comuna-dropdown, #filtro-sitios-dropdown, #filtro-subcuencas-dropdown {
+    position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px);
     border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-2);
     box-shadow: 0 4px 14px rgba(0,0,0,0.22); display: flex; flex-direction: column;
   }
-  #filtro-comuna-dropdown { left: 0; right: 0; top: calc(100% + 4px); }
-  /* El de sitios prioritarios (23 nombres) se abre hacia la izquierda del
-     botón, no hacia abajo: con tantos ítems, desplegado hacia abajo se
-     corta contra el borde inferior de la pantalla. Además se ancla por
-     abajo (bottom:0, no top:0) y crece hacia arriba, porque el botón
-     suele quedar cerca del borde inferior del panel/pantalla — así
-     aprovecha el espacio disponible hacia arriba para mostrar los 23
-     sitios sin recortarse. */
-  #filtro-sitios-dropdown { bottom: 0; top: auto; right: 100%; left: auto; margin-right: 8px; width: 250px; }
-  #filtro-comuna-dropdown.oculto, #filtro-sitios-dropdown.oculto { display: none; }
+  #filtro-comuna-dropdown.oculto, #filtro-sitios-dropdown.oculto, #filtro-subcuencas-dropdown.oculto { display: none; }
   .filtro-comuna-acciones {
     display: flex; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--border-color);
   }
@@ -161,7 +153,8 @@
   }
   .filtro-comuna-acciones button:hover { filter: brightness(0.93); }
   #filtro-comuna-lista { max-height: 190px; overflow-y: auto; padding: 4px 8px 6px; }
-  #filtro-sitios-lista { max-height: min(80vh, 560px); overflow-y: auto; padding: 4px 8px 6px; }
+  #filtro-sitios-lista { max-height: 240px; overflow-y: auto; padding: 4px 8px 6px; }
+  #filtro-subcuencas-lista { max-height: 180px; overflow-y: auto; padding: 4px 8px 6px; }
   .filtro-comuna-item {
     display: flex !important; align-items: center; gap: 6px; font-size: 12.5px !important;
     margin: 3px 0 !important; cursor: pointer; font-weight: 400;
@@ -574,7 +567,7 @@ const COLORES_FIJOS_POR_CAPA = {
   4: '#70e000', // Bosques de Bolsillo
   5: '#00b4d8', // Red hidrográfica - Ríos y esteros RM
   7: '#0081a7', // Proyectos hídricos
-  10: '#dc143c' // Sitios Prioritarios para la Conservación de la Biodiversidad
+  10: '#06d6a0' // Sitios Prioritarios para la Conservación de la Biodiversidad
 };
 
 // Etiquetas y colores para la capa de "Propuestas ciudadanas" (tabla
@@ -913,9 +906,9 @@ function cambiarHorarioTemperatura(key, horario) {
  * click. Por eso queda excluida del filtro por comuna (ver
  * aplicarFiltroComuna) y no pasa por agregarCapaAlPanel.
  * ---------------------------------------------------------- */
-function crearCapaSitiosLeaflet(geojson, color) {
+function crearCapaSitiosLeaflet(geojson, color, pattern) {
   return L.geoJSON(geojson, {
-    style: { color, weight: 1.4, fillColor: color, fillOpacity: 0.28 },
+    style: { color, weight: 1.4, fillPattern: pattern, fillOpacity: 1 },
     onEachFeature: (feature, featureLayer) => {
       const nombre = (feature.properties && feature.properties.nombre) || 'Sitio prioritario';
       featureLayer.bindPopup(
@@ -927,8 +920,13 @@ function crearCapaSitiosLeaflet(geojson, color) {
 }
 
 function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
+  // El patrón debe agregarse al mapa antes de poder usarse como fillPattern
+  // (así registra su <pattern> en los <defs> del SVG de Leaflet).
+  const patternSitios = new L.StripePattern({ color, weight: 2, spaceWeight: 4, angle: 45, opacity: 0.9, spaceOpacity: 0 });
+  patternSitios.addTo(map);
+
   // Sin .addTo(map): oculta por defecto (ver agregarCapaAlPanel).
-  const layer = crearCapaSitiosLeaflet(geojson, color);
+  const layer = crearCapaSitiosLeaflet(geojson, color, patternSitios);
   capaLayers[key] = layer;
   capaDatos[key] = {
     geojson, color, conFichas: false, tipoIcono: null, radioPunto: 7, grosorLinea: 1.4, label,
@@ -936,7 +934,7 @@ function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
   };
 
   const row = document.createElement('label');
-  row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloCapa(color, geojson)} <span>${label}</span>`;
+  row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloHachurado(color, 'sitios', 45)} <span>${label}</span>`;
   capasPanel.appendChild(row);
 
   // Filtro múltiple por nombre de sitio, con la misma UI (desplegable con
@@ -1002,7 +1000,7 @@ function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
     const geojsonFiltrado = sitiosSeleccionados.size
       ? { type: 'FeatureCollection', features: geojson.features.filter(f => sitiosSeleccionados.has(f.properties && f.properties.nombre)) }
       : geojson;
-    const nuevaCapa = crearCapaSitiosLeaflet(geojsonFiltrado, color);
+    const nuevaCapa = crearCapaSitiosLeaflet(geojsonFiltrado, color, patternSitios);
     capaLayers[key] = nuevaCapa;
     if (estabaActiva) nuevaCapa.addTo(map);
   }
@@ -1031,10 +1029,11 @@ function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
  * Capa especial "Subcuencas hidrográficas RM" (id 12) — fuente DGA
  * (BNA). En vez de relleno sólido usa un achurado (Leaflet.pattern/
  * StripePattern) celeste en diagonal, para poder superponerse a otras
- * capas de polígonos sin taparlas del todo. Su filtro por nombre vive
- * en un panel aparte, a un costado del panel de capas — no el filtro
- * general por comuna (los límites de subcuenca no calzan con los
- * comunales) — y solo se muestra mientras la capa esté activa.
+ * capas de polígonos sin taparlas del todo. Su filtro por nombre es un
+ * desplegable dentro del propio panel de capas (mismo patrón que
+ * "Filtrar sitios prioritarios"), no el filtro general por comuna (los
+ * límites de subcuenca no calzan con los comunales) — y la fila del
+ * filtro solo se muestra mientras la capa esté activa.
  * ---------------------------------------------------------- */
 const COLOR_SUBCUENCAS = '#4cc9f0';
 
@@ -1050,7 +1049,7 @@ function nombreFeatureHidro(props, claves) {
 
 function crearCapaHidrografica(geojson, pattern, color, claves) {
   return L.geoJSON(geojson, {
-    style: { fillPattern: pattern, color, weight: 1.3, fillOpacity: 1, opacity: 0.9 },
+    style: { fillPattern: pattern, color, weight: 2.6, fillOpacity: 1, opacity: 0.95 },
     onEachFeature: (feature, featureLayer) => {
       const nombre = nombreFeatureHidro(feature.properties, claves);
       featureLayer.bindPopup(`<div class="popup-sitio-nombre" style="color:${color};">${escaparHTML(nombre)}</div>`, { closeButton: false });
@@ -1088,28 +1087,50 @@ function agregarCapaSubcuencas(entradaSubcuencas) {
   capasPanel.appendChild(row);
   const checkboxCapa = row.querySelector('input[type=checkbox]');
 
-  // Panel lateral con el filtro por nombre de subcuenca: vive fuera del
-  // panel de capas (a su costado izquierdo) y permanece oculto hasta que
-  // se activa la capa, para no ensuciar el menú principal con algo que
-  // no aplica todavía.
-  const panelLateral = document.createElement('div');
-  panelLateral.id = 'subcuencas-panel';
-  panelLateral.className = 'panel';
-  panelLateral.style.display = 'none';
-  panelLateral.innerHTML = `
-    <div class="panel-header">
-      <span class="panel-titulo">Subcuencas</span>
+  // Filtro por nombre de subcuenca: mismo patrón (desplegable con
+  // checkboxes + Todas/Ninguna) que "Filtrar sitios prioritarios", pero
+  // la fila completa permanece oculta hasta que se activa esta capa.
+  const fila = document.createElement('div');
+  fila.id = 'filtro-subcuencas-fila';
+  fila.style.display = 'none';
+  fila.innerHTML = `
+    <label for="filtro-subcuencas-btn">Filtrar subcuencas</label>
+    <button type="button" id="filtro-subcuencas-btn">
+      <span id="filtro-subcuencas-resumen">Todas</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div id="filtro-subcuencas-dropdown" class="oculto">
+      <div class="filtro-comuna-acciones">
+        <button type="button" id="filtro-subcuencas-todas">Todas</button>
+        <button type="button" id="filtro-subcuencas-ninguna">Ninguna</button>
+      </div>
+      <div id="filtro-subcuencas-lista"></div>
     </div>
-    <div class="filtro-comuna-acciones">
-      <button type="button" id="subcuencas-todas">Todas</button>
-      <button type="button" id="subcuencas-ninguna">Ninguna</button>
-    </div>
-    <div id="subcuencas-lista"></div>
   `;
-  document.body.appendChild(panelLateral);
+  capasPanel.appendChild(fila);
 
-  const listaEl = panelLateral.querySelector('#subcuencas-lista');
+  const btn = fila.querySelector('#filtro-subcuencas-btn');
+  const resumen = fila.querySelector('#filtro-subcuencas-resumen');
+  const dropdown = fila.querySelector('#filtro-subcuencas-dropdown');
+  btn.addEventListener('click', () => {
+    const abierto = !dropdown.classList.contains('oculto');
+    dropdown.classList.toggle('oculto', abierto);
+    btn.classList.toggle('abierto', !abierto);
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown.contains(e.target) || btn.contains(e.target)) return;
+    dropdown.classList.add('oculto');
+    btn.classList.remove('abierto');
+  });
+
+  const listaEl = fila.querySelector('#filtro-subcuencas-lista');
   const seleccionadas = new Set();
+
+  function actualizarResumenSubcuencas() {
+    resumen.textContent = seleccionadas.size === 0 ? 'Todas' : `${seleccionadas.size} seleccionada${seleccionadas.size === 1 ? '' : 's'}`;
+  }
 
   function aplicarFiltroSubcuencas() {
     const estabaActiva = map.hasLayer(capaLayers['capa_12']);
@@ -1134,21 +1155,28 @@ function agregarCapaSubcuencas(entradaSubcuencas) {
     if (e.target.type !== 'checkbox') return;
     if (e.target.checked) seleccionadas.add(e.target.value);
     else seleccionadas.delete(e.target.value);
+    actualizarResumenSubcuencas();
     aplicarFiltroSubcuencas();
   });
-  panelLateral.querySelector('#subcuencas-todas').addEventListener('click', () => {
+  fila.querySelector('#filtro-subcuencas-todas').addEventListener('click', () => {
     listaEl.querySelectorAll('input[type=checkbox]').forEach((c) => { c.checked = true; seleccionadas.add(c.value); });
+    actualizarResumenSubcuencas();
     aplicarFiltroSubcuencas();
   });
-  panelLateral.querySelector('#subcuencas-ninguna').addEventListener('click', () => {
+  fila.querySelector('#filtro-subcuencas-ninguna').addEventListener('click', () => {
     listaEl.querySelectorAll('input[type=checkbox]').forEach((c) => { c.checked = false; });
     seleccionadas.clear();
+    actualizarResumenSubcuencas();
     aplicarFiltroSubcuencas();
   });
 
-  // El panel lateral solo se muestra mientras la capa de subcuencas esté activa.
+  // La fila del filtro solo se muestra mientras la capa de subcuencas esté activa.
   checkboxCapa.addEventListener('change', () => {
-    panelLateral.style.display = checkboxCapa.checked ? 'block' : 'none';
+    fila.style.display = checkboxCapa.checked ? 'block' : 'none';
+    if (!checkboxCapa.checked) {
+      dropdown.classList.add('oculto');
+      btn.classList.remove('abierto');
+    }
   });
 }
 
