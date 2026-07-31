@@ -39,12 +39,19 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.12); padding: 12px 14px;
     transition: background .2s, color .2s, border-color .2s;
   }
-  #capas-panel { top: 12px; right: 12px; width: 230px; }
+  #capas-panel { top: 12px; right: 12px; width: 300px; max-width: 90vw; }
   #capas-panel .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   #capas-panel .panel-titulo { font-size: 14px; font-weight: 600; }
   #capas-panel .panel-header-acciones { display: flex; align-items: center; gap: 2px; }
-  #capas-panel label { display: block; font-size: 13px; margin: 4px 0; cursor: pointer; }
+  #capas-panel label { display: flex; align-items: center; gap: 6px; font-size: 13px; margin: 4px 0; cursor: pointer; }
+  .simbolo-capa { flex-shrink: 0; }
   #capas-contenido.oculto { display: none; }
+  .capas-seccion-titulo {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--text-secondary, #6b7280); margin: 14px 0 4px; padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+  }
+  .capas-seccion-titulo:first-child { margin-top: 4px; padding-top: 0; border-top: none; }
 
   .icon-btn {
     border: none; background: transparent; cursor: pointer; padding: 4px; border-radius: 6px;
@@ -65,16 +72,6 @@
   #logo-home { top: 12px; left: 12px; padding: 8px; display: flex; align-items: center; }
   #logo-home a { display: flex; line-height: 0; }
 
-  #auth-panel {
-    left: 56px; bottom: 12px; padding: 0; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  }
-  #auth-panel button {
-    border: none; background: var(--surface-2); color: var(--text-primary);
-    padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
-  }
-  #auth-panel button:hover { background: var(--surface-1); }
-
   /* Fondo fijo (no sigue el tema): así el nombre de la comuna se lee
      bien sobre el mapa sin importar si el color de línea elegido es
      oscuro o claro, o si la app está en modo oscuro. */
@@ -84,6 +81,86 @@
     padding: 3px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
     box-shadow: 0 1px 5px rgba(0,0,0,0.18);
   }
+
+  /* Popup de ficha de proyecto: se abre al hacer click en un punto de
+     cualquier capa temática. Tabla breve de atributos + link al PDF. */
+  .leaflet-popup-content-wrapper {
+    background: var(--surface-2); color: var(--text-primary); border-radius: 10px;
+  }
+  .leaflet-popup-tip { background: var(--surface-2); }
+  .leaflet-popup-content { margin: 12px 14px; font-family: inherit; }
+  .ficha-popup { font-size: 13px; min-width: 200px; }
+  .ficha-popup h3 {
+    margin: 0 0 6px; font-size: 14px; font-weight: 700; line-height: 1.3;
+  }
+  .ficha-popup table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
+  .ficha-popup table td { padding: 2px 0; vertical-align: top; }
+  .ficha-popup table td.ficha-clave {
+    color: var(--text-secondary); padding-right: 8px; white-space: nowrap; font-size: 12px;
+  }
+  .ficha-popup table td.ficha-valor { font-size: 12px; }
+  .ficha-popup .ficha-link {
+    display: inline-block; margin-top: 2px; padding: 6px 12px; border-radius: 16px;
+    background: #1a7f37; color: #fff; text-decoration: none; font-size: 12px; font-weight: 600;
+  }
+  .ficha-popup .ficha-link:hover { background: #166a2e; }
+  .ficha-popup .ficha-sin-pdf { color: var(--text-secondary); font-size: 12px; font-style: italic; }
+
+  /* Filtro por comuna: selector múltiple (checkboxes en un desplegable)
+     dentro del panel de capas, que restringe todas las capas temáticas
+     (no el límite comunal en sí, que en cambio se resalta con otro
+     color) a las comunas elegidas, y hace zoom automático a su extensión. */
+  #filtro-comuna-fila, #filtro-sitios-fila, #filtro-hidro-fila { margin-bottom: 10px; position: relative; }
+  #filtro-comuna-fila > label, #filtro-sitios-fila > label, #filtro-hidro-fila > label {
+    display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .3px; margin-bottom: 4px;
+  }
+  #filtro-comuna-btn, #filtro-sitios-btn, #filtro-hidro-btn {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px;
+    font-size: 13px; background: var(--surface-1); color: var(--text-primary); cursor: pointer;
+    text-align: left;
+  }
+  #filtro-comuna-btn:disabled, #filtro-sitios-btn:disabled, #filtro-hidro-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #filtro-comuna-btn svg, #filtro-sitios-btn svg, #filtro-hidro-btn svg { flex-shrink: 0; transition: transform .15s; }
+  #filtro-comuna-btn.abierto svg, #filtro-sitios-btn.abierto svg, #filtro-hidro-btn.abierto svg { transform: rotate(180deg); }
+  #filtro-comuna-resumen, #filtro-sitios-resumen, #filtro-hidro-resumen { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  #filtro-comuna-dropdown, #filtro-sitios-dropdown, #filtro-hidro-dropdown {
+    position: absolute; z-index: 20;
+    border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-2);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.22); display: flex; flex-direction: column;
+  }
+  #filtro-comuna-dropdown, #filtro-hidro-dropdown { left: 0; right: 0; top: calc(100% + 4px); }
+  /* El de sitios prioritarios (23 nombres) se abre hacia la izquierda del
+     botón, no hacia abajo: con tantos ítems, desplegado hacia abajo se
+     corta contra el borde inferior de la pantalla. Además se ancla por
+     abajo (bottom:0, no top:0) y crece hacia arriba, porque el botón
+     suele quedar cerca del borde inferior del panel/pantalla — así
+     aprovecha el espacio disponible hacia arriba para mostrar los 23
+     sitios sin recortarse. */
+  #filtro-sitios-dropdown { bottom: 0; top: auto; right: 100%; left: auto; margin-right: 8px; width: 250px; }
+  #filtro-comuna-dropdown.oculto, #filtro-sitios-dropdown.oculto { display: none; }
+  .filtro-comuna-acciones {
+    display: flex; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--border-color);
+  }
+  .filtro-comuna-acciones button {
+    flex: 1; border: none; background: var(--surface-1); color: var(--text-primary); border-radius: 5px;
+    padding: 4px 6px; font-size: 11px; cursor: pointer;
+  }
+  .filtro-comuna-acciones button:hover { filter: brightness(0.93); }
+  #filtro-comuna-lista { max-height: 190px; overflow-y: auto; padding: 4px 8px 6px; }
+  #filtro-sitios-lista { max-height: min(80vh, 560px); overflow-y: auto; padding: 4px 8px 6px; }
+  #filtro-cuencas-lista, #filtro-subcuencas-lista { max-height: 140px; overflow-y: auto; padding: 2px 8px 6px; }
+  .filtro-subgrupo-titulo {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+    color: var(--text-secondary); padding: 6px 8px 2px;
+  }
+  .filtro-comuna-item {
+    display: flex !important; align-items: center; gap: 6px; font-size: 12.5px !important;
+    margin: 3px 0 !important; cursor: pointer; font-weight: 400;
+  }
+  .popup-sitio-nombre { font-size: 13px; font-weight: 700; }
 
   #modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -107,6 +184,15 @@
   }
   .modal-row button.primary { background: #1a7f37; color: #fff; border-color: #1a7f37; }
   #ubicacion-status { font-size: 12px; color: var(--text-secondary); margin-top: 6px; min-height: 16px; }
+  #contexto-territorial {
+    margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+    background: var(--surface-1); border: 1px solid var(--border-color);
+  }
+  #contexto-territorial.oculto { display: none; }
+  #contexto-territorial .contexto-titulo { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  #contexto-territorial .contexto-score { font-weight: 400; color: var(--text-secondary); }
+  #contexto-texto { font-size: 12.5px; line-height: 1.45; }
+  #contexto-territorial .contexto-nota { font-size: 10.5px; color: var(--text-secondary); margin-top: 6px; font-style: italic; }
   #modal-close { position: absolute; top: 10px; right: 14px; cursor: pointer; font-size: 18px; color: var(--text-secondary); }
   #modal { position: relative; }
 
@@ -141,6 +227,26 @@
   .limite-controles .limite-valor { font-size: 11px; color: var(--text-secondary); min-width: 34px; text-align: right; }
   .limite-controles input[type=range] { flex: 1; }
 
+  /* Slider de horario para la capa de temperatura ambiental (Heat Watch
+     Santiago): permite mover un solo control entre mañana/tarde/atardecer
+     en vez de tener 3 capas separadas. */
+  .horario-controles { margin: 6px 0 4px 22px; }
+  .horario-controles input[type=range] {
+    width: 100%; margin: 2px 0 4px;
+  }
+  .horario-controles .horario-etiquetas {
+    display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-secondary);
+  }
+  .horario-controles .horario-etiquetas span.activa { color: var(--text-primary); font-weight: 600; }
+  .leyenda-temperatura {
+    display: flex; align-items: center; gap: 4px; margin: 4px 0 2px 22px;
+  }
+  .leyenda-temperatura .franja {
+    flex: 1; height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, #3a86ff, #80ed99, #ffea00, #fb8500, #d00000);
+  }
+  .leyenda-temperatura .franja-valor { font-size: 10px; color: var(--text-secondary); }
+
   #limite-estilo-grupo {
     display: flex; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; margin-bottom: 8px;
   }
@@ -159,6 +265,17 @@
   }
   #limite-color-picker button.activo { box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 3.5px var(--text-primary); }
 
+  /* Por defecto Leaflet apila verticalmente los controles de un mismo
+     rincón (clear:both en .leaflet-control). Acá abajo a la izquierda
+     conviven el selector de mapa base y el zoom (+/-): se fuerza fila
+     horizontal para que el zoom quede al lado, no encima. */
+  .leaflet-bottom.leaflet-left {
+    display: flex; flex-direction: row; align-items: flex-end;
+  }
+  .leaflet-bottom.leaflet-left .leaflet-control {
+    clear: none; margin-right: 8px;
+  }
+
   /* El tema oscuro también aplica al selector de mapas base de Leaflet. */
   .leaflet-control-layers {
     background: var(--surface-2) !important; color: var(--text-primary) !important;
@@ -174,7 +291,7 @@
 <div id="map"></div>
 
 <div id="logo-home" class="panel">
-  <a href='/' title='Volver al inicio'>
+  <a href="index.html" title="Volver al inicio">
     <svg viewBox="0 0 64 64" width="22" height="22" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Inicio">
       <rect width="64" height="64" rx="14" fill="#1a2e22"/>
       <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="4"/>
@@ -183,10 +300,6 @@
       <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
     </svg>
   </a>
-</div>
-
-<div id="auth-panel" class="panel">
-  <button id="auth-btn">Login</button>
 </div>
 
 <div id="capas-panel" class="panel">
@@ -206,6 +319,22 @@
     </div>
   </div>
   <div id="capas-contenido">
+    <div id="filtro-comuna-fila">
+      <label for="filtro-comuna-btn">Filtrar por comuna</label>
+      <button type="button" id="filtro-comuna-btn" disabled>
+        <span id="filtro-comuna-resumen">Todas las comunas</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="filtro-comuna-dropdown" class="oculto">
+        <div class="filtro-comuna-acciones">
+          <button type="button" id="filtro-comuna-todas">Todas</button>
+          <button type="button" id="filtro-comuna-ninguna">Ninguna</button>
+        </div>
+        <div id="filtro-comuna-lista"></div>
+      </div>
+    </div>
     <div id="capas-lista"></div>
   </div>
 </div>
@@ -238,6 +367,12 @@
     </div>
     <div id="ubicacion-status">Aún no se ha definido una ubicación.</div>
 
+    <div id="contexto-territorial" class="oculto">
+      <div class="contexto-titulo">Contexto territorial <span class="contexto-score" id="contexto-score"></span></div>
+      <div id="contexto-texto"></div>
+      <div class="contexto-nota">Generado automáticamente a partir de las capas disponibles. Es un apoyo informativo: no reemplaza la evaluación técnica ni la decisión final.</div>
+    </div>
+
     <div class="modal-row">
       <button id="btn-cancelar" type="button">Cancelar</button>
       <button id="btn-enviar" type="button" class="primary">Enviar propuesta</button>
@@ -247,6 +382,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.pattern@0.1.0/dist/leaflet.pattern.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 /* ============================================================
@@ -257,10 +393,9 @@
 const SUPABASE_URL = "https://bpjfbeigsmzkyadvtupo.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Iw-Sm3aG8vLCeUL9EfpYBw_tRIe4-0f";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let sesionActual = null;
 
 // Centro aproximado de la Región Metropolitana
-const map = L.map('map').setView([-33.55, -70.65], 10);
+const map = L.map('map', { zoomControl: false }).setView([-33.55, -70.65], 10);
 
 // Ícono de ubicación: punto azul neón (reemplaza el pin clásico de Leaflet).
 const iconoUbicacion = L.divIcon({
@@ -293,7 +428,7 @@ function aplicarTema(tema) {
   localStorage.setItem('sig_tema', tema);
 }
 
-aplicarTema(localStorage.getItem('sig_tema') || 'claro');
+aplicarTema(localStorage.getItem('sig_tema') || 'oscuro');
 
 temaToggle.addEventListener('click', () => {
   const actual = document.documentElement.getAttribute('data-tema');
@@ -339,21 +474,15 @@ const MAPAS_BASE = {
   })
 };
 
-// Mapa base claro por defecto (coherente con el tema claro por defecto de la UI).
+// Mapa base claro (blanco) por defecto: la interfaz usa tema oscuro,
+// pero el mapa en sí queda claro para que los colores de las capas
+// se lean mejor sobre el fondo.
 MAPAS_BASE['Claro'].addTo(map);
 L.control.layers(MAPAS_BASE, null, { position: 'bottomleft', collapsed: true }).addTo(map);
-
-// El botón de login queda pegado al costado derecho del ícono de
-// selección de mapas base (control de Leaflet, abajo a la izquierda).
-const authPanel = document.getElementById('auth-panel');
-function posicionarLogin() {
-  const contenedor = document.querySelector('.leaflet-bottom.leaflet-left');
-  if (!contenedor) return;
-  const rect = contenedor.getBoundingClientRect();
-  authPanel.style.left = (rect.right + 10) + 'px';
-}
-setTimeout(posicionarLogin, 0);
-window.addEventListener('resize', posicionarLogin);
+// Los controles del mismo rincón se acomodan en fila (float:left en Leaflet),
+// así que agregar el zoom después del selector de mapa base lo deja a su
+// derecha, ambos abajo a la izquierda.
+L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
 /* ------------------------------------------------------------
  * Datos MOCK por capa. Cuando el cartógrafo entregue los
@@ -410,26 +539,666 @@ const CAPAS_MOCK = {
 };
 
 const capasPanel = document.getElementById('capas-lista');
+// Fila del filtro por comuna: vive como HTML fijo fuera de #capas-lista,
+// pero se traslada (appendChild la mueve, no la clona) al grupo "Límites
+// Comunales" cuando se arma el menú, para que quede agrupada junto a la
+// capa de límites comunales.
+const filtroComunaFila = document.getElementById('filtro-comuna-fila');
 const capaLayers = {};
+// Geojson original (sin filtrar) + color/conFichas de cada capa temática,
+// para poder reconstruirla al filtrar por comuna sin perder los datos
+// completos. No incluye la capa de referencia "Comunas" (ver más abajo).
+const capaDatos = {};
+// Comunas elegidas en el filtro (nombres tal cual aparecen en la capa
+// de referencia). Set vacío = sin filtro, se muestra todo.
+let comunasSeleccionadas = new Set();
 const PALETA = ['#d1495b', '#2a9d8f', '#e76f51', '#588157', '#1a5c9c', '#e9c46a'];
+
+// Referencia a la capa de límites comunales y a su estado de estilo
+// actual (color/grosor/estilo de línea elegidos en los controles),
+// para poder resaltar con otro color las comunas del filtro sin perder
+// esos controles. Se completan en agregarCapaReferencia().
+let capaLimitesLayer = null;
+let estadoLimiteGlobal = null;
+const COLOR_RESALTADO_COMUNA = '#ffd60a';
+
+// Colores fijos para capas específicas (por id de la tabla `capas`),
+// que anulan el color asignado automáticamente desde PALETA.
+const COLORES_FIJOS_POR_CAPA = {
+  4: '#70e000', // Bosques de Bolsillo
+  5: '#00b4d8', // Red hidrográfica - Ríos y esteros RM
+  7: '#0081a7', // Proyectos hídricos
+  10: '#dc143c' // Sitios Prioritarios para la Conservación de la Biodiversidad
+};
+
+// Etiquetas y colores para la capa de "Propuestas ciudadanas" (tabla
+// propuestas, solo las ya verificadas — ver cargarPropuestas()).
+const TIPO_INTERVENCION_LABEL = {
+  plaza: 'Plaza',
+  sitio_eriazo: 'Sitio eriazo',
+  sede_social: 'Sede social',
+  area_verde: 'Área verde',
+  otro: 'Otro'
+};
+const ESTADO_PROPUESTA_LABEL = {
+  verificado_social: 'Verificado por la comunidad',
+  verificado_municipal: 'Verificado por el municipio'
+};
+const ESTADO_PROPUESTA_COLOR = {
+  verificado_social: '#1a7f37',
+  verificado_municipal: '#5e548e'
+};
 
 // Features de la capa de referencia "Límites comunales RM" (categoria
 // catastro_referencia), usadas para detectar automáticamente la comuna
 // de una propuesta ciudadana por punto-en-polígono. Ver detectarComuna().
 let comunasFeatures = [];
 
-function agregarCapaAlPanel(key, label, color, geojson) {
-  const layer = L.geoJSON(geojson, {
-    style: { color, weight: 2, fillOpacity: 0.35 },
+function escaparHTML(texto) {
+  return String(texto)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Arma el popup que se muestra al hacer click en un punto: título con
+// el nombre del proyecto, una tabla breve con los atributos más
+// relevantes (los que existan) y, si hay ficha en PDF, un link
+// "Ficha de proyecto" que lleva directo al archivo en Supabase Storage.
+function construirPopupHTML(props) {
+  props = props || {};
+  const titulo = props.nombre_proyecto || props.nombre || 'Proyecto sin nombre';
+
+  const campos = [
+    ['comuna', 'Comuna'],
+    ['programa_origen', 'Programa'],
+    ['estado', 'Estado'],
+    ['tipo_intervencion', 'Intervención'],
+    ['costo_estimado', 'Costo estimado']
+  ];
+  const filas = campos
+    .filter(([clave]) => props[clave] !== undefined && props[clave] !== null && props[clave] !== '')
+    .map(([clave, etiqueta]) => `<tr><td class="ficha-clave">${escaparHTML(etiqueta)}</td><td class="ficha-valor">${escaparHTML(props[clave])}</td></tr>`)
+    .join('');
+
+  const enlace = props.ficha_pdf_url
+    ? `<a class="ficha-link" href="${escaparHTML(props.ficha_pdf_url)}" target="_blank" rel="noopener">Ficha de proyecto ↗</a>`
+    : `<div class="ficha-sin-pdf">Sin ficha en PDF disponible</div>`;
+
+  return `
+    <div class="ficha-popup">
+      <h3>${escaparHTML(titulo)}</h3>
+      ${filas ? `<table>${filas}</table>` : ''}
+      ${enlace}
+    </div>
+  `;
+}
+
+// Popup de una propuesta ciudadana ya verificada: tipo de intervención,
+// comuna/estado/fecha/puntaje, la descripción escrita por la persona y,
+// si existe, la minuta de contexto territorial generada al proponerla.
+function construirPopupPropuesta(props) {
+  props = props || {};
+  const titulo = TIPO_INTERVENCION_LABEL[props.tipo_intervencion] || props.tipo_intervencion || 'Propuesta ciudadana';
+  const estadoLabel = ESTADO_PROPUESTA_LABEL[props.estado] || props.estado;
+
+  const campos = [
+    ['Comuna', props.comuna],
+    ['Estado', estadoLabel],
+    ['Fecha', props.created_at ? new Date(props.created_at).toLocaleDateString('es-CL') : null],
+    ['Pertinencia', (props.score !== null && props.score !== undefined) ? `${props.score}/100` : null]
+  ];
+  const filas = campos
+    .filter(([, valor]) => valor !== undefined && valor !== null && valor !== '')
+    .map(([clave, valor]) => `<tr><td class="ficha-clave">${escaparHTML(clave)}</td><td class="ficha-valor">${escaparHTML(valor)}</td></tr>`)
+    .join('');
+
+  const descripcion = props.descripcion
+    ? `<div style="margin-bottom:8px;">${escaparHTML(props.descripcion)}</div>` : '';
+  const contexto = props.contexto_territorial
+    ? `<div style="font-size:11.5px; color:var(--text-secondary); font-style:italic;">${escaparHTML(props.contexto_territorial)}</div>` : '';
+
+  return `
+    <div class="ficha-popup">
+      <h3>${escaparHTML(titulo)}</h3>
+      ${filas ? `<table>${filas}</table>` : ''}
+      ${descripcion}
+      ${contexto}
+    </div>
+  `;
+}
+
+// Crea el layer de Leaflet a partir de un geojson (ya sea completo o
+// filtrado por comuna). Centraliza el estilo para que la creación
+// inicial y el re-filtrado por comuna se vean siempre igual.
+function crearCapaLeaflet(geojson, color, conFichas, tipoIcono, radioPunto = 7, grosorLinea = 2) {
+  const capaBase = L.geoJSON(geojson, {
+    style: { color, weight: grosorLinea, fillOpacity: 0.35 },
     pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-      radius: 7, color, fillColor: color, fillOpacity: 0.8
-    })
-  }).addTo(map);
+      radius: radioPunto, color, fillColor: color, fillOpacity: 0.8
+    }),
+    onEachFeature: conFichas
+      ? (feature, featureLayer) => {
+          featureLayer.bindPopup(construirPopupHTML(feature.properties));
+        }
+      : undefined
+  });
+
+  if (!tipoIcono) return capaBase;
+
+  // Además del polígono, se agrega un pequeño ícono (árbol o pez, según
+  // la capa) sobre el centroide de cada polígono, para que la capa se
+  // identifique de un vistazo en el mapa. Se agrupan en un layerGroup
+  // para que el resto del código (checkbox, filtro por comuna) siga
+  // tratándola como una sola capa.
+  const generadorIcono = GENERADORES_ICONO[tipoIcono];
+  if (!generadorIcono) return capaBase;
+
+  const grupo = L.layerGroup([capaBase]);
+  const icono = generadorIcono(color);
+  (geojson.features || []).forEach((feature) => {
+    const centro = centroideFeature(feature.geometry);
+    if (!centro) return;
+    L.marker([centro[1], centro[0]], { icon: icono, interactive: false }).addTo(grupo);
+  });
+  return grupo;
+}
+
+// Ícono simulando un peumo (árbol nativo): copa redonda verde con un
+// tronco corto. El color de la copa sigue el color asignado a la capa.
+function crearIconoArbol(color) {
+  return L.divIcon({
+    className: '',
+    html: `<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <rect x="11" y="16" width="2" height="6" rx="1" fill="#6b4423"/>
+      <circle cx="12" cy="12" r="5" fill="${color}" stroke="#274a12" stroke-width="1.2"/>
+    </svg>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 18]
+  });
+}
+
+// Ícono simulando un pez: cuerpo ovalado, cola en forma de triángulo y
+// un ojo, para identificar lagos, lagunas y embalses en el mapa.
+function crearIconoPez(color) {
+  // Se usa un color neón fijo (independiente del color de la capa) para
+  // que el pez destaque siempre sobre el agua, sin importar el tono azul
+  // asignado al polígono. Silueta plana, sin fondo, con ojo y línea de
+  // branquia oscuros para que se note que es un pez.
+  const NEON_PEZ = '#b5179e';
+  return L.divIcon({
+    className: '',
+    html: `<svg width="19" height="7" viewBox="0 0 44 16" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2,8 C3,4.15 12,2.5 18,3.6 C24,4.7 28,5.8 30,6.9 L42,2 L33,8 L42,14 L30,9.1 C28,10.2 24,11.3 18,12.4 C12,13.5 3,11.85 2,8 Z" fill="${NEON_PEZ}" stroke="#000000" stroke-width="0.35" stroke-linejoin="round"/>
+      <circle cx="7" cy="6.9" r="1" fill="#023047"/>
+      <path d="M10,5.25 Q13.5,8 10,10.75" stroke="#023047" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+    </svg>`,
+    iconSize: [19, 7],
+    iconAnchor: [9.5, 3.5]
+  });
+}
+
+// Registro de generadores de ícono disponibles por tipo, usado tanto al
+// dibujar la capa en el mapa como al construir su simbología en el menú.
+const GENERADORES_ICONO = {
+  arbol: crearIconoArbol,
+  pez: crearIconoPez
+};
+
+// Centroide aproximado de una geometría Polygon/MultiPolygon, reutilizando
+// centroideAnillo (ver más abajo). Para MultiPolygon se usa el anillo
+// exterior de mayor tamaño como aproximación.
+function centroideFeature(geometry) {
+  if (!geometry) return null;
+  if (geometry.type === 'Polygon') {
+    return centroideAnillo(geometry.coordinates[0]);
+  }
+  if (geometry.type === 'MultiPolygon') {
+    const anillos = geometry.coordinates.map(poly => poly[0]);
+    const mayor = anillos.reduce((a, b) => (b.length > a.length ? b : a));
+    return centroideAnillo(mayor);
+  }
+  return null;
+}
+
+// Simbología de la capa en el menú: un pequeño ícono que refleja el
+// color asignado y el tipo de geometría dominante (punto, línea o
+// polígono), para que el menú de capas sirva también de leyenda.
+function crearSimboloCapa(color, geojson, tipoIcono = null) {
+  const primerFeature = geojson && geojson.features && geojson.features[0];
+  const tipo = primerFeature && primerFeature.geometry && primerFeature.geometry.type;
+
+  // Pequeño glifo que se superpone al ícono base, para capas con
+  // tipoIcono activado (p.ej. Bosques de Bolsillo o Lagos/lagunas/embalses).
+  const GLIFOS_OVERLAY = {
+    arbol: `<rect x="6.3" y="8.6" width="1" height="3" rx="0.4" fill="#6b4423"/>
+      <circle cx="6.8" cy="6.5" r="3" fill="${color}" stroke="#274a12" stroke-width="0.7"/>`,
+    pez: `<path d="M1,6 C1.5,3.6 5,2.7 7,3.3 C9,3.9 10.5,4.5 11,5.1 L14.8,2.3 L12.5,6 L14.8,9.7 L11,6.9 C10.5,7.5 9,8.1 7,8.7 C5,9.3 1.5,8.4 1,6 Z" fill="#b5179e" stroke="#000000" stroke-width="0.3" stroke-linejoin="round"/>
+      <circle cx="3.2" cy="5.4" r="0.5" fill="#023047"/>
+      <path d="M4.5,4.5 Q6,6 4.5,7.5" stroke="#023047" stroke-width="0.45" fill="none" stroke-linecap="round"/>`
+  };
+  const overlay = GLIFOS_OVERLAY[tipoIcono] || '';
+
+  if (tipo === 'LineString' || tipo === 'MultiLineString') {
+    return `<svg class="simbolo-capa" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+      <line x1="1" y1="6" x2="15" y2="6" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+      ${overlay}
+    </svg>`;
+  }
+  if (tipo === 'Polygon' || tipo === 'MultiPolygon') {
+    return `<svg class="simbolo-capa" width="14" height="12" viewBox="0 0 14 12" aria-hidden="true">
+      <rect x="1" y="1" width="12" height="10" rx="2" fill="${color}" fill-opacity="0.35" stroke="${color}" stroke-width="1.6"/>
+      ${overlay}
+    </svg>`;
+  }
+  // Punto (o tipo desconocido / capa vacía): círculo relleno.
+  return `<svg class="simbolo-capa" width="14" height="12" viewBox="0 0 14 12" aria-hidden="true">
+    <circle cx="7" cy="6" r="5" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="1.4"/>
+    ${overlay}
+  </svg>`;
+}
+
+function agregarCapaAlPanel(key, label, color, geojson, conFichas = false, tipoIcono = null, radioPunto = 7, grosorLinea = 2) {
+  // Sin .addTo(map): por defecto, al abrir el visor solo la capa de
+  // límites comunales queda activa (ver agregarCapaReferencia). El resto
+  // se crea igual (para que el checkbox pueda activarla) pero oculta.
+  const layer = crearCapaLeaflet(geojson, color, conFichas, tipoIcono, radioPunto, grosorLinea);
   capaLayers[key] = layer;
+  // Se guarda también el label (nombre de la capa) para poder nombrarla
+  // en la minuta de contexto territorial (ver calcularContextoTerritorial).
+  capaDatos[key] = { geojson, color, conFichas, tipoIcono, radioPunto, grosorLinea, label };
 
   const row = document.createElement('label');
-  row.innerHTML = `<input type="checkbox" checked data-capa="${key}"> ${label}`;
+  row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloCapa(color, geojson, tipoIcono)} <span>${label}</span>`;
   capasPanel.appendChild(row);
+}
+
+// Etiquetas de los 3 horarios disponibles para la capa de temperatura,
+// en el mismo orden en que se recorre el slider (0, 1, 2).
+const HORARIOS_TEMPERATURA = ['am', 'af', 'pm'];
+const HORARIOS_TEMPERATURA_LABEL = { am: 'Mañana', af: 'Tarde', pm: 'Atardecer' };
+
+// Construye el layer de Leaflet para un horario de la capa de
+// temperatura: cada polígono ya trae su propio color (banda de
+// temperatura), por eso el estilo se calcula por feature en vez de usar
+// un color único como el resto de las capas.
+function crearCapaTemperatura(features) {
+  return L.geoJSON({ type: 'FeatureCollection', features }, {
+    style: (feature) => ({
+      color: feature.properties.color,
+      weight: 1,
+      fillColor: feature.properties.color,
+      fillOpacity: 0.55
+    }),
+    onEachFeature: (feature, featureLayer) => {
+      const p = feature.properties;
+      featureLayer.bindPopup(`${p.temp_min}°C – ${p.temp_max}°C`);
+    }
+  });
+}
+
+// Agrega la capa especial de temperatura ambiental (Heat Watch Santiago):
+// en vez de mostrar mañana/tarde/atardecer como 3 capas separadas, las
+// agrupa en una sola fila del panel con un slider que cambia cuál de los
+// 3 conjuntos de polígonos está visible.
+function agregarCapaTemperaturaHorario(key, label, geojson) {
+  const porHorario = { am: [], af: [], pm: [] };
+  geojson.features.forEach((f) => {
+    const h = f.properties && f.properties.horario;
+    if (porHorario[h]) porHorario[h].push(f);
+  });
+
+  const horarioActual = 'am';
+  // Sin .addTo(map): oculta por defecto, igual que el resto de las capas
+  // temáticas (ver agregarCapaAlPanel).
+  const layer = crearCapaTemperatura(porHorario[horarioActual]);
+  capaLayers[key] = layer;
+  capaDatos[key] = { esTemperatura: true, porHorario, horarioActual, label };
+
+  const row = document.createElement('label');
+  row.innerHTML = `<input type="checkbox" data-capa="${key}"> <span>${label}</span>`;
+  capasPanel.appendChild(row);
+
+  const leyenda = document.createElement('div');
+  leyenda.className = 'leyenda-temperatura';
+  leyenda.innerHTML = `<span class="franja-valor">Frío</span><div class="franja"></div><span class="franja-valor">Calor</span>`;
+  capasPanel.appendChild(leyenda);
+
+  const controles = document.createElement('div');
+  controles.className = 'horario-controles';
+  controles.innerHTML = `
+    <input type="range" min="0" max="2" step="1" value="0" data-horario-slider="${key}">
+    <div class="horario-etiquetas">
+      <span class="activa">Mañana</span><span>Tarde</span><span>Atardecer</span>
+    </div>
+  `;
+  capasPanel.appendChild(controles);
+
+  const slider = controles.querySelector('input[type=range]');
+  const etiquetas = controles.querySelectorAll('.horario-etiquetas span');
+  slider.addEventListener('input', () => {
+    const horario = HORARIOS_TEMPERATURA[Number(slider.value)];
+    etiquetas.forEach((el, i) => el.classList.toggle('activa', i === Number(slider.value)));
+    cambiarHorarioTemperatura(key, horario);
+  });
+}
+
+// Cambia el horario visible de la capa de temperatura: reemplaza el
+// layer de Leaflet actual por el del horario elegido, respetando si la
+// capa estaba activa (checkbox marcado) o no.
+function cambiarHorarioTemperatura(key, horario) {
+  const datos = capaDatos[key];
+  if (!datos || !datos.esTemperatura) return;
+
+  const estabaActiva = capaLayers[key] ? map.hasLayer(capaLayers[key]) : true;
+  if (capaLayers[key]) map.removeLayer(capaLayers[key]);
+
+  const nuevaCapa = crearCapaTemperatura(datos.porHorario[horario]);
+  capaLayers[key] = nuevaCapa;
+  datos.horarioActual = horario;
+  if (estabaActiva) nuevaCapa.addTo(map);
+}
+
+/* ------------------------------------------------------------
+ * Capa especial "Sitios Prioritarios para la Conservación de la
+ * Biodiversidad": a diferencia de las demás capas temáticas, tiene su
+ * propio filtro de selección múltiple (por nombre de sitio, no por
+ * comuna) y, en vez de la ficha genérica, un popup minimalista que
+ * muestra el nombre del sitio en el mismo color de la capa al hacer
+ * click. Por eso queda excluida del filtro por comuna (ver
+ * aplicarFiltroComuna) y no pasa por agregarCapaAlPanel.
+ * ---------------------------------------------------------- */
+function crearCapaSitiosLeaflet(geojson, color) {
+  return L.geoJSON(geojson, {
+    style: { color, weight: 1.4, fillColor: color, fillOpacity: 0.28 },
+    onEachFeature: (feature, featureLayer) => {
+      const nombre = (feature.properties && feature.properties.nombre) || 'Sitio prioritario';
+      featureLayer.bindPopup(
+        `<div class="popup-sitio-nombre" style="color:${color};">${escaparHTML(nombre)}</div>`,
+        { closeButton: false }
+      );
+    }
+  });
+}
+
+function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
+  // Sin .addTo(map): oculta por defecto (ver agregarCapaAlPanel).
+  const layer = crearCapaSitiosLeaflet(geojson, color);
+  capaLayers[key] = layer;
+  capaDatos[key] = {
+    geojson, color, conFichas: false, tipoIcono: null, radioPunto: 7, grosorLinea: 1.4, label,
+    esSitiosPrioritarios: true
+  };
+
+  const row = document.createElement('label');
+  row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloCapa(color, geojson)} <span>${label}</span>`;
+  capasPanel.appendChild(row);
+
+  // Filtro múltiple por nombre de sitio, con la misma UI (desplegable con
+  // checkboxes) que el filtro por comuna, pero independiente: filtra solo
+  // esta capa, sin tocar las demás ni el zoom del mapa.
+  const fila = document.createElement('div');
+  fila.id = 'filtro-sitios-fila';
+  fila.innerHTML = `
+    <label for="filtro-sitios-btn">Filtrar sitios prioritarios</label>
+    <button type="button" id="filtro-sitios-btn">
+      <span id="filtro-sitios-resumen">Todos los sitios</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div id="filtro-sitios-dropdown" class="oculto">
+      <div class="filtro-comuna-acciones">
+        <button type="button" id="filtro-sitios-todas">Todos</button>
+        <button type="button" id="filtro-sitios-ninguna">Ninguno</button>
+      </div>
+      <div id="filtro-sitios-lista"></div>
+    </div>
+  `;
+  capasPanel.appendChild(fila);
+
+  const nombres = [...new Set(
+    (geojson.features || []).map(f => f.properties && f.properties.nombre).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
+  const listaEl = fila.querySelector('#filtro-sitios-lista');
+  nombres.forEach((nombre) => {
+    const item = document.createElement('label');
+    item.className = 'filtro-comuna-item';
+    item.innerHTML = `<input type="checkbox" value="${escaparHTML(nombre)}"> ${escaparHTML(nombre)}`;
+    listaEl.appendChild(item);
+  });
+
+  const btn = fila.querySelector('#filtro-sitios-btn');
+  const resumen = fila.querySelector('#filtro-sitios-resumen');
+  const dropdown = fila.querySelector('#filtro-sitios-dropdown');
+  btn.addEventListener('click', () => {
+    const abierto = !dropdown.classList.contains('oculto');
+    dropdown.classList.toggle('oculto', abierto);
+    btn.classList.toggle('abierto', !abierto);
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown.contains(e.target) || btn.contains(e.target)) return;
+    dropdown.classList.add('oculto');
+    btn.classList.remove('abierto');
+  });
+
+  const sitiosSeleccionados = new Set();
+
+  function actualizarResumenSitios() {
+    if (sitiosSeleccionados.size === 0) resumen.textContent = 'Todos los sitios';
+    else if (sitiosSeleccionados.size === 1) resumen.textContent = [...sitiosSeleccionados][0];
+    else resumen.textContent = `${sitiosSeleccionados.size} sitios seleccionados`;
+  }
+
+  function aplicarFiltroSitios() {
+    const estabaActiva = capaLayers[key] ? map.hasLayer(capaLayers[key]) : true;
+    if (capaLayers[key]) map.removeLayer(capaLayers[key]);
+    const geojsonFiltrado = sitiosSeleccionados.size
+      ? { type: 'FeatureCollection', features: geojson.features.filter(f => sitiosSeleccionados.has(f.properties && f.properties.nombre)) }
+      : geojson;
+    const nuevaCapa = crearCapaSitiosLeaflet(geojsonFiltrado, color);
+    capaLayers[key] = nuevaCapa;
+    if (estabaActiva) nuevaCapa.addTo(map);
+  }
+
+  listaEl.addEventListener('change', (e) => {
+    if (e.target.type !== 'checkbox') return;
+    if (e.target.checked) sitiosSeleccionados.add(e.target.value);
+    else sitiosSeleccionados.delete(e.target.value);
+    actualizarResumenSitios();
+    aplicarFiltroSitios();
+  });
+  fila.querySelector('#filtro-sitios-todas').addEventListener('click', () => {
+    listaEl.querySelectorAll('input[type=checkbox]').forEach((c) => { c.checked = true; sitiosSeleccionados.add(c.value); });
+    actualizarResumenSitios();
+    aplicarFiltroSitios();
+  });
+  fila.querySelector('#filtro-sitios-ninguna').addEventListener('click', () => {
+    listaEl.querySelectorAll('input[type=checkbox]').forEach((c) => { c.checked = false; });
+    sitiosSeleccionados.clear();
+    actualizarResumenSitios();
+    aplicarFiltroSitios();
+  });
+}
+
+/* ------------------------------------------------------------
+ * Capas especiales "Cuencas hidrográficas RM" (id 11) y
+ * "Subcuencas hidrográficas RM" (id 12) — fuente DGA (BNA). En vez
+ * de relleno sólido usan un achurado (Leaflet.pattern/StripePattern)
+ * para poder superponerse a otras capas de polígonos sin taparlas
+ * del todo: azul en diagonal para cuencas, celeste en diagonal
+ * opuesta para subcuencas. Comparten un filtro por nombre propio
+ * (no el filtro general por comuna: sus límites no calzan con los
+ * comunales) con dos listas independientes, cuencas y subcuencas.
+ * ---------------------------------------------------------- */
+const COLOR_CUENCAS = '#1a5c9c';
+const COLOR_SUBCUENCAS = '#4cc9f0';
+
+// Los atributos vienen tal cual del shapefile de origen (NOM_CUEN /
+// NOM_SUBC); se prueban variantes de nombre por si alguna carga futura
+// los normaliza distinto.
+function nombreFeatureHidro(props, claves) {
+  props = props || {};
+  for (const clave of claves) {
+    if (props[clave]) return props[clave];
+  }
+  return 'Sin nombre';
+}
+
+function crearCapaHidrografica(geojson, pattern, color, claves) {
+  return L.geoJSON(geojson, {
+    style: { fillPattern: pattern, color, weight: 1.3, fillOpacity: 1, opacity: 0.9 },
+    onEachFeature: (feature, featureLayer) => {
+      const nombre = nombreFeatureHidro(feature.properties, claves);
+      featureLayer.bindPopup(`<div class="popup-sitio-nombre" style="color:${color};">${escaparHTML(nombre)}</div>`, { closeButton: false });
+    }
+  });
+}
+
+function crearSimboloHachurado(color, idSufijo, angulo) {
+  return `<svg class="simbolo-capa" width="14" height="12" viewBox="0 0 14 12" aria-hidden="true">
+    <defs><pattern id="hach-${idSufijo}" width="4" height="4" patternTransform="rotate(${angulo})" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="4" stroke="${color}" stroke-width="2"/>
+    </pattern></defs>
+    <rect x="1" y="1" width="12" height="10" rx="2" fill="url(#hach-${idSufijo})" stroke="${color}" stroke-width="1.4"/>
+  </svg>`;
+}
+
+// entradaCuencas/entradaSubcuencas: { capa, geojson } tal como llegan de
+// capasConDatos en cargarCapas(), o null si esa capa puntual todavía no
+// tiene features cargados en Supabase (se muestra vacía mientras tanto).
+function agregarCapaCuencasSubcuencas(entradaCuencas, entradaSubcuencas) {
+  const geojsonCuencas = (entradaCuencas && entradaCuencas.geojson) || { type: 'FeatureCollection', features: [] };
+  const geojsonSubcuencas = (entradaSubcuencas && entradaSubcuencas.geojson) || { type: 'FeatureCollection', features: [] };
+  const nombreCuencas = (entradaCuencas && entradaCuencas.capa.nombre) || 'Cuencas hidrográficas RM';
+  const nombreSubcuencas = (entradaSubcuencas && entradaSubcuencas.capa.nombre) || 'Subcuencas hidrográficas RM';
+
+  // Los patrones deben agregarse al mapa antes de poder usarse como
+  // fillPattern (así registran su <pattern> en los <defs> del SVG de Leaflet).
+  const patternCuencas = new L.StripePattern({ color: COLOR_CUENCAS, weight: 2, spaceWeight: 4, angle: 45, opacity: 0.9, spaceOpacity: 0 });
+  const patternSubcuencas = new L.StripePattern({ color: COLOR_SUBCUENCAS, weight: 2, spaceWeight: 4, angle: -45, opacity: 0.9, spaceOpacity: 0 });
+  patternCuencas.addTo(map);
+  patternSubcuencas.addTo(map);
+
+  const clavesCuencas = ['NOM_CUEN', 'nombre', 'nom_cuen'];
+  const clavesSubcuencas = ['NOM_SUBC', 'nombre', 'nom_subc'];
+
+  capaLayers['capa_11'] = crearCapaHidrografica(geojsonCuencas, patternCuencas, COLOR_CUENCAS, clavesCuencas);
+  capaLayers['capa_12'] = crearCapaHidrografica(geojsonSubcuencas, patternSubcuencas, COLOR_SUBCUENCAS, clavesSubcuencas);
+  capaDatos['capa_11'] = { geojson: geojsonCuencas, label: nombreCuencas, esHidrografica: true };
+  capaDatos['capa_12'] = { geojson: geojsonSubcuencas, label: nombreSubcuencas, esHidrografica: true };
+
+  const rowCuencas = document.createElement('label');
+  rowCuencas.innerHTML = `<input type="checkbox" data-capa="capa_11"> ${crearSimboloHachurado(COLOR_CUENCAS, 'cuencas', 45)} <span>${nombreCuencas}</span>`;
+  capasPanel.appendChild(rowCuencas);
+
+  const rowSubcuencas = document.createElement('label');
+  rowSubcuencas.innerHTML = `<input type="checkbox" data-capa="capa_12"> ${crearSimboloHachurado(COLOR_SUBCUENCAS, 'subcuencas', -45)} <span>${nombreSubcuencas}</span>`;
+  capasPanel.appendChild(rowSubcuencas);
+
+  // Filtro por nombre, con dos listas independientes (cuencas / subcuencas)
+  // dentro del mismo desplegable — misma UI que el filtro de sitios
+  // prioritarios (checkboxes + Todas/Ninguna), pero sin tocar las demás
+  // capas ni el zoom del mapa.
+  const fila = document.createElement('div');
+  fila.id = 'filtro-hidro-fila';
+  fila.innerHTML = `
+    <label for="filtro-hidro-btn">Filtrar cuencas / subcuencas</label>
+    <button type="button" id="filtro-hidro-btn">
+      <span id="filtro-hidro-resumen">Todas</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div id="filtro-hidro-dropdown" class="oculto">
+      <div class="filtro-comuna-acciones">
+        <button type="button" id="filtro-hidro-todas">Todas</button>
+        <button type="button" id="filtro-hidro-ninguna">Ninguna</button>
+      </div>
+      <div class="filtro-subgrupo-titulo">Cuencas</div>
+      <div id="filtro-cuencas-lista"></div>
+      <div class="filtro-subgrupo-titulo">Subcuencas</div>
+      <div id="filtro-subcuencas-lista"></div>
+    </div>
+  `;
+  capasPanel.appendChild(fila);
+
+  const btn = fila.querySelector('#filtro-hidro-btn');
+  const resumen = fila.querySelector('#filtro-hidro-resumen');
+  const dropdown = fila.querySelector('#filtro-hidro-dropdown');
+  btn.addEventListener('click', () => {
+    const abierto = !dropdown.classList.contains('oculto');
+    dropdown.classList.toggle('oculto', abierto);
+    btn.classList.toggle('abierto', !abierto);
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown.contains(e.target) || btn.contains(e.target)) return;
+    dropdown.classList.add('oculto');
+    btn.classList.remove('abierto');
+  });
+
+  const cuencasSeleccionadas = new Set();
+  const subcuencasSeleccionadas = new Set();
+
+  function actualizarResumenHidro() {
+    const total = cuencasSeleccionadas.size + subcuencasSeleccionadas.size;
+    resumen.textContent = total === 0 ? 'Todas' : `${total} seleccionada${total === 1 ? '' : 's'}`;
+  }
+
+  function aplicarFiltroHidro() {
+    const estabaActivaCuencas = map.hasLayer(capaLayers['capa_11']);
+    const estabaActivaSubcuencas = map.hasLayer(capaLayers['capa_12']);
+    map.removeLayer(capaLayers['capa_11']);
+    map.removeLayer(capaLayers['capa_12']);
+
+    const geojsonCuencasFiltrado = cuencasSeleccionadas.size
+      ? { type: 'FeatureCollection', features: geojsonCuencas.features.filter(f => cuencasSeleccionadas.has(nombreFeatureHidro(f.properties, clavesCuencas))) }
+      : geojsonCuencas;
+    const geojsonSubcuencasFiltrado = subcuencasSeleccionadas.size
+      ? { type: 'FeatureCollection', features: geojsonSubcuencas.features.filter(f => subcuencasSeleccionadas.has(nombreFeatureHidro(f.properties, clavesSubcuencas))) }
+      : geojsonSubcuencas;
+
+    capaLayers['capa_11'] = crearCapaHidrografica(geojsonCuencasFiltrado, patternCuencas, COLOR_CUENCAS, clavesCuencas);
+    capaLayers['capa_12'] = crearCapaHidrografica(geojsonSubcuencasFiltrado, patternSubcuencas, COLOR_SUBCUENCAS, clavesSubcuencas);
+    if (estabaActivaCuencas) capaLayers['capa_11'].addTo(map);
+    if (estabaActivaSubcuencas) capaLayers['capa_12'].addTo(map);
+  }
+
+  function poblarLista(listaEl, geojson, claves, seleccionadas) {
+    const nombres = [...new Set(geojson.features.map(f => nombreFeatureHidro(f.properties, claves)))]
+      .filter(n => n !== 'Sin nombre')
+      .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+    nombres.forEach((nombre) => {
+      const item = document.createElement('label');
+      item.className = 'filtro-comuna-item';
+      item.innerHTML = `<input type="checkbox" value="${escaparHTML(nombre)}"> ${escaparHTML(nombre)}`;
+      listaEl.appendChild(item);
+    });
+    listaEl.addEventListener('change', (e) => {
+      if (e.target.type !== 'checkbox') return;
+      if (e.target.checked) seleccionadas.add(e.target.value);
+      else seleccionadas.delete(e.target.value);
+      actualizarResumenHidro();
+      aplicarFiltroHidro();
+    });
+  }
+
+  poblarLista(fila.querySelector('#filtro-cuencas-lista'), geojsonCuencas, clavesCuencas, cuencasSeleccionadas);
+  poblarLista(fila.querySelector('#filtro-subcuencas-lista'), geojsonSubcuencas, clavesSubcuencas, subcuencasSeleccionadas);
+
+  fila.querySelector('#filtro-hidro-todas').addEventListener('click', () => {
+    fila.querySelectorAll('#filtro-cuencas-lista input[type=checkbox]').forEach((c) => { c.checked = true; cuencasSeleccionadas.add(c.value); });
+    fila.querySelectorAll('#filtro-subcuencas-lista input[type=checkbox]').forEach((c) => { c.checked = true; subcuencasSeleccionadas.add(c.value); });
+    actualizarResumenHidro();
+    aplicarFiltroHidro();
+  });
+  fila.querySelector('#filtro-hidro-ninguna').addEventListener('click', () => {
+    fila.querySelectorAll('#filtro-hidro-dropdown input[type=checkbox]').forEach((c) => { c.checked = false; });
+    cuencasSeleccionadas.clear();
+    subcuencasSeleccionadas.clear();
+    actualizarResumenHidro();
+    aplicarFiltroHidro();
+  });
 }
 
 // La capa de límites comunales se usa como referencia (para detectar
@@ -453,7 +1222,10 @@ function iconoEstiloSVG(estilo) {
 function agregarCapaReferencia(key, label, geojson) {
   const colorInicial = PALETA_LIMITES[0];
   // Grosor mínimo por defecto (coincide con el mínimo del slider).
-  const estadoLimite = { color: colorInicial, grosor: 0.2, estilo: 'solida' };
+  // Se guarda también en la variable global para que el resaltado de
+  // comunas filtradas pueda leer/restaurar estos mismos valores.
+  estadoLimiteGlobal = { color: colorInicial, grosor: 0.2, estilo: 'solida' };
+  const estadoLimite = estadoLimiteGlobal;
 
   const layer = L.geoJSON(geojson, {
     style: { color: colorInicial, weight: estadoLimite.grosor, fillOpacity: 0, opacity: 0.95, className: 'limite-comuna-neon' },
@@ -480,6 +1252,7 @@ function agregarCapaReferencia(key, label, geojson) {
     }
   }).addTo(map);
   capaLayers[key] = layer;
+  capaLimitesLayer = layer;
 
   const row = document.createElement('label');
   row.innerHTML = `<input type="checkbox" checked data-capa="${key}"> Comunas`;
@@ -511,6 +1284,7 @@ function agregarCapaReferencia(key, label, geojson) {
       estadoLimite.estilo = clave;
       const dash = def.dash(estadoLimite.grosor);
       layer.setStyle({ dashArray: dash });
+      actualizarResaltadoLimites();
       grupoEstilo.querySelectorAll('button').forEach(b => b.classList.remove('activo'));
       btn.classList.add('activo');
     });
@@ -531,6 +1305,7 @@ function agregarCapaReferencia(key, label, geojson) {
       layer.setStyle({ color });
       estadoLimite.color = color;
       document.documentElement.style.setProperty('--limite-color', color);
+      actualizarResaltadoLimites();
       picker.querySelectorAll('button').forEach(b => b.classList.remove('activo'));
       btn.classList.add('activo');
     });
@@ -551,6 +1326,7 @@ function agregarCapaReferencia(key, label, geojson) {
     valorGrosor.textContent = `${w.toFixed(1)} px`;
     const dash = ESTILOS_LINEA[estadoLimite.estilo].dash(w);
     layer.setStyle({ weight: w, dashArray: dash });
+    actualizarResaltadoLimites();
   });
 }
 
@@ -609,6 +1385,378 @@ function detectarComuna(geomGeoJSON) {
   return encontrada ? (encontrada.properties.comuna || null) : null;
 }
 
+/* ------------------------------------------------------------
+ * Contexto territorial automático: al proponer un lugar, se arma una
+ * mini "minuta" en base a las capas ya cargadas en el navegador (no
+ * hace falta ninguna consulta extra a Supabase). Es una aproximación
+ * informativa pensada para orientar a quien propone, no un informe
+ * técnico ni una evaluación de factibilidad.
+ * ---------------------------------------------------------- */
+
+// Distancia aproximada entre dos coordenadas [lon, lat], en metros
+// (fórmula de Haversine).
+function haversineMetros([lon1, lat1], [lon2, lat2]) {
+  const R = 6371000;
+  const rad = (g) => (g * Math.PI) / 180;
+  const dLat = rad(lat2 - lat1);
+  const dLon = rad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Distancia mínima aproximada entre un punto y una geometría cualquiera:
+// se calcula contra todos sus vértices (extraerPuntos ya sabe recorrer
+// Point/LineString/Polygon/Multi*). No es exacta para segmentos largos
+// entre vértices, pero alcanza para una orientación general.
+function distanciaMinimaAFeature(punto, geometry) {
+  const puntos = extraerPuntos(geometry);
+  if (!puntos.length) return Infinity;
+  return puntos.reduce((min, p) => Math.min(min, haversineMetros(punto, p)), Infinity);
+}
+
+// Punto representativo de la geometría propuesta (mismo criterio que
+// detectarComuna): las coordenadas si es un punto, o el centroide del
+// anillo exterior si es un polígono dibujado a mano.
+function puntoRepresentativo(geomGeoJSON) {
+  if (!geomGeoJSON) return null;
+  if (geomGeoJSON.type === 'Point') return geomGeoJSON.coordinates;
+  if (geomGeoJSON.type === 'Polygon') return centroideAnillo(geomGeoJSON.coordinates[0]);
+  return null;
+}
+
+// Radio dentro del cual se considera "cercano" para efectos de la minuta.
+const RADIO_CERCANIA_M = 400;
+
+// Recorre todas las capas temáticas ya cargadas (capaDatos) y, para cada
+// una, determina si el punto propuesto cae dentro de alguno de sus
+// features (polígonos) o, si no, la distancia al feature más cercano.
+// La capa de temperatura se trata aparte porque tiene 3 horarios.
+function calcularContextoTerritorial(geomGeoJSON) {
+  const punto = puntoRepresentativo(geomGeoJSON);
+  if (!punto) return null;
+
+  const resultados = [];
+  let temperatura = null;
+
+  Object.values(capaDatos).forEach((datos) => {
+    if (datos.esTemperatura) {
+      const porHorarioResultado = {};
+      HORARIOS_TEMPERATURA.forEach((h) => {
+        const feature = (datos.porHorario[h] || []).find(f => puntoEnGeometria(punto, f.geometry));
+        if (feature) {
+          porHorarioResultado[h] = {
+            temp_min: feature.properties.temp_min,
+            temp_max: feature.properties.temp_max
+          };
+        }
+      });
+      if (Object.keys(porHorarioResultado).length) {
+        temperatura = { label: datos.label, porHorario: porHorarioResultado };
+      }
+      return;
+    }
+
+    if (!datos.geojson || !datos.geojson.features.length) return;
+
+    const dentro = datos.geojson.features.some(f => puntoEnGeometria(punto, f.geometry));
+    let distanciaM = dentro ? 0 : Infinity;
+    if (!dentro) {
+      datos.geojson.features.forEach((f) => {
+        const d = distanciaMinimaAFeature(punto, f.geometry);
+        if (d < distanciaM) distanciaM = d;
+      });
+    }
+    // Se propagan flags de capas especiales (si existen) para que
+    // generarMinutaTexto pueda dar un mensaje/ajuste de puntaje propio en
+    // vez de depender solo de adivinar por el nombre de la capa (regex).
+    resultados.push({
+      label: datos.label, dentro, distanciaM,
+      esSitiosPrioritarios: !!datos.esSitiosPrioritarios,
+      esPropuestas: !!datos.esPropuestas
+    });
+  });
+
+  return { resultados, temperatura, geom: geomGeoJSON };
+}
+
+// Construye el texto de la minuta en español a partir del contexto
+// calculado, más una sugerencia simple basada en reglas (no reemplaza
+// una evaluación técnica). También devuelve un puntaje 0-100 orientativo
+// que se guarda junto con la propuesta.
+function generarMinutaTexto(contexto, comuna) {
+  if (!contexto) return null;
+  const frases = [];
+  let score = 50;
+
+  frases.push(comuna
+    ? `El lugar propuesto se ubica en la comuna de ${comuna}.`
+    : 'No fue posible determinar automáticamente la comuna de este lugar.');
+
+  let hayVerdeCerca = false;
+  let hayProyectoCerca = false;
+  let haySitioPrioritarioCerca = false;
+  let hayPropuestaCerca = false;
+
+  contexto.resultados.forEach(({ label, dentro, distanciaM, esSitiosPrioritarios, esPropuestas }) => {
+    if (dentro) {
+      frases.push(`El punto cae dentro de un polígono existente de "${label}".`);
+    } else if (distanciaM <= RADIO_CERCANIA_M) {
+      frases.push(`A aproximadamente ${Math.round(distanciaM)} m de "${label}".`);
+    }
+    if (dentro || distanciaM <= RADIO_CERCANIA_M) {
+      if (/bosque|verde|corredor/i.test(label)) hayVerdeCerca = true;
+      if (/proyecto/i.test(label)) hayProyectoCerca = true;
+      if (esSitiosPrioritarios) haySitioPrioritarioCerca = true;
+      if (esPropuestas) hayPropuestaCerca = true;
+    }
+  });
+
+  if (contexto.temperatura) {
+    const { porHorario } = contexto.temperatura;
+    const partes = HORARIOS_TEMPERATURA
+      .filter(h => porHorario[h])
+      .map(h => `${HORARIOS_TEMPERATURA_LABEL[h]}: ${porHorario[h].temp_min}–${porHorario[h].temp_max}°C`);
+    if (partes.length) {
+      frases.push(`Temperatura ambiental estimada — ${partes.join(', ')}.`);
+      const maxTarde = porHorario.af ? porHorario.af.temp_max : null;
+      if (maxTarde !== null && maxTarde >= 30) {
+        score += hayVerdeCerca ? 5 : 20;
+        frases.push(hayVerdeCerca
+          ? 'Es una zona de calor relativamente alto en la tarde, aunque ya cuenta con infraestructura verde cercana.'
+          : 'Es una zona de calor relativamente alto en la tarde y sin infraestructura verde cercana: podría ser un buen candidato para un proyecto que aporte sombra o vegetación.');
+      }
+    }
+  }
+
+  if (hayProyectoCerca) {
+    score -= 10;
+    frases.push('Ya existe un proyecto hídrico registrado en las cercanías: conviene revisar que la propuesta sea complementaria y no se duplique.');
+  }
+
+  if (!hayVerdeCerca) score += 5;
+
+  // Cada nueva capa de información que se agregue al visor debe integrarse
+  // acá también (no solo dibujarse en el mapa): si amerita un mensaje o
+  // ajuste de puntaje propio en vez de la mención genérica de arriba, se
+  // agrega su regla en este bloque. Estos dos casos usan flags explícitos
+  // (esSitiosPrioritarios / esPropuestas) en vez de adivinar por el nombre.
+  if (haySitioPrioritarioCerca) {
+    score -= 20;
+    frases.push('El lugar está dentro o muy cerca de un Sitio Prioritario para la Conservación de la Biodiversidad: cualquier intervención debería evaluarse con especial cuidado por su posible impacto ambiental.');
+  }
+
+  if (hayPropuestaCerca) {
+    score -= 5;
+    frases.push('Ya existe una propuesta ciudadana verificada cerca de este lugar: conviene revisar si tiene sentido sumarse a esa iniciativa en vez de duplicarla.');
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  frases.push('Este resumen se genera automáticamente a partir de las capas disponibles; es un apoyo informativo y no reemplaza la evaluación técnica ni la decisión final.');
+
+  return { texto: frases.join(' '), score };
+}
+
+/* ------------------------------------------------------------
+ * Filtro por comuna: además de la detección puntual de arriba,
+ * acá se resuelve si un feature cualquiera (punto, línea o polígono,
+ * de cualquier capa temática) "pertenece" a una comuna elegida en el
+ * selector — usando el atributo `comuna` si el feature lo trae, o si
+ * no, verificando si algún vértice de su geometría cae dentro del
+ * polígono comunal (y viceversa, por si el feature es un polígono
+ * grande que contiene a una comuna pequeña).
+ * ---------------------------------------------------------- */
+function normalizarTexto(texto) {
+  return String(texto || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// Aplana las coordenadas de cualquier geometría (Point, LineString,
+// Polygon y sus variantes Multi*) a una lista simple de [lon, lat].
+function extraerPuntos(geometry) {
+  const puntos = [];
+  function recorrer(arr) {
+    if (!Array.isArray(arr)) return;
+    if (typeof arr[0] === 'number') puntos.push(arr);
+    else arr.forEach(recorrer);
+  }
+  if (geometry && geometry.coordinates) recorrer(geometry.coordinates);
+  return puntos;
+}
+
+function featureEnComuna(feature, comunaFeature) {
+  if (!feature.geometry) return false;
+  const puntosFeature = extraerPuntos(feature.geometry);
+  if (puntosFeature.some(p => puntoEnGeometria(p, comunaFeature.geometry))) return true;
+  // Caso inverso: un polígono grande (ej. un área verde extensa) que
+  // contiene por completo a la comuna, sin que ninguno de sus vértices
+  // caiga dentro de ella.
+  if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+    const puntosComuna = extraerPuntos(comunaFeature.geometry);
+    if (puntosComuna.some(p => puntoEnGeometria(p, feature.geometry))) return true;
+  }
+  return false;
+}
+
+function featurePerteneceAComuna(feature, comunaFeature) {
+  if (!comunaFeature) return true; // sin filtro activo
+  const valorComuna = feature.properties && feature.properties.comuna;
+  if (valorComuna) {
+    return normalizarTexto(valorComuna) === normalizarTexto(comunaFeature.properties.comuna);
+  }
+  return featureEnComuna(feature, comunaFeature);
+}
+
+// Pinta con COLOR_RESALTADO_COMUNA solo el borde de las comunas que
+// están en el filtro actual; el resto conserva el color/grosor/estilo
+// elegidos en los controles de la capa de límites. Sin filtro, todo
+// vuelve a verse igual (sin resaltado).
+function actualizarResaltadoLimites(featuresSeleccionadas) {
+  if (!capaLimitesLayer || !estadoLimiteGlobal) return;
+  const nombresResaltados = new Set(
+    (featuresSeleccionadas || featuresSeleccionadasActuales())
+      .map(f => normalizarTexto(f.properties && f.properties.comuna))
+  );
+  const dashBase = ESTILOS_LINEA[estadoLimiteGlobal.estilo].dash(estadoLimiteGlobal.grosor);
+
+  capaLimitesLayer.eachLayer((child) => {
+    const nombre = normalizarTexto(child.feature && child.feature.properties && child.feature.properties.comuna);
+    const resaltada = nombresResaltados.size > 0 && nombresResaltados.has(nombre);
+    child.setStyle({
+      color: resaltada ? COLOR_RESALTADO_COMUNA : estadoLimiteGlobal.color,
+      weight: resaltada ? estadoLimiteGlobal.grosor + 1.6 : estadoLimiteGlobal.grosor,
+      dashArray: resaltada ? null : dashBase
+    });
+    if (resaltada) child.bringToFront();
+  });
+}
+
+// Comunas actualmente marcadas en el filtro, como features completos
+// (con su geometría), listas para filtrar capas o hacer zoom.
+function featuresSeleccionadasActuales() {
+  if (!comunasSeleccionadas.size) return [];
+  return comunasFeatures.filter(f => comunasSeleccionadas.has(f.properties && f.properties.comuna));
+}
+
+// Reconstruye todas las capas temáticas mostrando solo lo que cae
+// dentro de alguna de las comunas elegidas (o todo, si no hay ninguna
+// marcada), respetando qué capas estaban activas/inactivas, resalta
+// los límites de esas comunas y centra el mapa en su extensión conjunta.
+function aplicarFiltroComuna() {
+  const featuresSeleccionadas = featuresSeleccionadasActuales();
+
+  Object.keys(capaDatos).forEach((key) => {
+    const datos = capaDatos[key];
+
+    // La capa de temperatura por horario no se recorta por comuna (las
+    // bandas de calor cruzan varias comunas a la vez y no tiene sentido
+    // cortarlas); el filtro de comuna la deja tal cual. Los Sitios
+    // Prioritarios tienen su propio filtro independiente (por nombre de
+    // sitio, ver agregarCapaSitiosPrioritarios) y tampoco se recortan aquí.
+    if (datos.esTemperatura || datos.esSitiosPrioritarios || datos.esPropuestas || datos.esHidrografica) return;
+
+    const estabaActiva = capaLayers[key] ? map.hasLayer(capaLayers[key]) : true;
+    if (capaLayers[key]) map.removeLayer(capaLayers[key]);
+
+    const geojsonFiltrado = featuresSeleccionadas.length
+      ? { type: 'FeatureCollection', features: datos.geojson.features.filter(f => featuresSeleccionadas.some(cf => featurePerteneceAComuna(f, cf))) }
+      : datos.geojson;
+
+    const nuevaCapa = crearCapaLeaflet(geojsonFiltrado, datos.color, datos.conFichas, datos.tipoIcono, datos.radioPunto, datos.grosorLinea);
+    capaLayers[key] = nuevaCapa;
+    if (estabaActiva) nuevaCapa.addTo(map);
+  });
+
+  actualizarResaltadoLimites(featuresSeleccionadas);
+
+  if (featuresSeleccionadas.length) {
+    const grupo = L.geoJSON({
+      type: 'FeatureCollection',
+      features: featuresSeleccionadas.map(f => ({ type: 'Feature', properties: {}, geometry: f.geometry }))
+    });
+    map.fitBounds(grupo.getBounds(), { padding: [20, 20] });
+  } else {
+    map.setView([-33.55, -70.65], 10);
+  }
+}
+
+/* ------------------------------------------------------------
+ * UI del selector múltiple de comunas: un botón que abre un
+ * desplegable con checkboxes (en vez de un <select multiple>, poco
+ * intuitivo sin usar Ctrl/Cmd+click).
+ * ---------------------------------------------------------- */
+const filtroComunaBtn = document.getElementById('filtro-comuna-btn');
+const filtroComunaResumen = document.getElementById('filtro-comuna-resumen');
+const filtroComunaDropdown = document.getElementById('filtro-comuna-dropdown');
+const filtroComunaLista = document.getElementById('filtro-comuna-lista');
+
+filtroComunaBtn.addEventListener('click', () => {
+  const abierto = !filtroComunaDropdown.classList.contains('oculto');
+  filtroComunaDropdown.classList.toggle('oculto', abierto);
+  filtroComunaBtn.classList.toggle('abierto', !abierto);
+});
+
+document.addEventListener('click', (e) => {
+  if (filtroComunaDropdown.contains(e.target) || filtroComunaBtn.contains(e.target)) return;
+  filtroComunaDropdown.classList.add('oculto');
+  filtroComunaBtn.classList.remove('abierto');
+});
+
+function actualizarResumenFiltroComuna() {
+  if (comunasSeleccionadas.size === 0) {
+    filtroComunaResumen.textContent = 'Todas las comunas';
+  } else if (comunasSeleccionadas.size === 1) {
+    filtroComunaResumen.textContent = [...comunasSeleccionadas][0];
+  } else {
+    filtroComunaResumen.textContent = `${comunasSeleccionadas.size} comunas seleccionadas`;
+  }
+}
+
+filtroComunaLista.addEventListener('change', (e) => {
+  if (e.target.type !== 'checkbox') return;
+  if (e.target.checked) comunasSeleccionadas.add(e.target.value);
+  else comunasSeleccionadas.delete(e.target.value);
+  actualizarResumenFiltroComuna();
+  aplicarFiltroComuna();
+});
+
+document.getElementById('filtro-comuna-todas').addEventListener('click', () => {
+  const casillas = filtroComunaLista.querySelectorAll('input[type=checkbox]');
+  casillas.forEach((c) => { c.checked = true; comunasSeleccionadas.add(c.value); });
+  actualizarResumenFiltroComuna();
+  aplicarFiltroComuna();
+});
+
+document.getElementById('filtro-comuna-ninguna').addEventListener('click', () => {
+  const casillas = filtroComunaLista.querySelectorAll('input[type=checkbox]');
+  casillas.forEach((c) => { c.checked = false; });
+  comunasSeleccionadas.clear();
+  actualizarResumenFiltroComuna();
+  aplicarFiltroComuna();
+});
+
+// Llena el desplegable con los nombres de comuna disponibles en la
+// capa de referencia, en orden alfabético (localeCompare 'es' para
+// que Ñ y tildes queden bien ordenadas). Si aún no hay capa de
+// límites cargada, el botón queda deshabilitado.
+function poblarFiltroComuna() {
+  if (!comunasFeatures.length) {
+    filtroComunaBtn.disabled = true;
+    return;
+  }
+  filtroComunaBtn.disabled = false;
+  const nombres = [...new Set(
+    comunasFeatures.map(f => f.properties && f.properties.comuna).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
+  nombres.forEach((nombre) => {
+    const fila = document.createElement('label');
+    fila.className = 'filtro-comuna-item';
+    fila.innerHTML = `<input type="checkbox" value="${escaparHTML(nombre)}"> ${escaparHTML(nombre)}`;
+    filtroComunaLista.appendChild(fila);
+  });
+}
+
 capasPanel.addEventListener('change', (e) => {
   const key = e.target.dataset.capa;
   if (!key) return;
@@ -622,107 +1770,209 @@ capasPanel.addEventListener('change', (e) => {
  * no hay ninguna capa cargada por el cartógrafo, usa el mock
  * para que el visor no se vea vacío mientras tanto.
  * ---------------------------------------------------------- */
+/* Supabase limita cada respuesta a un máximo de filas (por defecto 1000
+ * en la API REST/PostgREST), así que capas grandes como "Áreas verdes"
+ * (12.111 filas) llegaban truncadas. Esta función pagina con .range()
+ * hasta traer todas las filas de la capa. */
+async function obtenerTodosLosFeatures(capa) {
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let todos = [];
+  while (true) {
+    const { data, error } = await sb
+      .rpc('capa_features_geojson', { p_capa_id: capa.id })
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (error) {
+      console.warn(`No se pudieron cargar los features de la capa ${capa.nombre}:`, error.message);
+      return todos.length ? todos : null;
+    }
+    todos = todos.concat(data || []);
+    if (!data || data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return todos;
+}
+
+// Agrupación del menú de capas en 3 secciones fijas, definidas por el id
+// de cada capa. Toda capa cuyo id no aparezca en ninguna lista cae por
+// defecto en "Territorio", para que capas nuevas no queden fuera del menú.
+const SECCIONES_CAPAS = [
+  { titulo: 'Límites Comunales', capaIds: [1] },
+  { titulo: 'Territorio', capaIds: [3, 5, 6, 9, 11, 12] },
+  { titulo: 'Proyectos', capaIds: [4, 7] },
+  { titulo: 'Conservación', capaIds: [10] }
+];
+
+function seccionParaCapa(id) {
+  const seccion = SECCIONES_CAPAS.find(s => s.capaIds.includes(id));
+  return seccion ? seccion.titulo : 'Territorio';
+}
+
+function agregarEncabezadoSeccion(titulo) {
+  const encabezado = document.createElement('div');
+  encabezado.className = 'capas-seccion-titulo';
+  encabezado.textContent = titulo;
+  capasPanel.appendChild(encabezado);
+}
+
 async function cargarCapas() {
   const { data: capas, error } = await sb.from('capas').select('id, nombre, categoria');
 
   if (error) {
     console.warn('No se pudo consultar la tabla capas, usando mock:', error.message);
     Object.entries(CAPAS_MOCK).forEach(([key, c]) => agregarCapaAlPanel(key, c.label + ' (mock)', c.color, c.geojson));
+    poblarFiltroComuna();
     return;
   }
 
   if (!capas || capas.length === 0) {
     console.info('Aún no hay capas cargadas en Supabase — mostrando datos mock de ejemplo.');
     Object.entries(CAPAS_MOCK).forEach(([key, c]) => agregarCapaAlPanel(key, c.label + ' (mock)', c.color, c.geojson));
+    poblarFiltroComuna();
     return;
   }
 
+  // Primero se cargan todos los geojson. Antes esto se hacía dentro del
+  // mismo loop que dibujaba las filas, pero ahora las filas se agrupan por
+  // sección (no por el orden en que llegan desde la base de datos), así
+  // que necesitamos tener todos los datos listos antes de decidir el orden.
+  const capasConDatos = [];
   for (let i = 0; i < capas.length; i++) {
     const capa = capas[i];
-    const { data: features, error: errFeatures } = await sb.rpc('capa_features_geojson', { p_capa_id: capa.id });
-    if (errFeatures) {
-      console.warn(`No se pudieron cargar los features de la capa ${capa.nombre}:`, errFeatures.message);
-      continue;
-    }
+    const features = await obtenerTodosLosFeatures(capa);
+    if (features === null) continue;
     const geojson = {
       type: 'FeatureCollection',
-      features: (features || []).map(f => ({ type: 'Feature', properties: f.atributos || {}, geometry: f.geometry }))
+      features: features.map(f => ({ type: 'Feature', properties: f.atributos || {}, geometry: f.geometry }))
     };
+    capasConDatos.push({ capa, geojson, indice: i });
+  }
 
-    if (capa.categoria === 'catastro_referencia') {
-      comunasFeatures = geojson.features;
-      agregarCapaReferencia('capa_' + capa.id, capa.nombre, geojson);
-      continue;
+  SECCIONES_CAPAS.forEach((seccion) => {
+    const capasDeSeccion = capasConDatos.filter(({ capa }) => seccionParaCapa(capa.id) === seccion.titulo);
+    if (capasDeSeccion.length === 0) return;
+
+    agregarEncabezadoSeccion(seccion.titulo);
+    if (seccion.titulo === 'Límites Comunales' && filtroComunaFila) {
+      capasPanel.appendChild(filtroComunaFila);
     }
 
-    const color = PALETA[i % PALETA.length];
-    agregarCapaAlPanel('capa_' + capa.id, capa.nombre, color, geojson);
-  }
-}
+    capasDeSeccion.forEach(({ capa, geojson, indice }) => {
+      if (capa.categoria === 'catastro_referencia') {
+        comunasFeatures = geojson.features;
+        agregarCapaReferencia('capa_' + capa.id, capa.nombre, geojson);
+        return;
+      }
 
-cargarCapas();
+      if (capa.nombre === 'Temperatura ambiental (Heat Watch Santiago)') {
+        agregarCapaTemperaturaHorario('capa_' + capa.id, capa.nombre, geojson);
+        return;
+      }
 
-/* ------------------------------------------------------------
- * Autenticación simple (nombre + correo) vía magic link.
- * No pedimos contraseña: Supabase Auth manda un enlace al correo.
- * ---------------------------------------------------------- */
-const authBtn = document.getElementById('auth-btn');
+      if (capa.id === 10) {
+        agregarCapaSitiosPrioritarios('capa_' + capa.id, capa.nombre, geojson, COLORES_FIJOS_POR_CAPA[10]);
+        return;
+      }
 
-async function iniciarSesion() {
-  const correo = prompt('Ingresa tu correo para recibir un enlace de acceso:');
-  if (!correo) return;
-  const { error } = await sb.auth.signInWithOtp({
-    email: correo,
-    options: { emailRedirectTo: window.location.href }
-  });
-  if (error) {
-    alert('No se pudo enviar el enlace: ' + error.message);
-    return;
-  }
-  alert('Te enviamos un enlace a ' + correo + '. Ábrelo desde este mismo dispositivo para quedar conectado.');
-}
+      if (capa.id === 11 || capa.id === 12) {
+        return; // se agregan juntas, con achurado, después de este forEach (ver agregarCapaCuencasSubcuencas)
+      }
 
-async function cerrarSesion() {
-  await sb.auth.signOut();
-}
+      const color = COLORES_FIJOS_POR_CAPA[capa.id] || PALETA[indice % PALETA.length];
+      const tipoIcono = capa.id === 4 ? 'arbol' : (capa.id === 6 ? 'pez' : null);
+      agregarCapaAlPanel('capa_' + capa.id, capa.nombre, color, geojson, capa.id === 7, tipoIcono, capa.id === 7 ? 6 : 7, capa.id === 5 ? 1.2 : 2);
+    });
 
-authBtn.addEventListener('click', () => {
-  if (sesionActual) cerrarSesion();
-  else iniciarSesion();
-});
-
-async function actualizarEstadoAuth(session) {
-  sesionActual = session;
-  if (session) {
-    authBtn.textContent = 'Cerrar sesión';
-    authBtn.title = `Conectado: ${session.user.email}`;
-
-    // Si es la primera vez de este usuario, no existe aún su fila en 'perfiles'.
-    const { data: perfil } = await sb.from('perfiles').select('nombre').eq('id', session.user.id).maybeSingle();
-    if (!perfil) {
-      const nombre = prompt('Antes de continuar, ¿cuál es tu nombre?');
-      if (nombre) {
-        await sb.from('perfiles').insert({ id: session.user.id, nombre, rol: 'ciudadano' });
+    if (seccion.titulo === 'Territorio') {
+      const entradaCuencas = capasDeSeccion.find(({ capa }) => capa.id === 11);
+      const entradaSubcuencas = capasDeSeccion.find(({ capa }) => capa.id === 12);
+      if (entradaCuencas || entradaSubcuencas) {
+        agregarCapaCuencasSubcuencas(entradaCuencas, entradaSubcuencas);
       }
     }
-  } else {
-    authBtn.textContent = 'Login';
-    authBtn.title = 'Sin iniciar sesión';
-  }
+  });
+
+  poblarFiltroComuna();
 }
 
-sb.auth.getSession().then(({ data }) => actualizarEstadoAuth(data.session));
-sb.auth.onAuthStateChange((_event, session) => actualizarEstadoAuth(session));
+// Capa de "Propuestas ciudadanas": trae, vía la función propuesta_geojson
+// (RLS aplica igual que en el cliente: solo llegan las verificado_social /
+// verificado_municipal, o las propias), las propuestas ya validadas y las
+// dibuja como una capa más en el mapa, en su propia sección del panel.
+// Se llama después de cargarCapas() para que la sección quede al final.
+async function cargarPropuestas() {
+  const { data, error } = await sb.rpc('propuestas_geojson');
+  if (error) {
+    console.warn('No se pudieron cargar las propuestas ciudadanas:', error.message);
+    return;
+  }
+  if (!data || data.length === 0) return;
+
+  const geojson = {
+    type: 'FeatureCollection',
+    features: data.map((p) => ({
+      type: 'Feature',
+      properties: {
+        tipo_intervencion: p.tipo_intervencion,
+        descripcion: p.descripcion,
+        comuna: p.comuna,
+        estado: p.estado,
+        score: p.score,
+        contexto_territorial: p.contexto_territorial,
+        created_at: p.created_at
+      },
+      geometry: p.geometry
+    }))
+  };
+
+  const colorPorFeature = (feature) => ESTADO_PROPUESTA_COLOR[feature.properties.estado] || '#888888';
+
+  const layer = L.geoJSON(geojson, {
+    style: (feature) => ({ color: colorPorFeature(feature), weight: 2, fillColor: colorPorFeature(feature), fillOpacity: 0.3 }),
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+      radius: 7, color: colorPorFeature(feature), fillColor: colorPorFeature(feature), fillOpacity: 0.85, weight: 2
+    }),
+    onEachFeature: (feature, featureLayer) => {
+      featureLayer.bindPopup(construirPopupPropuesta(feature.properties));
+    }
+  }); // sin .addTo(map): oculta por defecto, igual que el resto de las capas
+  capaLayers['propuestas'] = layer;
+  // Se agrega a capaDatos (con esPropuestas:true) para que el análisis de
+  // contexto territorial (calcularContextoTerritorial/generarMinutaTexto)
+  // avise si ya existe una propuesta verificada cerca de una nueva. Queda
+  // excluida del filtro por comuna (ver aplicarFiltroComuna) porque su
+  // estilo por estado y su popup no pasan por crearCapaLeaflet.
+  capaDatos['propuestas'] = { geojson, label: 'Propuestas ciudadanas verificadas', esPropuestas: true };
+
+  agregarEncabezadoSeccion('Propuestas ciudadanas');
+  const row = document.createElement('label');
+  row.innerHTML = `<input type="checkbox" data-capa="propuestas"> ${crearSimboloCapa(ESTADO_PROPUESTA_COLOR.verificado_social, geojson)} <span>Propuestas verificadas (${data.length})</span>`;
+  capasPanel.appendChild(row);
+
+  const leyenda = document.createElement('div');
+  leyenda.style.cssText = 'font-size:10.5px; color:var(--text-secondary); margin:2px 0 4px 22px;';
+  leyenda.innerHTML = `<span style="color:${ESTADO_PROPUESTA_COLOR.verificado_social}">●</span> Comunidad&nbsp;&nbsp;<span style="color:${ESTADO_PROPUESTA_COLOR.verificado_municipal}">●</span> Municipio`;
+  capasPanel.appendChild(leyenda);
+}
+
+cargarCapas().then(cargarPropuestas);
 
 /* ------------------------------------------------------------
- * Flujo de propuesta ciudadana
+ * Flujo de propuesta ciudadana. Sin login: cualquiera puede enviar
+ * una propuesta, que queda guardada sin usuario asociado (anónima)
+ * y como "sin_verificar" hasta que la comunidad o el municipio la
+ * validen.
  * ---------------------------------------------------------- */
 const overlay = document.getElementById('modal-overlay');
 const ubicacionStatus = document.getElementById('ubicacion-status');
+const contextoTerritorialEl = document.getElementById('contexto-territorial');
+const contextoTextoEl = document.getElementById('contexto-texto');
+const contextoScoreEl = document.getElementById('contexto-score');
 
 let geomPropuesta = null;        // lugar propuesto (donde el usuario marca/dibuja)
 let ubicacionDispositivo = null; // GPS real al momento de proponer (chequeo de credibilidad)
 let comunaDetectada = null;      // comuna detectada por punto-en-polígono contra la capa de referencia
+let contextoTerritorialActual = null; // { texto, score } de la minuta calculada para geomPropuesta
 let marcadorPropuesta = null;
 let drawControl = null;
 let drawControlPoligono = null;
@@ -740,6 +1990,28 @@ function cerrarModal() {
   if (drawControlPoligono) drawControlPoligono.disable();
 }
 
+// Recalcula y muestra la minuta de contexto territorial para la ubicación
+// actual (geomPropuesta). Se llama cada vez que la ubicación cambia (GPS,
+// marcar punto o dibujar área). Si no hay ubicación definida, se oculta.
+function actualizarContextoTerritorial() {
+  if (!geomPropuesta) {
+    contextoTerritorialActual = null;
+    contextoTerritorialEl.classList.add('oculto');
+    return;
+  }
+  const contexto = calcularContextoTerritorial(geomPropuesta);
+  const minuta = generarMinutaTexto(contexto, comunaDetectada);
+  if (!minuta) {
+    contextoTerritorialActual = null;
+    contextoTerritorialEl.classList.add('oculto');
+    return;
+  }
+  contextoTerritorialActual = minuta;
+  contextoTextoEl.textContent = minuta.texto;
+  contextoScoreEl.textContent = `(pertinencia orientativa: ${minuta.score}/100)`;
+  contextoTerritorialEl.classList.remove('oculto');
+}
+
 document.getElementById('btn-gps').addEventListener('click', () => {
   if (!navigator.geolocation) {
     ubicacionStatus.textContent = 'Este dispositivo no entrega geolocalización.';
@@ -755,6 +2027,7 @@ document.getElementById('btn-gps').addEventListener('click', () => {
     marcadorPropuesta = L.marker([latitude, longitude], { icon: iconoUbicacion }).addTo(map);
     ubicacionStatus.textContent = `Ubicación capturada (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`
       + (comunaDetectada ? ` — comuna detectada: ${comunaDetectada}.` : '. No se pudo detectar la comuna automáticamente.');
+    actualizarContextoTerritorial();
   }, () => {
     ubicacionStatus.textContent = 'No se pudo obtener la ubicación (permiso denegado).';
   });
@@ -790,15 +2063,11 @@ map.on(L.Draw.Event.CREATED, (e) => {
   const tipoTexto = geomPropuesta.type === 'Polygon' ? 'Área dibujada en el mapa.' : 'Ubicación marcada en el mapa.';
   ubicacionStatus.textContent = tipoTexto
     + (comunaDetectada ? ` Comuna detectada: ${comunaDetectada}.` : ' No se pudo detectar la comuna automáticamente (fuera de la RM o capa de límites aún no cargada).');
+  actualizarContextoTerritorial();
   overlay.style.display = 'flex';
 });
 
 document.getElementById('btn-enviar').addEventListener('click', async () => {
-  if (!sesionActual) {
-    alert('Primero inicia sesión (botón abajo a la izquierda) para poder proponer un lugar.');
-    return;
-  }
-
   const tipo = document.getElementById('f-tipo').value;
   const descripcion = document.getElementById('f-desc').value.trim();
 
@@ -812,13 +2081,17 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
     descripcion,
     geom: geomPropuesta,
     ubicacion_dispositivo: ubicacionDispositivo,
-    comuna: comunaDetectada
+    comuna: comunaDetectada,
+    contexto_territorial: contextoTerritorialActual ? contextoTerritorialActual.texto : null,
+    score: contextoTerritorialActual ? contextoTerritorialActual.score : null
   });
 
   cerrarModal();
   geomPropuesta = null;
   ubicacionDispositivo = null;
   comunaDetectada = null;
+  contextoTerritorialActual = null;
+  contextoTerritorialEl.classList.add('oculto');
   if (marcadorPropuesta) { map.removeLayer(marcadorPropuesta); marcadorPropuesta = null; }
   drawnItems.clearLayers();
   ubicacionStatus.textContent = 'Aún no se ha definido una ubicación.';
@@ -846,12 +2119,14 @@ function geoJSONaEWKT(geom) {
 
 async function guardarPropuesta(propuesta) {
   const { error } = await sb.from('propuestas').insert({
-    usuario_id: sesionActual.user.id,
+    usuario_id: null,
     tipo_intervencion: propuesta.tipo_intervencion,
     geom: geoJSONaEWKT(propuesta.geom),
     ubicacion_dispositivo: geoJSONaEWKT(propuesta.ubicacion_dispositivo),
     descripcion: propuesta.descripcion,
     comuna: propuesta.comuna || null,
+    contexto_territorial: propuesta.contexto_territorial || null,
+    score: propuesta.score,
     estado: 'sin_verificar'
   });
 
