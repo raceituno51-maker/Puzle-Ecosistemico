@@ -212,6 +212,15 @@
   #contexto-territorial .contexto-nota { font-size: 10.5px; color: var(--text-secondary); margin-top: 6px; font-style: italic; }
   #modal-close { position: absolute; top: 10px; right: 14px; cursor: pointer; font-size: 18px; color: var(--text-secondary); }
   #modal { position: relative; }
+  #form-propuesta-contenido.oculto { display: none; }
+  #gracias-propuesta.oculto { display: none; }
+  #gracias-propuesta h2 { color: #1a7f37; }
+  .gracias-codigo-box {
+    margin-top: 14px; padding: 14px 16px; border-radius: 8px; text-align: center;
+    background: var(--surface-1); border: 1px solid #1a7f37;
+  }
+  .gracias-codigo-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-secondary); }
+  .gracias-codigo-valor { font-size: 22px; font-weight: 700; color: #1a7f37; letter-spacing: 1px; margin-top: 2px; }
 
   /* Pin de ubicación: punto azul neón con halo pulsante, en vez del
      pin clásico de Leaflet. Se usa tanto para la ubicación GPS como
@@ -364,6 +373,7 @@
 <div id="modal-overlay">
   <div id="modal">
     <span id="modal-close">&times;</span>
+    <div id="form-propuesta-contenido">
     <h2>Proponer un lugar</h2>
     <p style="font-size:12px; color:#666; margin-top:-4px;">Formulario para organizaciones sociales (territoriales o funcionales) de la Región Metropolitana.</p>
 
@@ -466,6 +476,21 @@
       <button id="btn-cancelar" type="button">Cancelar</button>
       <button id="btn-enviar" type="button" class="primary">Enviar propuesta</button>
     </div>
+    </div>
+
+    <div id="gracias-propuesta" class="oculto">
+      <h2>¡Gracias por tu propuesta!</h2>
+      <p id="gracias-mensaje" style="font-size:13px; line-height:1.5;"></p>
+      <div class="gracias-codigo-box">
+        <div class="gracias-codigo-label">Código de seguimiento</div>
+        <div id="gracias-codigo" class="gracias-codigo-valor"></div>
+      </div>
+      <p class="modal-hint" style="margin-top:10px;">Guarda este código: te servirá para consultar el estado de tu propuesta más adelante. También te lo enviamos al correo del representante.</p>
+      <div class="modal-row">
+        <button id="btn-descargar-pdf" type="button">Descargar PDF</button>
+        <button id="btn-gracias-cerrar" type="button" class="primary">Volver al mapa</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -473,6 +498,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet.pattern@0.1.0/dist/leaflet.pattern.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ============================================================
  * CONFIG — proyecto Supabase real "SIG Colaborativo RM".
@@ -2145,6 +2171,7 @@ let marcadorPropuesta = null;
 let drawControl = null;
 let drawControlPoligono = null;
 let drawnItems = new L.FeatureGroup().addTo(map);
+let ultimaPropuestaEnviada = null; // { codigo, ...datosPropuesta } de la última propuesta enviada, para el botón "Descargar PDF"
 
 const FOTO_MAX_BYTES = 5 * 1024 * 1024;
 
@@ -2181,6 +2208,7 @@ function cerrarModal() {
   overlay.style.display = 'none';
   if (drawControl) drawControl.disable();
   if (drawControlPoligono) drawControlPoligono.disable();
+  volverAFormularioPropuesta();
 }
 
 // Recalcula y muestra la minuta de contexto territorial para la ubicación
@@ -2311,7 +2339,7 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
   try {
     const fotosUrls = await subirFotos(fotos);
 
-    await guardarPropuesta({
+    const datosPropuesta = {
       tipo_intervencion: tipo,
       descripcion,
       motivo_importancia: motivoImportancia,
@@ -2333,7 +2361,17 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
       representante_email: repEmail,
       representante_telefono: repTelefono,
       consentimiento_datos: consentimiento
-    });
+    };
+
+    const codigo = await guardarPropuesta(datosPropuesta);
+    if (codigo) {
+      mostrarPantallaGracias(codigo, datosPropuesta);
+      limpiarFormularioPropuesta();
+      // El correo se envía en segundo plano; si falla, la propuesta ya
+      // quedó guardada y el código ya se le mostró al usuario en pantalla.
+      sb.functions.invoke('enviar-confirmacion-propuesta', { body: { codigo_seguimiento: codigo } })
+        .catch((err) => console.error('No se pudo enviar el correo de confirmación:', err));
+    }
   } finally {
     btnEnviar.disabled = false;
     btnEnviar.textContent = 'Enviar propuesta';
@@ -2405,8 +2443,11 @@ function geoJSONaEWKT(geom) {
   return null;
 }
 
+// Guarda la propuesta vía RPC y devuelve el código de seguimiento
+// generado (ej. "SIG-2026-0042"), o null si hubo un error (ya avisado
+// con alert()).
 async function guardarPropuesta(propuesta) {
-  const { error } = await sb.rpc('crear_propuesta_organizacion', {
+  const { data, error } = await sb.rpc('crear_propuesta_organizacion', {
     p_tipo_intervencion: propuesta.tipo_intervencion,
     p_descripcion: propuesta.descripcion,
     p_motivo_importancia: propuesta.motivo_importancia,
@@ -2433,11 +2474,103 @@ async function guardarPropuesta(propuesta) {
   if (error) {
     alert('No se pudo guardar la propuesta: ' + error.message);
     console.error(error);
-    return;
+    return null;
   }
-  cerrarModal();
-  limpiarFormularioPropuesta();
-  alert('¡Propuesta registrada! Quedará como "sin verificar" hasta que la comunidad o el municipio la validen.');
+  return data;
+}
+
+const TIPO_ORGANIZACION_LABEL = {
+  junta_vecinos: 'Junta de vecinos', club_deportivo: 'Club deportivo',
+  club_adulto_mayor: 'Club de adulto mayor', centro_madres: 'Centro de madres',
+  agrupacion_cultural: 'Agrupación cultural', comite_vivienda: 'Comité de vivienda',
+  agrupacion_ambiental: 'Agrupación medioambiental', ong_fundacion: 'ONG / Fundación',
+  cooperativa: 'Cooperativa', otro: 'Otro'
+};
+
+// Reemplaza el formulario por la pantalla de agradecimiento dentro del
+// mismo modal, y deja lista la data para el botón "Descargar PDF".
+function mostrarPantallaGracias(codigo, datosPropuesta) {
+  ultimaPropuestaEnviada = { codigo, ...datosPropuesta };
+  document.getElementById('gracias-mensaje').textContent =
+    `¡Gracias por tu propuesta, ${datosPropuesta.nombre_organizacion}! Tu idea ya quedó registrada. `
+    + 'Quedará como "sin verificar" hasta que la comunidad o el municipio la validen.';
+  document.getElementById('gracias-codigo').textContent = codigo;
+  document.getElementById('form-propuesta-contenido').classList.add('oculto');
+  document.getElementById('gracias-propuesta').classList.remove('oculto');
+}
+
+function volverAFormularioPropuesta() {
+  document.getElementById('gracias-propuesta').classList.add('oculto');
+  document.getElementById('form-propuesta-contenido').classList.remove('oculto');
+  ultimaPropuestaEnviada = null;
+}
+
+document.getElementById('btn-gracias-cerrar').addEventListener('click', cerrarModal);
+
+document.getElementById('btn-descargar-pdf').addEventListener('click', () => {
+  if (!ultimaPropuestaEnviada) return;
+  generarPdfPropuesta(ultimaPropuestaEnviada);
+});
+
+// Genera un PDF simple con el resumen de la propuesta, usando jsPDF
+// (cargado vía CDN, sin dependencias de build).
+function generarPdfPropuesta(p) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const margen = 14;
+  let y = 20;
+  const salto = (lineas) => { y += lineas * 7; };
+  const titulo = (texto) => {
+    doc.setFont(undefined, 'bold'); doc.setFontSize(12);
+    doc.text(texto, margen, y); salto(1);
+    doc.setFont(undefined, 'normal'); doc.setFontSize(10);
+  };
+  const parrafo = (etiqueta, valor) => {
+    doc.setFont(undefined, 'bold');
+    doc.text(`${etiqueta}:`, margen, y);
+    doc.setFont(undefined, 'normal');
+    const lineas = doc.splitTextToSize(String(valor || '—'), 180 - 45);
+    doc.text(lineas, margen + 45, y);
+    salto(Math.max(1, lineas.length));
+  };
+
+  doc.setFontSize(16); doc.setFont(undefined, 'bold');
+  doc.text('Resumen de propuesta', margen, y); salto(1.5);
+  doc.setFontSize(11); doc.setTextColor(26, 127, 55);
+  doc.text(`Código de seguimiento: ${p.codigo}`, margen, y); salto(1.5);
+  doc.setTextColor(0, 0, 0); doc.setFontSize(10);
+
+  titulo('Organización');
+  parrafo('Nombre', p.nombre_organizacion);
+  const tipoOrgTexto = p.tipo_organizacion === 'otro' && p.tipo_organizacion_otro
+    ? p.tipo_organizacion_otro
+    : (TIPO_ORGANIZACION_LABEL[p.tipo_organizacion] || p.tipo_organizacion);
+  parrafo('Tipo', tipoOrgTexto);
+  salto(0.5);
+
+  titulo('Representante y contacto');
+  parrafo('Nombre', p.representante_nombre);
+  parrafo('Correo', p.representante_email);
+  parrafo('Teléfono', p.representante_telefono);
+  salto(0.5);
+
+  titulo('La propuesta');
+  parrafo('Tipo de intervención', TIPO_INTERVENCION_LABEL[p.tipo_intervencion] || p.tipo_intervencion);
+  parrafo('Qué se propone', p.descripcion);
+  parrafo('Por qué es importante', p.motivo_importancia);
+  parrafo('Comuna', p.comuna || 'No detectada automáticamente');
+  salto(0.5);
+
+  if (p.contexto_territorial) {
+    titulo('Descripción del territorio (automática)');
+    parrafo('Contexto', p.contexto_territorial);
+    salto(0.5);
+  }
+
+  titulo('Fotos adjuntas');
+  parrafo('Cantidad', `${(p.fotos || []).length} foto(s) — no incluidas en este PDF`);
+
+  doc.save(`${p.codigo}.pdf`);
 }
 </script>
 </body>
