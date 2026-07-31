@@ -578,10 +578,11 @@ const COLOR_RESALTADO_COMUNA = '#ffd60a';
 // Colores fijos para capas específicas (por id de la tabla `capas`),
 // que anulan el color asignado automáticamente desde PALETA.
 const COLORES_FIJOS_POR_CAPA = {
-  4: '#70e000', // Bosques de Bolsillo
-  5: '#00b4d8', // Red hidrográfica - Ríos y esteros RM
-  7: '#0081a7', // Proyectos hídricos
-  10: '#06d6a0' // Sitios Prioritarios para la Conservación de la Biodiversidad
+  4: '#70e000',  // Bosques de Bolsillo
+  5: '#00b4d8',  // Red hidrográfica - Ríos y esteros RM
+  10: '#06d6a0', // Sitios Prioritarios para la Conservación de la Biodiversidad
+  13: '#0081a7', // Estrategias Hídricas Locales - Fase 1
+  14: '#f4a261'  // Programa Maipo Resiliente
 };
 
 // Etiquetas y colores para la capa de "Propuestas ciudadanas" (tabla
@@ -683,12 +684,15 @@ function construirPopupPropuesta(props) {
 // Crea el layer de Leaflet a partir de un geojson (ya sea completo o
 // filtrado por comuna). Centraliza el estilo para que la creación
 // inicial y el re-filtrado por comuna se vean siempre igual.
-function crearCapaLeaflet(geojson, color, conFichas, tipoIcono, radioPunto = 7, grosorLinea = 2) {
+function crearCapaLeaflet(geojson, color, conFichas, tipoIcono, radioPunto = 7, grosorLinea = 2, iconoPunto = null) {
   const capaBase = L.geoJSON(geojson, {
     style: { color, weight: grosorLinea, fillOpacity: 0.35 },
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-      radius: radioPunto, color, fillColor: color, fillOpacity: 0.8
-    }),
+    // iconoPunto reemplaza el circleMarker genérico por un marcador con
+    // ícono propio (ver ICONO_GOTA/ICONO_ESCUDO) — así dos capas de puntos
+    // con el mismo tipo de geometría se distinguen a simple vista.
+    pointToLayer: (feature, latlng) => iconoPunto
+      ? L.marker(latlng, { icon: iconoPunto.marcador(color) })
+      : L.circleMarker(latlng, { radius: radioPunto, color, fillColor: color, fillOpacity: 0.8 }),
     onEachFeature: conFichas
       ? (feature, featureLayer) => {
           featureLayer.bindPopup(construirPopupHTML(feature.properties));
@@ -757,6 +761,47 @@ const GENERADORES_ICONO = {
   pez: crearIconoPez
 };
 
+/* ------------------------------------------------------------
+ * Íconos de punto para diferenciar los dos programas de proyectos
+ * hídricos (ambos son features de tipo Point, por eso van directo en
+ * el marcador — a diferencia de árbol/pez, que se superponen sobre el
+ * centroide de un polígono). Cada uno trae su versión de marcador
+ * (para el mapa) y de símbolo (para la fila del menú, 14x12).
+ * ---------------------------------------------------------- */
+const ICONO_GOTA = {
+  marcador: (color) => L.divIcon({
+    className: '',
+    html: `<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C12 2 5 11 5 15.5C5 19.6 8.4 23 12 23C15.6 23 19 19.6 19 15.5C19 11 12 2 12 2Z" fill="${color}" stroke="#023047" stroke-width="1.3"/>
+    </svg>`,
+    iconSize: [18, 18], iconAnchor: [9, 17]
+  }),
+  simbolo: (color) => `<svg class="simbolo-capa" width="14" height="12" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2C12 2 5 11 5 15.5C5 19.6 8.4 23 12 23C15.6 23 19 19.6 19 15.5C19 11 12 2 12 2Z" fill="${color}" stroke="#023047" stroke-width="1.8"/>
+  </svg>`
+};
+
+const ICONO_ESCUDO = {
+  marcador: (color) => L.divIcon({
+    className: '',
+    html: `<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2 L20 5.5 V11 C20 16 16.5 20.5 12 22 C7.5 20.5 4 16 4 11 V5.5 Z" fill="${color}" stroke="#7a2e00" stroke-width="1.3"/>
+      <path d="M8.5 12 L11 14.5 L15.5 9" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+    iconSize: [18, 18], iconAnchor: [9, 16]
+  }),
+  simbolo: (color) => `<svg class="simbolo-capa" width="14" height="12" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2 L20 5.5 V11 C20 16 16.5 20.5 12 22 C7.5 20.5 4 16 4 11 V5.5 Z" fill="${color}" stroke="#7a2e00" stroke-width="1.8"/>
+    <path d="M8.5 12 L11 14.5 L15.5 9" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`
+};
+
+// Íconos de punto por id de capa (ver COLORES_FIJOS_POR_CAPA).
+const ICONOS_PUNTO_POR_CAPA = {
+  13: ICONO_GOTA,   // Estrategias Hídricas Locales - Fase 1
+  14: ICONO_ESCUDO  // Programa Maipo Resiliente
+};
+
 // Centroide aproximado de una geometría Polygon/MultiPolygon, reutilizando
 // centroideAnillo (ver más abajo). Para MultiPolygon se usa el anillo
 // exterior de mayor tamaño como aproximación.
@@ -810,18 +855,21 @@ function crearSimboloCapa(color, geojson, tipoIcono = null) {
   </svg>`;
 }
 
-function agregarCapaAlPanel(key, label, color, geojson, conFichas = false, tipoIcono = null, radioPunto = 7, grosorLinea = 2) {
+function agregarCapaAlPanel(key, label, color, geojson, conFichas = false, tipoIcono = null, radioPunto = 7, grosorLinea = 2, iconoPunto = null) {
   // Sin .addTo(map): por defecto, al abrir el visor solo la capa de
   // límites comunales queda activa (ver agregarCapaReferencia). El resto
   // se crea igual (para que el checkbox pueda activarla) pero oculta.
-  const layer = crearCapaLeaflet(geojson, color, conFichas, tipoIcono, radioPunto, grosorLinea);
+  const layer = crearCapaLeaflet(geojson, color, conFichas, tipoIcono, radioPunto, grosorLinea, iconoPunto);
   capaLayers[key] = layer;
   // Se guarda también el label (nombre de la capa) para poder nombrarla
-  // en la minuta de contexto territorial (ver calcularContextoTerritorial).
-  capaDatos[key] = { geojson, color, conFichas, tipoIcono, radioPunto, grosorLinea, label };
+  // en la minuta de contexto territorial (ver calcularContextoTerritorial),
+  // e iconoPunto para que el filtro por comuna reconstruya la capa sin
+  // perder su símbolo (ver aplicarFiltroComuna).
+  capaDatos[key] = { geojson, color, conFichas, tipoIcono, radioPunto, grosorLinea, iconoPunto, label };
 
   const row = document.createElement('label');
-  row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloCapa(color, geojson, tipoIcono)} <span>${label}</span>`;
+  const simbolo = iconoPunto ? iconoPunto.simbolo(color) : crearSimboloCapa(color, geojson, tipoIcono);
+  row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${simbolo} <span>${label}</span>`;
   agregarAlPanel(row);
 }
 
@@ -1671,7 +1719,7 @@ function aplicarFiltroComuna() {
       ? { type: 'FeatureCollection', features: datos.geojson.features.filter(f => featuresSeleccionadas.some(cf => featurePerteneceAComuna(f, cf))) }
       : datos.geojson;
 
-    const nuevaCapa = crearCapaLeaflet(geojsonFiltrado, datos.color, datos.conFichas, datos.tipoIcono, datos.radioPunto, datos.grosorLinea);
+    const nuevaCapa = crearCapaLeaflet(geojsonFiltrado, datos.color, datos.conFichas, datos.tipoIcono, datos.radioPunto, datos.grosorLinea, datos.iconoPunto);
     capaLayers[key] = nuevaCapa;
     if (estabaActiva) nuevaCapa.addTo(map);
   });
@@ -1808,7 +1856,7 @@ async function obtenerTodosLosFeatures(capa) {
 const SECCIONES_CAPAS = [
   { titulo: 'Límites Comunales', capaIds: [1] },
   { titulo: 'Territorio', capaIds: [3, 5, 6, 9, 12] },
-  { titulo: 'Proyectos', capaIds: [4, 7] },
+  { titulo: 'Proyectos', capaIds: [4, 13, 14] },
   { titulo: 'Conservación', capaIds: [10] }
 ];
 
@@ -1915,7 +1963,9 @@ async function cargarCapas() {
 
       const color = COLORES_FIJOS_POR_CAPA[capa.id] || PALETA[indice % PALETA.length];
       const tipoIcono = capa.id === 4 ? 'arbol' : (capa.id === 6 ? 'pez' : null);
-      agregarCapaAlPanel('capa_' + capa.id, capa.nombre, color, geojson, capa.id === 7, tipoIcono, capa.id === 7 ? 6 : 7, capa.id === 5 ? 1.2 : 2);
+      const conFichas = capa.id === 13 || capa.id === 14;
+      const iconoPunto = ICONOS_PUNTO_POR_CAPA[capa.id] || null;
+      agregarCapaAlPanel('capa_' + capa.id, capa.nombre, color, geojson, conFichas, tipoIcono, 7, capa.id === 5 ? 1.2 : 2, iconoPunto);
     });
 
     if (seccion.titulo === 'Territorio') {
