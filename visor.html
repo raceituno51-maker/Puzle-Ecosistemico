@@ -39,24 +39,27 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.12); padding: 12px 14px;
     transition: background .2s, color .2s, border-color .2s;
   }
-  #capas-panel { top: 12px; right: 12px; width: 300px; max-width: 90vw; max-height: calc(100vh - 24px); display: flex; flex-direction: column; }
-  #capas-panel .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-shrink: 0; }
+  #capas-panel { top: 12px; right: 12px; width: 300px; max-width: 90vw; }
+  #capas-panel .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   #capas-panel .panel-titulo { font-size: 14px; font-weight: 600; }
   #capas-panel .panel-header-acciones { display: flex; align-items: center; gap: 2px; }
   #capas-panel label { display: flex; align-items: center; gap: 6px; font-size: 13px; margin: 4px 0; cursor: pointer; }
   .simbolo-capa { flex-shrink: 0; }
-  /* El contenido (no el panel completo) es lo que hace scroll, así el
-     encabezado queda siempre visible y ninguna capa (p.ej. las de más
-     abajo, como Sitios Prioritarios) queda cortada fuera de la pantalla. */
-  #capas-contenido { overflow-y: auto; padding-right: 2px; }
   #capas-contenido.oculto { display: none; }
 
+  /* Encabezado de sección: es un <button> (acordeón), no solo una
+     etiqueta — de ahí el reset de estilos de botón nativo. */
   .capas-seccion-titulo {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-    color: var(--text-secondary, #6b7280); margin: 14px 0 4px; padding-top: 10px;
-    border-top: 1px solid var(--border-color);
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--text-secondary, #6b7280); margin: 14px 0 4px; padding: 10px 0 4px;
+    border: none; border-top: 1px solid var(--border-color); background: transparent; cursor: pointer;
   }
+  .capas-seccion-titulo:hover { color: var(--text-primary); }
   .capas-seccion-titulo:first-child { margin-top: 4px; padding-top: 0; border-top: none; }
+  .capas-seccion-flecha { flex-shrink: 0; transition: transform .15s; }
+  .capas-seccion-titulo.colapsada .capas-seccion-flecha { transform: rotate(-90deg); }
+  .capas-seccion-contenido.colapsada { display: none; }
 
   .icon-btn {
     border: none; background: transparent; cursor: pointer; padding: 4px; border-radius: 6px;
@@ -218,7 +221,10 @@
     filter: drop-shadow(0 0 1px var(--limite-color)) drop-shadow(0 0 2.5px var(--limite-color));
   }
 
+  .limite-fila-comunas { display: flex; align-items: center; justify-content: space-between; }
+  .limite-fila-comunas label { flex: 1; }
   .limite-controles { margin: 8px 0 2px 22px; }
+  .limite-controles.oculto { display: none; }
   .limite-controles .limite-fila {
     display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;
   }
@@ -538,6 +544,14 @@ const CAPAS_MOCK = {
 };
 
 const capasPanel = document.getElementById('capas-lista');
+// Contenedor de la sección actualmente en construcción (ver
+// agregarEncabezadoSeccion): todas las filas/controles de una capa se
+// agregan ahí, no directo a capasPanel, para que cada sección se pueda
+// colapsar como acordeón sin importar qué función haya creado la fila.
+let seccionContenidoActual = capasPanel;
+function agregarAlPanel(el) {
+  seccionContenidoActual.appendChild(el);
+}
 // Fila del filtro por comuna: vive como HTML fijo fuera de #capas-lista,
 // pero se traslada (appendChild la mueve, no la clona) al grupo "Límites
 // Comunales" cuando se arma el menú, para que quede agrupada junto a la
@@ -808,7 +822,7 @@ function agregarCapaAlPanel(key, label, color, geojson, conFichas = false, tipoI
 
   const row = document.createElement('label');
   row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloCapa(color, geojson, tipoIcono)} <span>${label}</span>`;
-  capasPanel.appendChild(row);
+  agregarAlPanel(row);
 }
 
 // Etiquetas de los 3 horarios disponibles para la capa de temperatura,
@@ -855,12 +869,12 @@ function agregarCapaTemperaturaHorario(key, label, geojson) {
 
   const row = document.createElement('label');
   row.innerHTML = `<input type="checkbox" data-capa="${key}"> <span>${label}</span>`;
-  capasPanel.appendChild(row);
+  agregarAlPanel(row);
 
   const leyenda = document.createElement('div');
   leyenda.className = 'leyenda-temperatura';
   leyenda.innerHTML = `<span class="franja-valor">Frío</span><div class="franja"></div><span class="franja-valor">Calor</span>`;
-  capasPanel.appendChild(leyenda);
+  agregarAlPanel(leyenda);
 
   const controles = document.createElement('div');
   controles.className = 'horario-controles';
@@ -870,7 +884,7 @@ function agregarCapaTemperaturaHorario(key, label, geojson) {
       <span class="activa">Mañana</span><span>Tarde</span><span>Atardecer</span>
     </div>
   `;
-  capasPanel.appendChild(controles);
+  agregarAlPanel(controles);
 
   const slider = controles.querySelector('input[type=range]');
   const etiquetas = controles.querySelectorAll('.horario-etiquetas span');
@@ -935,7 +949,7 @@ function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
 
   const row = document.createElement('label');
   row.innerHTML = `<input type="checkbox" data-capa="${key}"> ${crearSimboloHachurado(color, 'sitios', 45)} <span>${label}</span>`;
-  capasPanel.appendChild(row);
+  agregarAlPanel(row);
 
   // Filtro múltiple por nombre de sitio, con la misma UI (desplegable con
   // checkboxes) que el filtro por comuna, pero independiente: filtra solo
@@ -958,7 +972,7 @@ function agregarCapaSitiosPrioritarios(key, label, geojson, color) {
       <div id="filtro-sitios-lista"></div>
     </div>
   `;
-  capasPanel.appendChild(fila);
+  agregarAlPanel(fila);
 
   const nombres = [...new Set(
     (geojson.features || []).map(f => f.properties && f.properties.nombre).filter(Boolean)
@@ -1084,7 +1098,7 @@ function agregarCapaSubcuencas(entradaSubcuencas) {
 
   const row = document.createElement('label');
   row.innerHTML = `<input type="checkbox" data-capa="capa_12"> ${crearSimboloHachurado(COLOR_SUBCUENCAS, 'subcuencas', -45)} <span>${nombreSubcuencas}</span>`;
-  capasPanel.appendChild(row);
+  agregarAlPanel(row);
   const checkboxCapa = row.querySelector('input[type=checkbox]');
 
   // Filtro por nombre de subcuenca: mismo patrón (desplegable con
@@ -1109,7 +1123,7 @@ function agregarCapaSubcuencas(entradaSubcuencas) {
       <div id="filtro-subcuencas-lista"></div>
     </div>
   `;
-  capasPanel.appendChild(fila);
+  agregarAlPanel(fila);
 
   const btn = fila.querySelector('#filtro-subcuencas-btn');
   const resumen = fila.querySelector('#filtro-subcuencas-resumen');
@@ -1233,12 +1247,22 @@ function agregarCapaReferencia(key, label, geojson) {
   capaLayers[key] = layer;
   capaLimitesLayer = layer;
 
-  const row = document.createElement('label');
-  row.innerHTML = `<input type="checkbox" checked data-capa="${key}"> Comunas`;
-  capasPanel.appendChild(row);
+  const row = document.createElement('div');
+  row.className = 'limite-fila-comunas';
+  row.innerHTML = `
+    <label><input type="checkbox" checked data-capa="${key}"> Comunas</label>
+    <button type="button" id="limite-estilo-toggle" class="icon-btn girado" title="Personalizar estilo del límite">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  `;
+  agregarAlPanel(row);
 
   const controles = document.createElement('div');
-  controles.className = 'limite-controles';
+  // Colapsado por defecto: es una personalización secundaria (grosor,
+  // tipo de línea, color), no algo que se necesite ver de entrada.
+  controles.className = 'limite-controles oculto';
 
   // Grosor: slider en tiempo real.
   const filaGrosor = document.createElement('div');
@@ -1292,8 +1316,14 @@ function agregarCapaReferencia(key, label, geojson) {
   });
   controles.appendChild(picker);
 
-  capasPanel.appendChild(controles);
+  agregarAlPanel(controles);
   document.documentElement.style.setProperty('--limite-color', colorInicial);
+
+  const toggleEstilo = row.querySelector('#limite-estilo-toggle');
+  toggleEstilo.addEventListener('click', () => {
+    const oculto = controles.classList.toggle('oculto');
+    toggleEstilo.classList.toggle('girado', oculto);
+  });
 
   // El slider actualiza el mapa en tiempo real y también reescala el
   // dashArray si el estilo activo no es la línea continua.
@@ -1787,11 +1817,37 @@ function seccionParaCapa(id) {
   return seccion ? seccion.titulo : 'Territorio';
 }
 
+// Cada sección es un acordeón: un encabezado clickeable más un contenedor
+// colapsable con sus filas/controles (agregados vía agregarAlPanel, ver
+// más arriba). "Territorio" queda abierta por defecto por ser la más
+// usada; el resto arranca colapsada para que el panel nunca necesite
+// scroll propio aunque se agreguen más capas a futuro.
 function agregarEncabezadoSeccion(titulo) {
-  const encabezado = document.createElement('div');
+  const colapsadaInicial = titulo !== 'Territorio';
+
+  const encabezado = document.createElement('button');
+  encabezado.type = 'button';
   encabezado.className = 'capas-seccion-titulo';
-  encabezado.textContent = titulo;
+  if (colapsadaInicial) encabezado.classList.add('colapsada');
+  encabezado.innerHTML = `
+    <span>${escaparHTML(titulo)}</span>
+    <svg class="capas-seccion-flecha" width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
   capasPanel.appendChild(encabezado);
+
+  const contenido = document.createElement('div');
+  contenido.className = 'capas-seccion-contenido';
+  if (colapsadaInicial) contenido.classList.add('colapsada');
+  capasPanel.appendChild(contenido);
+
+  encabezado.addEventListener('click', () => {
+    const colapsada = contenido.classList.toggle('colapsada');
+    encabezado.classList.toggle('colapsada', colapsada);
+  });
+
+  seccionContenidoActual = contenido;
 }
 
 async function cargarCapas() {
@@ -1833,7 +1889,7 @@ async function cargarCapas() {
 
     agregarEncabezadoSeccion(seccion.titulo);
     if (seccion.titulo === 'Límites Comunales' && filtroComunaFila) {
-      capasPanel.appendChild(filtroComunaFila);
+      agregarAlPanel(filtroComunaFila);
     }
 
     capasDeSeccion.forEach(({ capa, geojson, indice }) => {
@@ -1925,12 +1981,12 @@ async function cargarPropuestas() {
   agregarEncabezadoSeccion('Propuestas ciudadanas');
   const row = document.createElement('label');
   row.innerHTML = `<input type="checkbox" data-capa="propuestas"> ${crearSimboloCapa(ESTADO_PROPUESTA_COLOR.verificado_social, geojson)} <span>Propuestas verificadas (${data.length})</span>`;
-  capasPanel.appendChild(row);
+  agregarAlPanel(row);
 
   const leyenda = document.createElement('div');
   leyenda.style.cssText = 'font-size:10.5px; color:var(--text-secondary); margin:2px 0 4px 22px;';
   leyenda.innerHTML = `<span style="color:${ESTADO_PROPUESTA_COLOR.verificado_social}">●</span> Comunidad&nbsp;&nbsp;<span style="color:${ESTADO_PROPUESTA_COLOR.verificado_municipal}">●</span> Municipio`;
-  capasPanel.appendChild(leyenda);
+  agregarAlPanel(leyenda);
 }
 
 cargarCapas().then(cargarPropuestas);
