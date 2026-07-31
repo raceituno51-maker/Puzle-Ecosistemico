@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma SIG Colaborativa RM</title>
+<meta name="description" content="Plataforma bidireccional de información geográfica para la Región Metropolitana: ciudadanos proponen lugares, empresas financian, municipios coordinan.">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; min-height: 100%;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #f4f5f4; color: #1a2e22;
+  }
+
+  .topbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 20px;
+  }
+  .topbar .logo-mark { flex-shrink: 0; }
+  .topbar .marca { font-weight: 700; font-size: 15px; }
+  .topbar .marca small { display: block; font-weight: 400; font-size: 11px; color: #666; }
+
+  .hero {
+    text-align: center; padding: 28px 20px 36px;
+    max-width: 640px; margin: 0 auto;
+  }
+  .hero .logo-mark.grande { margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(22px, 5vw, 30px); margin: 0 0 10px; line-height: 1.25; }
+  .hero p { font-size: 14px; line-height: 1.6; color: #444; margin: 0 auto 6px; max-width: 520px; }
+  .hero .region { display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 600; color: #1a7f37; background: #e3f3e6; padding: 5px 12px; border-radius: 20px; }
+
+  .como-funciona {
+    max-width: 640px; margin: 0 auto 8px; padding: 0 20px;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px;
+    font-size: 12px; color: #555;
+  }
+  .como-funciona span { white-space: nowrap; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 30px 20px 50px; }
+  main > h2 { text-align: center; font-size: 16px; margin: 0 0 4px; }
+  main > p.sub { text-align: center; font-size: 13px; color: #777; margin: 0 0 26px; }
+
+  .roles {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+  }
+  .card-rol {
+    background: #fff; border-radius: 12px; padding: 22px 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; text-align: left;
+  }
+  .card-rol .icono {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  .card-rol h3 { font-size: 15px; margin: 0 0 6px; }
+  .card-rol p { font-size: 12.5px; color: #666; line-height: 1.5; margin: 0 0 16px; flex: 1; }
+  .card-rol a {
+    display: inline-block; text-align: center; text-decoration: none;
+    font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 8px;
+    color: #fff;
+  }
+  .card-rol.ciudadano .icono { background: #e3f3e6; }
+  .card-rol.ciudadano a { background: #1a7f37; }
+  .card-rol.empresa .icono { background: #e6ecf7; }
+  .card-rol.empresa a { background: #1a5c9c; }
+  .card-rol.municipio .icono { background: #ece3f7; }
+  .card-rol.municipio a { background: #5a189a; }
+
+  footer {
+    text-align: center; font-size: 11px; color: #999;
+    padding: 20px; border-top: 1px solid #e5e5e5;
+  }
+
+  @media (max-width: 480px) {
+    .hero { padding: 20px 16px 28px; }
+    .card-rol { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo-mark">
+    <svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
+      <rect width="64" height="64" rx="14" fill="#1a2e22"/>
+      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
+      <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
+      <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+      <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+      <circle cx="32" cy="22" r="3.4" fill="#ffffff"/>
+      <circle cx="25" cy="31" r="3.4" fill="#ffffff"/>
+      <circle cx="39" cy="31" r="3.4" fill="#ffffff"/>
+    </svg>
+  </span>
+  <span class="marca">SIG Colaborativo RM<small>Piloto — Región Metropolitana</small></span>
+</div>
+
+<section class="hero">
+  <span class="logo-mark grande">
+    <svg viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
+      <rect width="64" height="64" rx="16" fill="#1a2e22"/>
+      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
+      <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
+      <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+      <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
+      <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
+      <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
+      <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
+    </svg>
+  </span>
+  <h1>Cruzamos información geográfica para transformar espacios en la Región Metropolitana</h1>
+  <p>
+    Una plataforma que conecta a tres actores: personas y organizaciones que proponen lugares para
+    intervenir (una plaza, un sitio eriazo, una sede social), empresas que quieren financiar proyectos,
+    y municipios que buscan socios y datos para decidir mejor. Cruzamos cada propuesta con capas oficiales
+    (vulnerabilidad social, áreas verdes, islas de calor, corredores biológicos) para priorizar dónde
+    intervenir primero.
+  </p>
+  <span class="region">Toda la Región Metropolitana · Piloto sin costo</span>
+  <div class="como-funciona">
+    <span>📍 1. Propones un lugar</span>
+    <span>📊 2. Se prioriza con datos oficiales</span>
+    <span>🤝 3. Empresas y municipios lo hacen realidad</span>
+  </div>
+</section>
+
+<main>
+  <h2>¿Cómo quieres participar?</h2>
+  <p class="sub">Elige tu rol para entrar directo a lo que te sirve.</p>
+
+  <div class="roles">
+    <div class="card-rol ciudadano">
+      <span class="icono">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="3.4" stroke="#1a7f37" stroke-width="1.8"/>
+          <path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2" stroke="#1a7f37" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <h3>Ciudadano u organización</h3>
+      <p>Mira las capas oficiales de tu comuna, marca un punto o dibuja un área, y propón dónde debería haber una plaza, una sede social o una intervención.</p>
+      <a href='/visor'>Entrar al visor →</a>
+    </div>
+
+    <div class="card-rol empresa">
+      <span class="icono">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="9" width="16" height="10" rx="1.6" stroke="#1a5c9c" stroke-width="1.8"/>
+          <path d="M9 9V7a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v2" stroke="#1a5c9c" stroke-width="1.8"/>
+        </svg>
+      </span>
+      <h3>Empresa</h3>
+      <p>Descubre propuestas ya verificadas, ordenadas por prioridad, y muestra interés en financiar la que más se alinee con tu estrategia de impacto.</p>
+      <a href='/panel?vista=empresa'>Ver oportunidades →</a>
+    </div>
+
+    <div class="card-rol municipio">
+      <span class="icono">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 20h16M6 20v-8m4 8v-8m4 8v-8m4 8v-8M4 12l8-6 8 6" stroke="#5a189a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <h3>Municipio / institución pública</h3>
+      <p>Revisa las propuestas de tu comuna, verifícalas oficialmente y encuentra empresas y organizaciones dispuestas a colaborar.</p>
+      <a href='/panel?vista=municipio'>Entrar al panel →</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Piloto sin costo — Región Metropolitana · Los datos oficiales se cargan progresivamente a medida que las instituciones los entregan.
+</footer>
+
+</body>
+</html>

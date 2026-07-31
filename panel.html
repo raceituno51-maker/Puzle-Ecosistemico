@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma SIG Colaborativa RM — Panel</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f4f5f4; color: #222; }
+
+  header {
+    background: #1a2e22; color: #fff; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  nav { display: flex; gap: 8px; }
+  nav button {
+    background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff;
+    padding: 7px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+  }
+  nav button.active { background: #fff; color: #1a2e22; font-weight: 600; }
+
+  main { padding: 20px 24px; max-width: 960px; margin: 0 auto; }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
+  .toolbar select { padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; }
+  .toolbar span { font-size: 12px; color: #666; }
+  .toolbar label { font-size: 12px; color: #555; }
+  .resumen { font-size: 12px; color: #777; margin-bottom: 14px; }
+
+  .card {
+    background: #fff; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; justify-content: space-between; gap: 14px;
+  }
+  .card .info { flex: 1; }
+  .card h3 { margin: 0 0 4px; font-size: 14px; }
+  .card p { margin: 2px 0; font-size: 12px; color: #555; }
+  .card .antiguedad { font-size: 11px; color: #999; }
+  .card .motivo { font-size: 12px; color: #7a1a1a; font-style: italic; margin-top: 4px; }
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; margin-right: 6px;
+  }
+  .badge.sin_verificar { background: #f4e3b2; color: #7a5c00; }
+  .badge.verificado_social { background: #cfe8ff; color: #0a4a7a; }
+  .badge.verificado_municipal { background: #cdeccb; color: #1a5c1a; }
+  .badge.rechazado { background: #f3c9c9; color: #7a1a1a; }
+  .chip-interes {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; background: #e6ddf7; color: #4a1a7a; margin-left: 6px;
+  }
+
+  .score { font-size: 20px; font-weight: 700; color: #1a7f37; min-width: 46px; text-align: center; }
+
+  .actions { display: flex; flex-direction: column; gap: 6px; justify-content: center; min-width: 130px; }
+  .actions button {
+    padding: 7px 10px; border-radius: 6px; border: 1px solid #ccc; background: #f5f5f5;
+    font-size: 12px; cursor: pointer;
+  }
+  .actions button.aprobar { background: #1a7f37; color: #fff; border-color: #1a7f37; }
+  .actions button.rechazar { background: #b23b3b; color: #fff; border-color: #b23b3b; }
+  .actions button.interes { background: #1a5c9c; color: #fff; border-color: #1a5c9c; }
+  .actions button.revertir { background: #fff; color: #777; }
+  .actions button:disabled { opacity: 0.4; cursor: default; }
+
+  .empty { text-align: center; color: #888; padding: 40px 0; font-size: 13px; }
+  .note { font-size: 12px; color: #888; margin-top: 18px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href='/' style='display:flex; align-items:center; gap:8px; text-decoration:none; color:#fff;'>
+    <svg viewBox="0 0 64 64" width="26" height="26" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Inicio">
+      <rect width="64" height="64" rx="14" fill="#0d1a12"/>
+      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="4"/>
+      <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
+      <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
+      <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
+    </svg>
+    <h1>Plataforma SIG Colaborativa RM — Panel</h1>
+  </a>
+  <nav>
+    <button id="tab-municipio" class="active">Municipio</button>
+    <button id="tab-empresa">Empresas</button>
+    <span id="auth-status" style="font-size:12px; margin-left:12px; opacity:0.8;">Sin iniciar sesión</span>
+    <button id="auth-btn">Iniciar sesión</button>
+  </nav>
+</header>
+
+<main>
+  <div id="vista-municipio">
+    <div class="toolbar">
+      <label for="filtro-comuna">Comuna:</label>
+      <select id="filtro-comuna"></select>
+      <label for="filtro-estado">Estado:</label>
+      <select id="filtro-estado">
+        <option value="Todos">Todos</option>
+        <option value="sin_verificar">Sin verificar</option>
+        <option value="verificado_social">Verificado (social)</option>
+        <option value="verificado_municipal">Verificado (municipio)</option>
+        <option value="rechazado">Rechazado</option>
+      </select>
+      <label for="filtro-tipo">Tipo:</label>
+      <select id="filtro-tipo">
+        <option value="Todos">Todos</option>
+        <option value="plaza">Plaza</option>
+        <option value="sitio_eriazo">Sitio eriazo</option>
+        <option value="sede_social">Sede social</option>
+        <option value="area_verde">Área verde</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+    <p class="resumen">Aprobar marca la propuesta como verificada oficialmente; rechazar la retira del listado público y pide un motivo breve.</p>
+    <div id="resumen-municipio" class="resumen"></div>
+    <div id="lista-municipio"></div>
+  </div>
+
+  <div id="vista-empresa" style="display:none">
+    <div class="toolbar">
+      <label for="filtro-comuna-empresa">Comuna:</label>
+      <select id="filtro-comuna-empresa"></select>
+      <label for="filtro-tipo-empresa">Tipo:</label>
+      <select id="filtro-tipo-empresa">
+        <option value="Todos">Todos</option>
+        <option value="plaza">Plaza</option>
+        <option value="sitio_eriazo">Sitio eriazo</option>
+        <option value="sede_social">Sede social</option>
+        <option value="area_verde">Área verde</option>
+        <option value="otro">Otro</option>
+      </select>
+      <label for="orden-empresa">Orden:</label>
+      <select id="orden-empresa">
+        <option value="score_desc">Score (mayor primero)</option>
+        <option value="score_asc">Score (menor primero)</option>
+        <option value="recientes">Más recientes</option>
+      </select>
+    </div>
+    <p class="resumen">Solo se listan propuestas ya verificadas (social o municipalmente).</p>
+    <div id="lista-empresa"></div>
+  </div>
+
+  <p class="note">
+    Datos de ejemplo (mock) mientras no haya propuestas reales en Supabase. "Aprobar/Rechazar/Revertir" actualizan
+    <code>propuestas.estado</code> (y <code>motivo_rechazo</code> al rechazar); "Mostrar interés" hace un
+    <code>insert into intereses_financiamiento</code>. Ver README.md.
+  </p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ============================================================
+ * CONFIG — mismo proyecto Supabase que visor.html.
+ * ============================================================ */
+const SUPABASE_URL = "https://bpjfbeigsmzkyadvtupo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Iw-Sm3aG8vLCeUL9EfpYBw_tRIe4-0f";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let sesionActual = null;
+let MODO_REAL = false; // true cuando ya hay propuestas reales en Supabase
+
+/* ------------------------------------------------------------
+ * Datos MOCK — se usan solo mientras la tabla propuestas esté
+ * vacía, para que el panel no se vea en blanco en la demo.
+ * ---------------------------------------------------------- */
+function haceDias(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString();
+}
+
+let PROPUESTAS = [
+  { id: 1, comuna: 'La Pintana', tipo: 'sitio_eriazo', nombre: 'Marisol A.', descripcion: 'Sitio eriazo con acumulación de basura hace años, ideal para una plaza.', estado: 'sin_verificar', score: 82, created_at: haceDias(1), motivo_rechazo: null },
+  { id: 2, comuna: 'Cerro Navia', tipo: 'plaza', nombre: 'Junta de Vecinos El Retiro', descripcion: 'Plaza deteriorada, juegos rotos, falta de sombra.', estado: 'verificado_social', score: 76, created_at: haceDias(4), motivo_rechazo: null },
+  { id: 3, comuna: 'Puente Alto', tipo: 'sede_social', nombre: 'Comité Vecinal Bajos de Mena', descripcion: 'Sede social sin techo en buen estado, se llueve entera.', estado: 'verificado_municipal', score: 61, created_at: haceDias(9), motivo_rechazo: null },
+  { id: 4, comuna: 'Providencia', tipo: 'area_verde', nombre: 'Tomás R.', descripcion: 'Bandejón sin mantención, oportunidad de jardín de lluvia.', estado: 'sin_verificar', score: 28, created_at: haceDias(2), motivo_rechazo: null },
+  { id: 5, comuna: 'Lo Barnechea', tipo: 'plaza', nombre: 'Fundación Cerro Verde', descripcion: 'Terreno municipal disponible junto a quebrada, potencial corredor.', estado: 'verificado_municipal', score: 45, created_at: haceDias(14), motivo_rechazo: null },
+  { id: 6, comuna: 'Maipú', tipo: 'otro', nombre: 'Club Deportivo Los Robles', descripcion: 'Cierre perimetral de cancha ya intervenida por otro proyecto municipal.', estado: 'rechazado', score: 22, created_at: haceDias(20), motivo_rechazo: 'Terreno ya comprometido con otro proyecto en curso.' },
+];
+
+let INTERESES_COUNT = {};   // propuesta_id -> total de empresas interesadas
+let MIS_INTERESES = new Set(); // propuesta_id donde la empresa logueada ya mostró interés
+
+function textoAntiguedad(iso) {
+  if (!iso) return '';
+  const dias = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (dias <= 0) return 'hoy';
+  if (dias === 1) return 'hace 1 día';
+  return `hace ${dias} días`;
+}
+
+const badgeLabel = {
+  sin_verificar: 'Sin verificar',
+  verificado_social: 'Verificado (social)',
+  verificado_municipal: 'Verificado (municipio)',
+  rechazado: 'Rechazado'
+};
+const tipoLabel = {
+  plaza: 'Plaza', sitio_eriazo: 'Sitio eriazo', sede_social: 'Sede social',
+  area_verde: 'Área verde', otro: 'Otro'
+};
+
+/* ------------------------------------------------------------
+ * Tabs
+ * ---------------------------------------------------------- */
+const tabMunicipio = document.getElementById('tab-municipio');
+const tabEmpresa = document.getElementById('tab-empresa');
+const vistaMunicipio = document.getElementById('vista-municipio');
+const vistaEmpresa = document.getElementById('vista-empresa');
+
+tabMunicipio.addEventListener('click', () => cambiarVista('municipio'));
+tabEmpresa.addEventListener('click', () => cambiarVista('empresa'));
+
+function cambiarVista(vista) {
+  const esMunicipio = vista === 'municipio';
+  tabMunicipio.classList.toggle('active', esMunicipio);
+  tabEmpresa.classList.toggle('active', !esMunicipio);
+  vistaMunicipio.style.display = esMunicipio ? 'block' : 'none';
+  vistaEmpresa.style.display = esMunicipio ? 'none' : 'block';
+  if (!esMunicipio) cargarIntereses();
+}
+
+/* ------------------------------------------------------------
+ * Vista Municipio
+ * ---------------------------------------------------------- */
+const filtroComuna = document.getElementById('filtro-comuna');
+const filtroEstado = document.getElementById('filtro-estado');
+const filtroTipo = document.getElementById('filtro-tipo');
+const listaMunicipio = document.getElementById('lista-municipio');
+const resumenMunicipio = document.getElementById('resumen-municipio');
+
+function poblarFiltroComunas() {
+  const comunas = ['Todas', ...new Set(PROPUESTAS.map(p => p.comuna))];
+  filtroComuna.innerHTML = comunas.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const comunasEmpresa = ['Todas', ...new Set(PROPUESTAS.map(p => p.comuna))];
+  const filtroComunaEmpresa = document.getElementById('filtro-comuna-empresa');
+  if (filtroComunaEmpresa) {
+    filtroComunaEmpresa.innerHTML = comunasEmpresa.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+}
+filtroComuna.addEventListener('change', renderMunicipio);
+filtroEstado.addEventListener('change', renderMunicipio);
+filtroTipo.addEventListener('change', renderMunicipio);
+
+function renderMunicipio() {
+  const comunaSel = filtroComuna.value;
+  const estadoSel = filtroEstado.value;
+  const tipoSel = filtroTipo.value;
+  const filtradas = PROPUESTAS.filter(p =>
+    (comunaSel === 'Todas' || p.comuna === comunaSel) &&
+    (estadoSel === 'Todos' || p.estado === estadoSel) &&
+    (tipoSel === 'Todos' || p.tipo === tipoSel)
+  );
+
+  const sinVerificar = PROPUESTAS.filter(p => p.estado === 'sin_verificar').length;
+  resumenMunicipio.textContent = `${PROPUESTAS.length} propuestas en total — ${sinVerificar} sin verificar.`;
+
+  if (filtradas.length === 0) {
+    listaMunicipio.innerHTML = '<div class="empty">No hay propuestas con estos filtros.</div>';
+    return;
+  }
+
+  listaMunicipio.innerHTML = filtradas.map(p => `
+    <div class="card">
+      <div class="score">${p.score}</div>
+      <div class="info">
+        <h3>${tipoLabel[p.tipo] || p.tipo} — ${p.comuna}</h3>
+        <p><span class="badge ${p.estado}">${badgeLabel[p.estado]}</span> Propuesto por ${p.nombre}
+          <span class="antiguedad">· ${textoAntiguedad(p.created_at)}</span></p>
+        <p>${p.descripcion}</p>
+        ${p.estado === 'rechazado' && p.motivo_rechazo ? `<p class="motivo">Motivo: ${p.motivo_rechazo}</p>` : ''}
+      </div>
+      <div class="actions">
+        <button class="aprobar" data-id="${p.id}" ${p.estado === 'verificado_municipal' ? 'disabled' : ''}>Aprobar</button>
+        <button class="rechazar" data-id="${p.id}" ${p.estado === 'rechazado' ? 'disabled' : ''}>Rechazar</button>
+        ${p.estado !== 'sin_verificar' ? `<button class="revertir" data-id="${p.id}">Revertir a sin verificar</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  listaMunicipio.querySelectorAll('.aprobar').forEach(btn =>
+    btn.addEventListener('click', () => actualizarEstado(btn.dataset.id, 'verificado_municipal')));
+  listaMunicipio.querySelectorAll('.rechazar').forEach(btn =>
+    btn.addEventListener('click', () => {
+      const motivo = prompt('Motivo del rechazo (opcional):', '');
+      if (motivo === null) return; // canceló
+      actualizarEstado(btn.dataset.id, 'rechazado', motivo || null);
+    }));
+  listaMunicipio.querySelectorAll('.revertir').forEach(btn =>
+    btn.addEventListener('click', () => actualizarEstado(btn.dataset.id, 'sin_verificar', null)));
+}
+
+async function actualizarEstado(id, nuevoEstado, motivo) {
+  const propuesta = PROPUESTAS.find(p => p.id === Number(id));
+  if (!propuesta) return;
+
+  if (MODO_REAL) {
+    const payload = { estado: nuevoEstado, motivo_rechazo: nuevoEstado === 'rechazado' ? motivo : null };
+    const { error } = await sb.from('propuestas').update(payload).eq('id', id);
+    if (error) {
+      alert('No se pudo actualizar en Supabase: ' + error.message);
+      console.error(error);
+      return;
+    }
+  } else {
+    console.log(`[modo demo] Propuesta ${id} -> ${nuevoEstado} (no hay propuestas reales aún)`);
+  }
+
+  propuesta.estado = nuevoEstado;
+  propuesta.motivo_rechazo = nuevoEstado === 'rechazado' ? (motivo || null) : null;
+  renderMunicipio();
+}
+
+/* ------------------------------------------------------------
+ * Vista Empresa
+ * ---------------------------------------------------------- */
+const listaEmpresa = document.getElementById('lista-empresa');
+const filtroComunaEmpresa = document.getElementById('filtro-comuna-empresa');
+const filtroTipoEmpresa = document.getElementById('filtro-tipo-empresa');
+const ordenEmpresa = document.getElementById('orden-empresa');
+[filtroComunaEmpresa, filtroTipoEmpresa, ordenEmpresa].forEach(el =>
+  el.addEventListener('change', renderEmpresa));
+
+function renderEmpresa() {
+  const comunaSel = filtroComunaEmpresa.value || 'Todas';
+  const tipoSel = filtroTipoEmpresa.value || 'Todos';
+  const orden = ordenEmpresa.value || 'score_desc';
+
+  let oportunidades = PROPUESTAS.filter(p =>
+    (p.estado === 'verificado_social' || p.estado === 'verificado_municipal') &&
+    (comunaSel === 'Todas' || p.comuna === comunaSel) &&
+    (tipoSel === 'Todos' || p.tipo === tipoSel)
+  );
+
+  if (orden === 'score_desc') oportunidades.sort((a, b) => b.score - a.score);
+  else if (orden === 'score_asc') oportunidades.sort((a, b) => a.score - b.score);
+  else if (orden === 'recientes') oportunidades.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  if (oportunidades.length === 0) {
+    listaEmpresa.innerHTML = '<div class="empty">Aún no hay propuestas verificadas con estos filtros.</div>';
+    return;
+  }
+
+  listaEmpresa.innerHTML = oportunidades.map(p => {
+    const total = INTERESES_COUNT[p.id] || 0;
+    const yaInteresado = MIS_INTERESES.has(p.id);
+    return `
+    <div class="card">
+      <div class="score">${p.score}</div>
+      <div class="info">
+        <h3>${tipoLabel[p.tipo] || p.tipo} — ${p.comuna}</h3>
+        <p><span class="badge ${p.estado}">${badgeLabel[p.estado]}</span>
+          <span class="antiguedad">${textoAntiguedad(p.created_at)}</span>
+          ${total > 0 ? `<span class="chip-interes">${total} empresa${total === 1 ? '' : 's'} interesada${total === 1 ? '' : 's'}</span>` : ''}
+        </p>
+        <p>${p.descripcion}</p>
+      </div>
+      <div class="actions">
+        <button class="interes" data-id="${p.id}" ${yaInteresado ? 'disabled' : ''}>${yaInteresado ? 'Ya mostraste interés' : 'Mostrar interés'}</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+
+  listaEmpresa.querySelectorAll('.interes:not(:disabled)').forEach(btn =>
+    btn.addEventListener('click', () => mostrarInteres(btn.dataset.id)));
+}
+
+async function mostrarInteres(id) {
+  const mensaje = prompt('Mensaje breve para el municipio/proponente (opcional):', '');
+  if (mensaje === null) return;
+
+  if (MODO_REAL) {
+    if (!sesionActual) {
+      alert('Primero inicia sesión (arriba a la derecha) para registrar tu interés.');
+      return;
+    }
+    const { error } = await sb.from('intereses_financiamiento').insert({
+      propuesta_id: Number(id), empresa_id: sesionActual.user.id, mensaje
+    });
+    if (error) {
+      alert('No se pudo registrar el interés: ' + error.message);
+      console.error(error);
+      return;
+    }
+    alert('Interés registrado.');
+    MIS_INTERESES.add(Number(id));
+    INTERESES_COUNT[id] = (INTERESES_COUNT[id] || 0) + 1;
+  } else {
+    console.log(`[modo demo] Interés registrado para propuesta ${id}:`, mensaje);
+    alert('Interés registrado (modo demo — aún no hay propuestas reales).');
+    MIS_INTERESES.add(Number(id));
+    INTERESES_COUNT[id] = (INTERESES_COUNT[id] || 0) + 1;
+  }
+  renderEmpresa();
+}
+
+/* ------------------------------------------------------------
+ * Conteo de intereses por propuesta (vía RPC, no expone qué
+ * empresa es cada una) + cuáles ya mostró interés la empresa
+ * logueada actualmente (esto sí es visible por RLS: cada quien
+ * lee sus propias filas de intereses_financiamiento).
+ * ---------------------------------------------------------- */
+async function cargarIntereses() {
+  if (!MODO_REAL) {
+    // En modo demo no hay tabla real que consultar; se conserva
+    // el estado que haya dejado mostrarInteres() en esta sesión.
+    renderEmpresa();
+    return;
+  }
+
+  const { data: conteos, error: errConteo } = await sb.rpc('intereses_count');
+  if (!errConteo && conteos) {
+    INTERESES_COUNT = {};
+    conteos.forEach(row => { INTERESES_COUNT[row.propuesta_id] = Number(row.total); });
+  }
+
+  MIS_INTERESES = new Set();
+  if (sesionActual) {
+    const { data: mios, error: errMios } = await sb
+      .from('intereses_financiamiento')
+      .select('propuesta_id')
+      .eq('empresa_id', sesionActual.user.id);
+    if (!errMios && mios) {
+      mios.forEach(row => MIS_INTERESES.add(row.propuesta_id));
+    }
+  }
+  renderEmpresa();
+}
+
+/* ------------------------------------------------------------
+ * Autenticación simple (igual que en visor.html): magic link
+ * por correo, sin contraseña.
+ * ---------------------------------------------------------- */
+const authStatusEl = document.getElementById('auth-status');
+const authBtn = document.getElementById('auth-btn');
+
+authBtn.addEventListener('click', async () => {
+  if (sesionActual) {
+    await sb.auth.signOut();
+    return;
+  }
+  const correo = prompt('Ingresa tu correo (empresa/municipio) para recibir un enlace de acceso:');
+  if (!correo) return;
+  const { error } = await sb.auth.signInWithOtp({ email: correo, options: { emailRedirectTo: window.location.href } });
+  if (error) { alert('No se pudo enviar el enlace: ' + error.message); return; }
+  alert('Te enviamos un enlace a ' + correo + '. Ábrelo desde este mismo dispositivo.');
+});
+
+function actualizarEstadoAuth(session) {
+  sesionActual = session;
+  authStatusEl.textContent = session ? `Conectado: ${session.user.email}` : 'Sin iniciar sesión';
+  authBtn.textContent = session ? 'Cerrar sesión' : 'Iniciar sesión';
+  if (vistaEmpresa.style.display !== 'none') cargarIntereses();
+}
+
+sb.auth.getSession().then(({ data }) => actualizarEstadoAuth(data.session));
+sb.auth.onAuthStateChange((_event, session) => actualizarEstadoAuth(session));
+
+/* ------------------------------------------------------------
+ * Carga real de propuestas. Si la tabla está vacía (aún no hay
+ * propuestas reales enviadas desde visor.html), se mantiene el
+ * listado mock para que el panel no se vea en blanco.
+ * ---------------------------------------------------------- */
+async function cargarPropuestas() {
+  const { data, error } = await sb
+    .from('propuestas')
+    .select('id, comuna, tipo_intervencion, descripcion, estado, score, created_at, motivo_rechazo, perfiles(nombre)')
+    .order('score', { ascending: false });
+
+  if (error) {
+    console.warn('No se pudo leer propuestas desde Supabase, usando datos mock:', error.message);
+    return;
+  }
+  if (!data || data.length === 0) {
+    console.info('Aún no hay propuestas reales — mostrando datos mock de ejemplo.');
+    return;
+  }
+
+  MODO_REAL = true;
+  PROPUESTAS = data.map(p => ({
+    id: p.id,
+    comuna: p.comuna || 'Sin comuna',
+    tipo: p.tipo_intervencion,
+    nombre: (p.perfiles && p.perfiles.nombre) || 'Anónimo',
+    descripcion: p.descripcion || '',
+    estado: p.estado,
+    score: p.score || 0,
+    created_at: p.created_at,
+    motivo_rechazo: p.motivo_rechazo || null
+  }));
+  poblarFiltroComunas();
+  renderMunicipio();
+}
+
+/* ------------------------------------------------------------
+ * Init — soporta ?vista=empresa|municipio para llegar directo
+ * desde la portada (index.html) a la pestaña correcta.
+ * ---------------------------------------------------------- */
+poblarFiltroComunas();
+renderMunicipio();
+cargarPropuestas();
+
+const vistaInicial = new URLSearchParams(window.location.search).get('vista');
+if (vistaInicial === 'empresa') cambiarVista('empresa');
+</script>
+</body>
+</html>

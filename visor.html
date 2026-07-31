@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma SIG Colaborativa RM — Visor</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<style>
+  * { box-sizing: border-box; }
+
+  :root {
+    --surface-2: #ffffff;
+    --surface-1: #f4f4f4;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --border-color: #e0e0e0;
+    --border-strong: #cccccc;
+    --limite-color: #000000;
+  }
+  [data-tema="oscuro"] {
+    --surface-2: #20242b;
+    --surface-1: #2b3038;
+    --text-primary: #f0f0f0;
+    --text-secondary: #a3a9b3;
+    --border-color: #3a3f48;
+    --border-strong: #545a64;
+  }
+
+  html, body {
+    margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--surface-1); color: var(--text-primary);
+  }
+  #map { height: 100%; width: 100%; }
+
+  .panel {
+    position: absolute; z-index: 1000; background: var(--surface-2); color: var(--text-primary);
+    border: 1px solid var(--border-color); border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12); padding: 12px 14px;
+    transition: background .2s, color .2s, border-color .2s;
+  }
+  #capas-panel { top: 12px; right: 12px; width: 230px; }
+  #capas-panel .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  #capas-panel .panel-titulo { font-size: 14px; font-weight: 600; }
+  #capas-panel .panel-header-acciones { display: flex; align-items: center; gap: 2px; }
+  #capas-panel label { display: block; font-size: 13px; margin: 4px 0; cursor: pointer; }
+  #capas-contenido.oculto { display: none; }
+
+  .icon-btn {
+    border: none; background: transparent; cursor: pointer; padding: 4px; border-radius: 6px;
+    color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: var(--surface-1); }
+  .icon-btn svg { display: block; transition: transform .2s; }
+  .icon-btn.girado svg { transform: rotate(-90deg); }
+
+  #proponer-btn {
+    position: absolute; z-index: 1000; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1a7f37; color: #fff; border: none; border-radius: 24px;
+    padding: 12px 22px; font-size: 14px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  }
+  #proponer-btn:hover { background: #166a2e; }
+
+  #logo-home { top: 12px; left: 12px; padding: 8px; display: flex; align-items: center; }
+  #logo-home a { display: flex; line-height: 0; }
+
+  #auth-panel {
+    left: 56px; bottom: 12px; padding: 0; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  }
+  #auth-panel button {
+    border: none; background: var(--surface-2); color: var(--text-primary);
+    padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  #auth-panel button:hover { background: var(--surface-1); }
+
+  /* Fondo fijo (no sigue el tema): así el nombre de la comuna se lee
+     bien sobre el mapa sin importar si el color de línea elegido es
+     oscuro o claro, o si la app está en modo oscuro. */
+  #comuna-hover-label {
+    position: absolute; z-index: 650; pointer-events: none; display: none;
+    background: #fbfbfb; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px;
+    padding: 3px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+  }
+
+  #modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 2000; align-items: center; justify-content: center;
+  }
+  #modal {
+    background: var(--surface-2); color: var(--text-primary); border-radius: 10px; padding: 20px 22px; width: 360px;
+    max-width: 90vw; max-height: 85vh; overflow-y: auto;
+  }
+  #modal h2 { margin-top: 0; font-size: 16px; }
+  #modal label { display: block; font-size: 13px; margin: 10px 0 4px; font-weight: 600; }
+  #modal input[type=text], #modal input[type=email], #modal select, #modal textarea {
+    width: 100%; padding: 7px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px;
+    background: var(--surface-1); color: var(--text-primary);
+  }
+  #modal textarea { resize: vertical; min-height: 50px; }
+  .modal-row { display: flex; gap: 8px; margin-top: 10px; }
+  .modal-row button {
+    flex: 1; padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-1);
+    color: var(--text-primary); font-size: 13px; cursor: pointer;
+  }
+  .modal-row button.primary { background: #1a7f37; color: #fff; border-color: #1a7f37; }
+  #ubicacion-status { font-size: 12px; color: var(--text-secondary); margin-top: 6px; min-height: 16px; }
+  #modal-close { position: absolute; top: 10px; right: 14px; cursor: pointer; font-size: 18px; color: var(--text-secondary); }
+  #modal { position: relative; }
+
+  /* Pin de ubicación: punto azul neón con halo pulsante, en vez del
+     pin clásico de Leaflet. Se usa tanto para la ubicación GPS como
+     para el punto marcado a mano en el mapa. */
+  .pin-ubicacion {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #00e5ff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 6px 2px rgba(0,229,255,0.9), 0 0 16px 6px rgba(0,229,255,0.5);
+    animation: pin-ubicacion-pulso 1.8s ease-out infinite;
+  }
+  @keyframes pin-ubicacion-pulso {
+    0%   { box-shadow: 0 0 6px 2px rgba(0,229,255,0.9), 0 0 0 0 rgba(0,229,255,0.6); }
+    70%  { box-shadow: 0 0 6px 2px rgba(0,229,255,0.9), 0 0 0 14px rgba(0,229,255,0); }
+    100% { box-shadow: 0 0 6px 2px rgba(0,229,255,0.9), 0 0 0 0 rgba(0,229,255,0); }
+  }
+
+  /* Borde de la capa de límites comunales: color neón con halo,
+     elegible desde el menú de colores. --limite-color se actualiza
+     por JS al elegir un color distinto. */
+  .limite-comuna-neon {
+    filter: drop-shadow(0 0 1px var(--limite-color)) drop-shadow(0 0 2.5px var(--limite-color));
+  }
+
+  .limite-controles { margin: 8px 0 2px 22px; }
+  .limite-controles .limite-fila {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;
+  }
+  .limite-controles .limite-titulo { font-size: 11px; color: var(--text-secondary); }
+  .limite-controles .limite-valor { font-size: 11px; color: var(--text-secondary); min-width: 34px; text-align: right; }
+  .limite-controles input[type=range] { flex: 1; }
+
+  #limite-estilo-grupo {
+    display: flex; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; margin-bottom: 8px;
+  }
+  #limite-estilo-grupo button {
+    flex: 1; border: none; border-right: 1px solid var(--border-color); background: var(--surface-2);
+    color: var(--text-primary);
+    padding: 5px 2px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  #limite-estilo-grupo button:last-child { border-right: none; }
+  #limite-estilo-grupo button.activo { background: var(--surface-1); }
+
+  #limite-color-picker { display: flex; flex-wrap: wrap; gap: 5px; }
+  #limite-color-picker button {
+    width: 18px; height: 18px; border-radius: 5px; padding: 0; cursor: pointer;
+    border: 1px solid var(--border-strong); box-shadow: none;
+  }
+  #limite-color-picker button.activo { box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 3.5px var(--text-primary); }
+
+  /* El tema oscuro también aplica al selector de mapas base de Leaflet. */
+  .leaflet-control-layers {
+    background: var(--surface-2) !important; color: var(--text-primary) !important;
+    border-radius: 10px !important;
+  }
+  .leaflet-control-layers-list label { color: var(--text-primary); }
+  [data-tema="oscuro"] .leaflet-control-layers-toggle { filter: invert(1) hue-rotate(180deg); }
+  [data-tema="oscuro"] .leaflet-bar a { background: var(--surface-2); color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="logo-home" class="panel">
+  <a href='/' title='Volver al inicio'>
+    <svg viewBox="0 0 64 64" width="22" height="22" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Inicio">
+      <rect width="64" height="64" rx="14" fill="#1a2e22"/>
+      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="4"/>
+      <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
+      <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
+      <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
+    </svg>
+  </a>
+</div>
+
+<div id="auth-panel" class="panel">
+  <button id="auth-btn">Login</button>
+</div>
+
+<div id="capas-panel" class="panel">
+  <div class="panel-header">
+    <span class="panel-titulo">Capas</span>
+    <div class="panel-header-acciones">
+      <button id="tema-toggle" type="button" class="icon-btn" title="Cambiar a modo oscuro">
+        <svg id="icono-tema" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="capas-toggle" type="button" class="icon-btn" title="Ocultar capas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div id="capas-contenido">
+    <div id="capas-lista"></div>
+  </div>
+</div>
+
+<button id="proponer-btn">+ Proponer un lugar</button>
+
+<div id="modal-overlay">
+  <div id="modal">
+    <span id="modal-close">&times;</span>
+    <h2>Proponer un lugar</h2>
+    <p style="font-size:12px; color:#666; margin-top:-4px;">Tu nombre y correo quedan asociados automáticamente a tu sesión iniciada.</p>
+
+    <label for="f-tipo">Tipo de intervención</label>
+    <select id="f-tipo">
+      <option value="plaza">Plaza</option>
+      <option value="sitio_eriazo">Sitio eriazo</option>
+      <option value="sede_social">Sede social</option>
+      <option value="area_verde">Área verde</option>
+      <option value="otro">Otro</option>
+    </select>
+
+    <label for="f-desc">Descripción breve</label>
+    <textarea id="f-desc" placeholder="¿Qué te gustaría que pasara en este lugar?"></textarea>
+
+    <label>Ubicación</label>
+    <div class="modal-row" style="flex-wrap:wrap;">
+      <button id="btn-gps" type="button">Mi ubicación</button>
+      <button id="btn-dibujar" type="button">Marcar punto</button>
+      <button id="btn-poligono" type="button">Dibujar área</button>
+    </div>
+    <div id="ubicacion-status">Aún no se ha definido una ubicación.</div>
+
+    <div class="modal-row">
+      <button id="btn-cancelar" type="button">Cancelar</button>
+      <button id="btn-enviar" type="button" class="primary">Enviar propuesta</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ============================================================
+ * CONFIG — proyecto Supabase real "SIG Colaborativo RM".
+ * La publishable key es segura para exponer en el navegador
+ * (así está pensada por Supabase); el acceso real lo controla RLS.
+ * ============================================================ */
+const SUPABASE_URL = "https://bpjfbeigsmzkyadvtupo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Iw-Sm3aG8vLCeUL9EfpYBw_tRIe4-0f";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let sesionActual = null;
+
+// Centro aproximado de la Región Metropolitana
+const map = L.map('map').setView([-33.55, -70.65], 10);
+
+// Ícono de ubicación: punto azul neón (reemplaza el pin clásico de Leaflet).
+const iconoUbicacion = L.divIcon({
+  className: '',
+  html: '<div class="pin-ubicacion"></div>',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
+});
+
+// Etiqueta flotante que muestra el nombre de la comuna al pasar el
+// cursor por encima de sus límites, en el mismo color que la línea.
+const hoverLabel = document.createElement('div');
+hoverLabel.id = 'comuna-hover-label';
+document.getElementById('map').appendChild(hoverLabel);
+
+/* ------------------------------------------------------------
+ * Tema claro/oscuro para toda la interfaz (paneles, menú de
+ * capas, selector de mapas base). Se guarda en localStorage para
+ * mantener la preferencia entre visitas.
+ * ---------------------------------------------------------- */
+const temaToggle = document.getElementById('tema-toggle');
+const iconoTema = document.getElementById('icono-tema');
+const ICONO_SOL = '<path d="M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/>';
+const ICONO_LUNA = '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>';
+
+function aplicarTema(tema) {
+  document.documentElement.setAttribute('data-tema', tema);
+  iconoTema.innerHTML = tema === 'oscuro' ? ICONO_SOL : ICONO_LUNA;
+  temaToggle.title = tema === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+  localStorage.setItem('sig_tema', tema);
+}
+
+aplicarTema(localStorage.getItem('sig_tema') || 'claro');
+
+temaToggle.addEventListener('click', () => {
+  const actual = document.documentElement.getAttribute('data-tema');
+  aplicarTema(actual === 'oscuro' ? 'claro' : 'oscuro');
+});
+
+/* ------------------------------------------------------------
+ * Mostrar/ocultar el panel de capas sin perder los controles ya
+ * configurados (el contenido queda intacto, solo se oculta).
+ * ---------------------------------------------------------- */
+const capasToggle = document.getElementById('capas-toggle');
+const capasContenido = document.getElementById('capas-contenido');
+capasToggle.addEventListener('click', () => {
+  const oculto = capasContenido.classList.toggle('oculto');
+  capasToggle.classList.toggle('girado', oculto);
+  capasToggle.title = oculto ? 'Mostrar capas' : 'Ocultar capas';
+});
+
+/* ------------------------------------------------------------
+ * Mapas base — el usuario puede elegir entre varios estilos.
+ * Todos gratuitos y sin API key (OSM y CARTO free tier, Esri
+ * World Imagery en modo público). El selector queda abajo a la
+ * izquierda para no chocar con los paneles existentes.
+ * ---------------------------------------------------------- */
+const MAPAS_BASE = {
+  'Calles': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }),
+  'Claro': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 20,
+    subdomains: 'abcd'
+  }),
+  'Oscuro': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 20,
+    subdomains: 'abcd'
+  }),
+  'Satelital': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics',
+    maxZoom: 19
+  })
+};
+
+// Mapa base claro por defecto (coherente con el tema claro por defecto de la UI).
+MAPAS_BASE['Claro'].addTo(map);
+L.control.layers(MAPAS_BASE, null, { position: 'bottomleft', collapsed: true }).addTo(map);
+
+// El botón de login queda pegado al costado derecho del ícono de
+// selección de mapas base (control de Leaflet, abajo a la izquierda).
+const authPanel = document.getElementById('auth-panel');
+function posicionarLogin() {
+  const contenedor = document.querySelector('.leaflet-bottom.leaflet-left');
+  if (!contenedor) return;
+  const rect = contenedor.getBoundingClientRect();
+  authPanel.style.left = (rect.right + 10) + 'px';
+}
+setTimeout(posicionarLogin, 0);
+window.addEventListener('resize', posicionarLogin);
+
+/* ------------------------------------------------------------
+ * Datos MOCK por capa. Cuando el cartógrafo entregue los
+ * GeoJSON reales (ver modelo_datos.md), esto se reemplaza por
+ * un fetch a Supabase (tabla capa_features filtrada por capa_id).
+ * ---------------------------------------------------------- */
+const CAPAS_MOCK = {
+  vulnerabilidad_social: {
+    color: '#d1495b',
+    label: 'Vulnerabilidad social',
+    geojson: {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { nivel: 'alto' },
+          geometry: { type: 'Polygon', coordinates: [[[-70.70,-33.50],[-70.66,-33.50],[-70.66,-33.53],[-70.70,-33.53],[-70.70,-33.50]]] } }
+      ]
+    }
+  },
+  areas_verdes: {
+    color: '#2a9d8f',
+    label: 'Áreas verdes',
+    geojson: {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { tipo: 'parque' },
+          geometry: { type: 'Point', coordinates: [-70.62, -33.44] } },
+        { type: 'Feature', properties: { tipo: 'plaza' },
+          geometry: { type: 'Point', coordinates: [-70.65, -33.47] } }
+      ]
+    }
+  },
+  islas_calor: {
+    color: '#e76f51',
+    label: 'Islas de calor',
+    geojson: {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { intensidad: 'media' },
+          geometry: { type: 'Polygon', coordinates: [[[-70.68,-33.46],[-70.63,-33.46],[-70.63,-33.49],[-70.68,-33.49],[-70.68,-33.46]]] } }
+      ]
+    }
+  },
+  corredores_biologicos: {
+    color: '#588157',
+    label: 'Corredores biológicos',
+    geojson: {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { nombre: 'corredor mock' },
+          geometry: { type: 'LineString', coordinates: [[-70.72,-33.40],[-70.60,-33.55]] } }
+      ]
+    }
+  }
+};
+
+const capasPanel = document.getElementById('capas-lista');
+const capaLayers = {};
+const PALETA = ['#d1495b', '#2a9d8f', '#e76f51', '#588157', '#1a5c9c', '#e9c46a'];
+
+// Features de la capa de referencia "Límites comunales RM" (categoria
+// catastro_referencia), usadas para detectar automáticamente la comuna
+// de una propuesta ciudadana por punto-en-polígono. Ver detectarComuna().
+let comunasFeatures = [];
+
+function agregarCapaAlPanel(key, label, color, geojson) {
+  const layer = L.geoJSON(geojson, {
+    style: { color, weight: 2, fillOpacity: 0.35 },
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+      radius: 7, color, fillColor: color, fillOpacity: 0.8
+    })
+  }).addTo(map);
+  capaLayers[key] = layer;
+
+  const row = document.createElement('label');
+  row.innerHTML = `<input type="checkbox" checked data-capa="${key}"> ${label}`;
+  capasPanel.appendChild(row);
+}
+
+// La capa de límites comunales se usa como referencia (para detectar
+// comuna automáticamente), no como capa temática: se dibuja solo el
+// borde, sin relleno, y queda activada por defecto.
+const PALETA_LIMITES = ['#000000', '#ffffff', '#2ec4b6', '#ef233c', '#0a9396', '#e71d36', '#ff9f1c', '#7b2cbf'];
+
+// Estilos de línea disponibles para el borde comunal. El dashArray se
+// escala según el grosor para que se vea proporcionado en cualquier valor.
+const ESTILOS_LINEA = {
+  solida: { etiqueta: 'Continua', dash: (w) => null },
+  discontinua: { etiqueta: 'Discontinua', dash: (w) => `${(w * 4).toFixed(1)},${(w * 3).toFixed(1)}` },
+  punteada: { etiqueta: 'Punteada', dash: (w) => `${(w * 0.6).toFixed(1)},${(w * 3.2).toFixed(1)}` }
+};
+
+function iconoEstiloSVG(estilo) {
+  const dash = estilo === 'discontinua' ? 'stroke-dasharray="6,4"' : (estilo === 'punteada' ? 'stroke-dasharray="0.1,5" stroke-linecap="round"' : '');
+  return `<svg width="30" height="8"><line x1="2" y1="4" x2="28" y2="4" stroke="currentColor" stroke-width="2" ${dash}/></svg>`;
+}
+
+function agregarCapaReferencia(key, label, geojson) {
+  const colorInicial = PALETA_LIMITES[0];
+  // Grosor mínimo por defecto (coincide con el mínimo del slider).
+  const estadoLimite = { color: colorInicial, grosor: 0.2, estilo: 'solida' };
+
+  const layer = L.geoJSON(geojson, {
+    style: { color: colorInicial, weight: estadoLimite.grosor, fillOpacity: 0, opacity: 0.95, className: 'limite-comuna-neon' },
+    onEachFeature: (feature, featureLayer) => {
+      const nombre = feature.properties && feature.properties.comuna;
+      if (!nombre) return;
+      featureLayer.on('mouseover', () => {
+        hoverLabel.textContent = nombre;
+        hoverLabel.style.color = estadoLimite.color;
+        // Si el color de línea es blanco, se pierde contra el fondo
+        // claro de la etiqueta: se le agrega un contorno sutil.
+        hoverLabel.style.webkitTextStroke = estadoLimite.color.toLowerCase() === '#ffffff'
+          ? '0.6px rgba(0,0,0,0.55)' : '0';
+        hoverLabel.style.display = 'block';
+      });
+      featureLayer.on('mousemove', (e) => {
+        const p = map.mouseEventToContainerPoint(e.originalEvent);
+        hoverLabel.style.left = (p.x + 14) + 'px';
+        hoverLabel.style.top = (p.y + 14) + 'px';
+      });
+      featureLayer.on('mouseout', () => {
+        hoverLabel.style.display = 'none';
+      });
+    }
+  }).addTo(map);
+  capaLayers[key] = layer;
+
+  const row = document.createElement('label');
+  row.innerHTML = `<input type="checkbox" checked data-capa="${key}"> Comunas`;
+  capasPanel.appendChild(row);
+
+  const controles = document.createElement('div');
+  controles.className = 'limite-controles';
+
+  // Grosor: slider en tiempo real.
+  const filaGrosor = document.createElement('div');
+  filaGrosor.className = 'limite-fila';
+  filaGrosor.innerHTML = `
+    <span class="limite-titulo">Grosor</span>
+    <input type="range" id="limite-grosor" min="0.2" max="3" step="0.1" value="${estadoLimite.grosor}">
+    <span class="limite-valor" id="limite-grosor-valor">${estadoLimite.grosor.toFixed(1)} px</span>
+  `;
+  controles.appendChild(filaGrosor);
+
+  // Tipo de línea: selector segmentado.
+  const grupoEstilo = document.createElement('div');
+  grupoEstilo.id = 'limite-estilo-grupo';
+  Object.entries(ESTILOS_LINEA).forEach(([clave, def]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.title = def.etiqueta;
+    btn.innerHTML = iconoEstiloSVG(clave);
+    if (clave === estadoLimite.estilo) btn.classList.add('activo');
+    btn.addEventListener('click', () => {
+      estadoLimite.estilo = clave;
+      const dash = def.dash(estadoLimite.grosor);
+      layer.setStyle({ dashArray: dash });
+      grupoEstilo.querySelectorAll('button').forEach(b => b.classList.remove('activo'));
+      btn.classList.add('activo');
+    });
+    grupoEstilo.appendChild(btn);
+  });
+  controles.appendChild(grupoEstilo);
+
+  // Color: cuadrados con bordes levemente redondeados.
+  const picker = document.createElement('div');
+  picker.id = 'limite-color-picker';
+  PALETA_LIMITES.forEach((color, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.style.background = color;
+    btn.title = color;
+    if (i === 0) btn.classList.add('activo');
+    btn.addEventListener('click', () => {
+      layer.setStyle({ color });
+      estadoLimite.color = color;
+      document.documentElement.style.setProperty('--limite-color', color);
+      picker.querySelectorAll('button').forEach(b => b.classList.remove('activo'));
+      btn.classList.add('activo');
+    });
+    picker.appendChild(btn);
+  });
+  controles.appendChild(picker);
+
+  capasPanel.appendChild(controles);
+  document.documentElement.style.setProperty('--limite-color', colorInicial);
+
+  // El slider actualiza el mapa en tiempo real y también reescala el
+  // dashArray si el estilo activo no es la línea continua.
+  const inputGrosor = filaGrosor.querySelector('#limite-grosor');
+  const valorGrosor = filaGrosor.querySelector('#limite-grosor-valor');
+  inputGrosor.addEventListener('input', () => {
+    const w = parseFloat(inputGrosor.value);
+    estadoLimite.grosor = w;
+    valorGrosor.textContent = `${w.toFixed(1)} px`;
+    const dash = ESTILOS_LINEA[estadoLimite.estilo].dash(w);
+    layer.setStyle({ weight: w, dashArray: dash });
+  });
+}
+
+/* ------------------------------------------------------------
+ * Detección automática de comuna por punto-en-polígono, usando
+ * la capa de referencia "Límites comunales RM". Ray casting simple,
+ * soporta Polygon y MultiPolygon (con agujeros).
+ * ---------------------------------------------------------- */
+function puntoEnAnillo(punto, anillo) {
+  let dentro = false;
+  for (let i = 0, j = anillo.length - 1; i < anillo.length; j = i++) {
+    const xi = anillo[i][0], yi = anillo[i][1];
+    const xj = anillo[j][0], yj = anillo[j][1];
+    const interseca = ((yi > punto[1]) !== (yj > punto[1])) &&
+      (punto[0] < (xj - xi) * (punto[1] - yi) / (yj - yi) + xi);
+    if (interseca) dentro = !dentro;
+  }
+  return dentro;
+}
+
+function puntoEnGeometria(punto, geometry) {
+  if (!geometry) return false;
+  if (geometry.type === 'Polygon') {
+    if (!puntoEnAnillo(punto, geometry.coordinates[0])) return false;
+    for (let k = 1; k < geometry.coordinates.length; k++) {
+      if (puntoEnAnillo(punto, geometry.coordinates[k])) return false; // agujero
+    }
+    return true;
+  }
+  if (geometry.type === 'MultiPolygon') {
+    return geometry.coordinates.some(poly => puntoEnGeometria(punto, { type: 'Polygon', coordinates: poly }));
+  }
+  return false;
+}
+
+// Centroide simple del anillo exterior (suficiente para un polígono
+// pequeño dibujado a mano; no pretende ser exacto para geometrías grandes).
+function centroideAnillo(anillo) {
+  const n = anillo.length - 1; // el último punto repite el primero
+  let x = 0, y = 0;
+  for (let i = 0; i < n; i++) { x += anillo[i][0]; y += anillo[i][1]; }
+  return [x / n, y / n];
+}
+
+function detectarComuna(geomGeoJSON) {
+  if (!geomGeoJSON || !comunasFeatures.length) return null;
+  let punto;
+  if (geomGeoJSON.type === 'Point') {
+    punto = geomGeoJSON.coordinates;
+  } else if (geomGeoJSON.type === 'Polygon') {
+    punto = centroideAnillo(geomGeoJSON.coordinates[0]);
+  } else {
+    return null;
+  }
+  const encontrada = comunasFeatures.find(f => puntoEnGeometria(punto, f.geometry));
+  return encontrada ? (encontrada.properties.comuna || null) : null;
+}
+
+capasPanel.addEventListener('change', (e) => {
+  const key = e.target.dataset.capa;
+  if (!key) return;
+  if (e.target.checked) map.addLayer(capaLayers[key]);
+  else map.removeLayer(capaLayers[key]);
+});
+
+/* ------------------------------------------------------------
+ * Carga de capas: intenta traer las reales desde Supabase
+ * (tabla `capas` + función capa_features_geojson). Si todavía
+ * no hay ninguna capa cargada por el cartógrafo, usa el mock
+ * para que el visor no se vea vacío mientras tanto.
+ * ---------------------------------------------------------- */
+async function cargarCapas() {
+  const { data: capas, error } = await sb.from('capas').select('id, nombre, categoria');
+
+  if (error) {
+    console.warn('No se pudo consultar la tabla capas, usando mock:', error.message);
+    Object.entries(CAPAS_MOCK).forEach(([key, c]) => agregarCapaAlPanel(key, c.label + ' (mock)', c.color, c.geojson));
+    return;
+  }
+
+  if (!capas || capas.length === 0) {
+    console.info('Aún no hay capas cargadas en Supabase — mostrando datos mock de ejemplo.');
+    Object.entries(CAPAS_MOCK).forEach(([key, c]) => agregarCapaAlPanel(key, c.label + ' (mock)', c.color, c.geojson));
+    return;
+  }
+
+  for (let i = 0; i < capas.length; i++) {
+    const capa = capas[i];
+    const { data: features, error: errFeatures } = await sb.rpc('capa_features_geojson', { p_capa_id: capa.id });
+    if (errFeatures) {
+      console.warn(`No se pudieron cargar los features de la capa ${capa.nombre}:`, errFeatures.message);
+      continue;
+    }
+    const geojson = {
+      type: 'FeatureCollection',
+      features: (features || []).map(f => ({ type: 'Feature', properties: f.atributos || {}, geometry: f.geometry }))
+    };
+
+    if (capa.categoria === 'catastro_referencia') {
+      comunasFeatures = geojson.features;
+      agregarCapaReferencia('capa_' + capa.id, capa.nombre, geojson);
+      continue;
+    }
+
+    const color = PALETA[i % PALETA.length];
+    agregarCapaAlPanel('capa_' + capa.id, capa.nombre, color, geojson);
+  }
+}
+
+cargarCapas();
+
+/* ------------------------------------------------------------
+ * Autenticación simple (nombre + correo) vía magic link.
+ * No pedimos contraseña: Supabase Auth manda un enlace al correo.
+ * ---------------------------------------------------------- */
+const authBtn = document.getElementById('auth-btn');
+
+async function iniciarSesion() {
+  const correo = prompt('Ingresa tu correo para recibir un enlace de acceso:');
+  if (!correo) return;
+  const { error } = await sb.auth.signInWithOtp({
+    email: correo,
+    options: { emailRedirectTo: window.location.href }
+  });
+  if (error) {
+    alert('No se pudo enviar el enlace: ' + error.message);
+    return;
+  }
+  alert('Te enviamos un enlace a ' + correo + '. Ábrelo desde este mismo dispositivo para quedar conectado.');
+}
+
+async function cerrarSesion() {
+  await sb.auth.signOut();
+}
+
+authBtn.addEventListener('click', () => {
+  if (sesionActual) cerrarSesion();
+  else iniciarSesion();
+});
+
+async function actualizarEstadoAuth(session) {
+  sesionActual = session;
+  if (session) {
+    authBtn.textContent = 'Cerrar sesión';
+    authBtn.title = `Conectado: ${session.user.email}`;
+
+    // Si es la primera vez de este usuario, no existe aún su fila en 'perfiles'.
+    const { data: perfil } = await sb.from('perfiles').select('nombre').eq('id', session.user.id).maybeSingle();
+    if (!perfil) {
+      const nombre = prompt('Antes de continuar, ¿cuál es tu nombre?');
+      if (nombre) {
+        await sb.from('perfiles').insert({ id: session.user.id, nombre, rol: 'ciudadano' });
+      }
+    }
+  } else {
+    authBtn.textContent = 'Login';
+    authBtn.title = 'Sin iniciar sesión';
+  }
+}
+
+sb.auth.getSession().then(({ data }) => actualizarEstadoAuth(data.session));
+sb.auth.onAuthStateChange((_event, session) => actualizarEstadoAuth(session));
+
+/* ------------------------------------------------------------
+ * Flujo de propuesta ciudadana
+ * ---------------------------------------------------------- */
+const overlay = document.getElementById('modal-overlay');
+const ubicacionStatus = document.getElementById('ubicacion-status');
+
+let geomPropuesta = null;        // lugar propuesto (donde el usuario marca/dibuja)
+let ubicacionDispositivo = null; // GPS real al momento de proponer (chequeo de credibilidad)
+let comunaDetectada = null;      // comuna detectada por punto-en-polígono contra la capa de referencia
+let marcadorPropuesta = null;
+let drawControl = null;
+let drawControlPoligono = null;
+let drawnItems = new L.FeatureGroup().addTo(map);
+
+document.getElementById('proponer-btn').addEventListener('click', () => {
+  overlay.style.display = 'flex';
+});
+document.getElementById('modal-close').addEventListener('click', cerrarModal);
+document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
+
+function cerrarModal() {
+  overlay.style.display = 'none';
+  if (drawControl) drawControl.disable();
+  if (drawControlPoligono) drawControlPoligono.disable();
+}
+
+document.getElementById('btn-gps').addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    ubicacionStatus.textContent = 'Este dispositivo no entrega geolocalización.';
+    return;
+  }
+  ubicacionStatus.textContent = 'Obteniendo ubicación...';
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const { latitude, longitude } = pos.coords;
+    ubicacionDispositivo = { type: 'Point', coordinates: [longitude, latitude] };
+    geomPropuesta = geomPropuesta || ubicacionDispositivo;
+    comunaDetectada = detectarComuna(geomPropuesta);
+    if (marcadorPropuesta) map.removeLayer(marcadorPropuesta);
+    marcadorPropuesta = L.marker([latitude, longitude], { icon: iconoUbicacion }).addTo(map);
+    ubicacionStatus.textContent = `Ubicación capturada (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`
+      + (comunaDetectada ? ` — comuna detectada: ${comunaDetectada}.` : '. No se pudo detectar la comuna automáticamente.');
+  }, () => {
+    ubicacionStatus.textContent = 'No se pudo obtener la ubicación (permiso denegado).';
+  });
+});
+
+document.getElementById('btn-dibujar').addEventListener('click', () => {
+  overlay.style.display = 'none';
+  ubicacionStatus.textContent = 'Marca el punto en el mapa.';
+  if (!drawControl) {
+    drawControl = new L.Draw.Marker(map, { icon: iconoUbicacion });
+  }
+  drawControl.enable();
+});
+
+document.getElementById('btn-poligono').addEventListener('click', () => {
+  overlay.style.display = 'none';
+  ubicacionStatus.textContent = 'Dibuja el área en el mapa: clic para cada vértice, doble clic para terminar.';
+  if (!drawControlPoligono) {
+    drawControlPoligono = new L.Draw.Polygon(map, {
+      shapeOptions: { color: '#1a7f37', weight: 2, fillOpacity: 0.25 },
+      allowIntersection: false,
+      showArea: true
+    });
+  }
+  drawControlPoligono.enable();
+});
+
+map.on(L.Draw.Event.CREATED, (e) => {
+  drawnItems.clearLayers();
+  drawnItems.addLayer(e.layer);
+  geomPropuesta = e.layer.toGeoJSON().geometry;
+  comunaDetectada = detectarComuna(geomPropuesta);
+  const tipoTexto = geomPropuesta.type === 'Polygon' ? 'Área dibujada en el mapa.' : 'Ubicación marcada en el mapa.';
+  ubicacionStatus.textContent = tipoTexto
+    + (comunaDetectada ? ` Comuna detectada: ${comunaDetectada}.` : ' No se pudo detectar la comuna automáticamente (fuera de la RM o capa de límites aún no cargada).');
+  overlay.style.display = 'flex';
+});
+
+document.getElementById('btn-enviar').addEventListener('click', async () => {
+  if (!sesionActual) {
+    alert('Primero inicia sesión (botón abajo a la izquierda) para poder proponer un lugar.');
+    return;
+  }
+
+  const tipo = document.getElementById('f-tipo').value;
+  const descripcion = document.getElementById('f-desc').value.trim();
+
+  if (!geomPropuesta) {
+    alert('Falta indicar la ubicación (GPS o marcar en el mapa).');
+    return;
+  }
+
+  await guardarPropuesta({
+    tipo_intervencion: tipo,
+    descripcion,
+    geom: geomPropuesta,
+    ubicacion_dispositivo: ubicacionDispositivo,
+    comuna: comunaDetectada
+  });
+
+  cerrarModal();
+  geomPropuesta = null;
+  ubicacionDispositivo = null;
+  comunaDetectada = null;
+  if (marcadorPropuesta) { map.removeLayer(marcadorPropuesta); marcadorPropuesta = null; }
+  drawnItems.clearLayers();
+  ubicacionStatus.textContent = 'Aún no se ha definido una ubicación.';
+});
+
+// Convierte un geometry de GeoJSON (Point o Polygon, que es lo que
+// produce este formulario) a texto EWKT, que PostGIS acepta directo
+// vía PostgREST. propuestas.geom es geometry(Geometry,4326), o sea
+// acepta cualquier tipo sin cambios de esquema.
+function geoJSONaEWKT(geom) {
+  if (!geom) return null;
+  if (geom.type === 'Point') {
+    const [lon, lat] = geom.coordinates;
+    return `SRID=4326;POINT(${lon} ${lat})`;
+  }
+  if (geom.type === 'Polygon') {
+    const anillos = geom.coordinates
+      .map(anillo => '(' + anillo.map(([lon, lat]) => `${lon} ${lat}`).join(', ') + ')')
+      .join(', ');
+    return `SRID=4326;POLYGON(${anillos})`;
+  }
+  console.warn('Tipo de geometría no soportado aún en el formulario:', geom.type);
+  return null;
+}
+
+async function guardarPropuesta(propuesta) {
+  const { error } = await sb.from('propuestas').insert({
+    usuario_id: sesionActual.user.id,
+    tipo_intervencion: propuesta.tipo_intervencion,
+    geom: geoJSONaEWKT(propuesta.geom),
+    ubicacion_dispositivo: geoJSONaEWKT(propuesta.ubicacion_dispositivo),
+    descripcion: propuesta.descripcion,
+    comuna: propuesta.comuna || null,
+    estado: 'sin_verificar'
+  });
+
+  if (error) {
+    alert('No se pudo guardar la propuesta: ' + error.message);
+    console.error(error);
+    return;
+  }
+  alert('¡Propuesta registrada! Quedará como "sin verificar" hasta que la comunidad o el municipio la validen.');
+}
+</script>
+</body>
+</html>
