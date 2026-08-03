@@ -3,148 +3,412 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plataforma SIG Colaborativa RM — Panel</title>
+<title>Puzle Ecosistémico — Seguimiento</title>
+<meta name="description" content="Universidades, empresas y municipios revisan ideas propuestas por organizaciones sociales, filtran, ven la ficha y muestran interés en apadrinar, financiar o desarrollar un proyecto.">
+<link rel="icon" type="image/png" href="assets/img/qinti-gradient.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --teal: #0EA5A3;
+    --blue: #3B82F6;
+    --violet: #7C6FF0;
+    --grad-135: linear-gradient(135deg, var(--teal) 0%, var(--blue) 52%, var(--violet) 100%);
+
+    --ink-900: #0F172A;
+    --ink-700: #334155;
+    --ink-600: #475569;
+    --ink-500: #64748B;
+
+    --bg: #FFFFFF;
+    --bg-subtle: #F8FAFC;
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 999px;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.05);
+    --shadow-md: 0 4px 16px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-lg: 0 24px 48px -16px rgba(15,23,42,.18);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f4f5f4; color: #222; }
-
-  header {
-    background: #1a2e22; color: #fff; padding: 14px 24px;
-    display: flex; align-items: center; justify-content: space-between;
+  html, body {
+    margin: 0; min-height: 100%;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-subtle); color: var(--ink-900);
   }
-  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
-  nav { display: flex; gap: 8px; }
-  nav button {
-    background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff;
-    padding: 7px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
-  }
-  nav button.active { background: #fff; color: #1a2e22; font-weight: 600; }
+  a { color: inherit; }
+  button { font-family: inherit; }
+  h1, h2, h3 { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+  a:focus-visible, button:focus-visible, select:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
 
-  main { padding: 20px 24px; max-width: 960px; margin: 0 auto; }
-  .toolbar { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
-  .toolbar select { padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; }
-  .toolbar span { font-size: 12px; color: #666; }
-  .toolbar label { font-size: 12px; color: #555; }
-  .resumen { font-size: 12px; color: #777; margin-bottom: 14px; }
+  .grad-text { background: var(--grad-135); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* Marca Qinti: PNG real ya coloreado con el degradé de marca (pre-
+     procesado una vez desde la foto/acuarela original) — se usa como
+     <img> normal, sin depender de mask-image en vivo. */
+  .qinti-badge { display: block; flex-shrink: 0; }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.9); backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner {
+    max-width: 1180px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; flex-shrink: 0; }
+  .brand .qinti-badge { width: 28px; height: 28px; }
+  .brand-word { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+
+  .tabs-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tabs-nav button {
+    border: 1px solid var(--border); background: #fff; color: var(--ink-600);
+    padding: 8px 14px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .18s ease;
+  }
+  .tabs-nav button:hover { border-color: var(--border-strong); color: var(--ink-900); }
+  .tabs-nav button.active { background: var(--grad-135); color: #fff; border-color: transparent; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--border-strong);
+    background: #fff; color: var(--ink-900); font-weight: 600; font-size: 13px;
+    padding: 8px 14px; border-radius: var(--radius-md); cursor: pointer; text-decoration: none;
+    transition: all .18s ease;
+  }
+  .btn:hover { border-color: var(--ink-500); background: var(--bg-subtle); }
+  .btn-primary { background: var(--grad-135); color: #fff; border-color: transparent; box-shadow: 0 8px 18px -8px rgba(59,130,246,.5); }
+  .btn-primary:hover { filter: brightness(1.07); }
+
+  main { padding: 22px 24px 56px; max-width: 1040px; margin: 0 auto; }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar select {
+    padding: 7px 10px; border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 13px;
+    background: #fff; color: var(--ink-900);
+    max-width: 240px; text-overflow: ellipsis;
+  }
+  .toolbar label { font-size: 12.5px; color: var(--ink-600); font-weight: 600; }
+  .resumen { font-size: 12.5px; color: var(--ink-500); margin-bottom: 14px; }
+  .vista-intro { font-size: 13px; color: var(--ink-600); margin: 0 0 10px; line-height: 1.5; }
 
   .card {
-    background: #fff; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; justify-content: space-between; gap: 14px;
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px;
+    margin-bottom: 12px; display: flex; justify-content: space-between; gap: 16px;
+    box-shadow: var(--shadow-sm); transition: box-shadow .2s ease, border-color .2s ease;
   }
-  .card .info { flex: 1; }
-  .card h3 { margin: 0 0 4px; font-size: 14px; }
-  .card p { margin: 2px 0; font-size: 12px; color: #555; }
-  .card .antiguedad { font-size: 11px; color: #999; }
-  .card .motivo { font-size: 12px; color: #7a1a1a; font-style: italic; margin-top: 4px; }
-  .badge {
-    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
-    font-weight: 600; margin-right: 6px;
-  }
-  .badge.sin_verificar { background: #f4e3b2; color: #7a5c00; }
-  .badge.verificado_social { background: #cfe8ff; color: #0a4a7a; }
-  .badge.verificado_municipal { background: #cdeccb; color: #1a5c1a; }
-  .badge.rechazado { background: #f3c9c9; color: #7a1a1a; }
-  .chip-interes {
-    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
-    font-weight: 600; background: #e6ddf7; color: #4a1a7a; margin-left: 6px;
+  .card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .card .info { flex: 1; min-width: 0; }
+  .card h3 { margin: 0 0 5px; font-size: 15px; font-weight: 700; }
+  .card p { margin: 3px 0; font-size: 12.5px; color: var(--ink-600); line-height: 1.5; }
+  .card .antiguedad { font-size: 11px; color: var(--ink-500); }
+  .card .motivo { font-size: 12px; color: #B3261E; font-style: italic; margin-top: 4px; }
+  .card .organizacion { font-weight: 600; color: var(--ink-900); }
+  .card-desc-clamp {
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
 
-  .score { font-size: 20px; font-weight: 700; color: #1a7f37; min-width: 46px; text-align: center; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: var(--radius-full); font-weight: 700; margin-right: 6px; }
+  .badge.sin_verificar { background: #FEF3C7; color: #92650C; }
+  .badge.verificado_social { background: rgba(14,165,163,.14); color: #0B7A78; }
+  .badge.verificado_municipal { background: rgba(124,111,240,.16); color: #5B4FD6; }
+  .badge.rechazado { background: #FEE2E2; color: #B3261E; }
+  .chip-interes { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: var(--radius-full); font-weight: 700; background: rgba(59,130,246,.14); color: #1D4ED8; margin-left: 6px; }
 
-  .actions { display: flex; flex-direction: column; gap: 6px; justify-content: center; min-width: 130px; }
+  .score { font-size: 21px; font-weight: 800; color: var(--teal); min-width: 46px; text-align: center; font-family: 'Space Grotesk', sans-serif; }
+  .score-institucional {
+    font-size: 12px; font-weight: 800; border-radius: var(--radius-md); padding: 8px 4px;
+    display: flex; align-items: center; justify-content: center; min-height: 40px;
+  }
+
+  /* Badges de proyectos institucionales (capas 13/14): mismo criterio de
+     color que su ficha en el visor (visor.html: badge-programa / badge-
+     estado-institucional), para que el mapa y el panel se lean igual. */
+  .badge-programa, .badge-estado-institucional {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px;
+    border-radius: var(--radius-full); margin-right: 6px;
+  }
+  .badge-programa { background: rgba(0,129,167,.14); color: #0081a7; }
+  .badge-estado-institucional.badge-estado-propuesto { background: rgba(100,116,139,.16); color: #475569; }
+  .badge-estado-institucional.badge-estado-diseno-avanzado { background: rgba(59,130,246,.16); color: #1d4ed8; }
+  .badge-estado-institucional.badge-estado-implementado { background: rgba(14,165,163,.16); color: #0b7a78; }
+
+  .cargar-mas-fila { text-align: center; margin-top: 6px; }
+  .btn-cargar-mas {
+    border: 1.5px solid var(--border-strong); background: #fff; color: var(--ink-700);
+    font-weight: 600; font-size: 13px; padding: 9px 18px; border-radius: var(--radius-full); cursor: pointer;
+  }
+  .btn-cargar-mas:hover { border-color: var(--blue); color: var(--blue); }
+
+  .actions { display: flex; flex-direction: column; gap: 6px; justify-content: center; min-width: 150px; }
   .actions button {
-    padding: 7px 10px; border-radius: 6px; border: 1px solid #ccc; background: #f5f5f5;
-    font-size: 12px; cursor: pointer;
+    padding: 8px 10px; border-radius: var(--radius-md); border: 1px solid var(--border);
+    background: #fff; color: var(--ink-700); font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all .16s ease;
   }
-  .actions button.aprobar { background: #1a7f37; color: #fff; border-color: #1a7f37; }
-  .actions button.rechazar { background: #b23b3b; color: #fff; border-color: #b23b3b; }
-  .actions button.interes { background: #1a5c9c; color: #fff; border-color: #1a5c9c; }
-  .actions button.revertir { background: #fff; color: #777; }
-  .actions button:disabled { opacity: 0.4; cursor: default; }
+  .actions button:hover { border-color: var(--border-strong); }
+  .actions button.aprobar { background: #0EA5A3; color: #fff; border-color: transparent; }
+  .actions button.rechazar { background: #EF4444; color: #fff; border-color: transparent; }
+  .actions button.interes { background: var(--grad-135); color: #fff; border-color: transparent; }
+  .actions button.ficha { background: #fff; color: var(--blue); border-color: var(--border); }
+  .actions button.revertir { background: #fff; color: var(--ink-500); }
+  .actions button:disabled { opacity: 0.5; cursor: default; }
 
-  .empty { text-align: center; color: #888; padding: 40px 0; font-size: 13px; }
-  .note { font-size: 12px; color: #888; margin-top: 18px; line-height: 1.5; }
+  .empty { text-align: center; color: var(--ink-500); padding: 40px 0; font-size: 13px; }
+  .note { font-size: 12px; color: var(--ink-500); margin-top: 22px; line-height: 1.6; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
+  .note code { background: var(--bg-subtle); padding: 1px 5px; border-radius: 4px; }
+
+  /* ---------- Modales ---------- */
+  #modal-overlay, #correo-overlay, #admin-login-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45);
+    z-index: 2000; align-items: center; justify-content: center; padding: 16px;
+  }
+  #modal-overlay.abierto, #correo-overlay.abierto, #admin-login-overlay.abierto { display: flex; }
+  #modal-ficha, #modal-correo, #admin-login-modal {
+    background: #fff; border-radius: var(--radius-lg); padding: 22px 24px; width: 420px; max-width: 100%;
+    max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg); position: relative;
+  }
+  #modal-ficha h2, #modal-correo h2, #admin-login-modal h2 { margin: 0 0 4px; font-size: 17px; }
+  #admin-login-modal label { display: block; font-size: 12.5px; font-weight: 600; margin: 12px 0 4px; }
+  #admin-login-modal input {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-size: 13px; font-family: inherit;
+  }
+  #admin-login-error { color: #B3261E; font-size: 12px; margin-top: 10px; }
+
+  /* ---------- Acceso administrador ---------- */
+  .header-admin { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  #admin-status { font-size: 12px; color: var(--ink-500); }
+  .btn-admin-chico { font-size: 12px; padding: 6px 12px; }
+  .modal-cerrar { position: absolute; top: 14px; right: 16px; cursor: pointer; font-size: 20px; color: var(--ink-500); background: none; border: none; }
+  .ficha-tabla { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .ficha-tabla td { padding: 4px 0; font-size: 12.5px; vertical-align: top; }
+  .ficha-tabla td.clave { color: var(--ink-500); padding-right: 10px; white-space: nowrap; }
+  .ficha-tabla td.valor { color: var(--ink-900); font-weight: 500; }
+  .ficha-desc { font-size: 13px; color: var(--ink-700); line-height: 1.55; margin: 10px 0; }
+  .ficha-privacidad { font-size: 11px; color: var(--ink-500); font-style: italic; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .modal-row { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-row button { flex: 1; }
+
+  #modal-correo textarea {
+    width: 100%; min-height: 70px; border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; margin-top: 6px;
+  }
+  .correo-preview {
+    background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 12px 14px; font-size: 12.5px; color: var(--ink-700); margin-top: 12px; line-height: 1.55;
+  }
+  .correo-preview .correo-linea { margin: 2px 0; }
+  .correo-preview .correo-etiqueta { color: var(--ink-500); font-weight: 600; }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink-900); color: #fff; padding: 12px 18px; border-radius: var(--radius-md);
+    font-size: 13px; box-shadow: var(--shadow-lg); z-index: 3000; opacity: 0; pointer-events: none;
+    transition: all .25s var(--ease-out); max-width: 90vw;
+  }
+  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .card { flex-direction: column; }
+    .actions { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+    .actions button { flex: 1; min-width: 110px; }
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <a href="index.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:#fff;">
-    <svg viewBox="0 0 64 64" width="26" height="26" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Inicio">
-      <rect width="64" height="64" rx="14" fill="#0d1a12"/>
-      <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="4"/>
-      <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
-      <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
-      <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
-    </svg>
-    <h1>Plataforma SIG Colaborativa RM — Panel</h1>
-  </a>
-  <nav>
-    <button id="tab-municipio" class="active">Municipio</button>
-    <button id="tab-empresa">Empresas</button>
-    <span id="auth-status" style="font-size:12px; margin-left:12px; opacity:0.8;">Sin iniciar sesión</span>
-    <button id="auth-btn">Iniciar sesión</button>
-  </nav>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <img class="qinti-badge" src="assets/img/qinti-gradient.png" alt="Puzle Ecosistémico">
+      <span class="brand-word">Puzle <span class="grad-text">Ecosistémico</span></span>
+    </a>
+    <nav class="tabs-nav">
+      <button id="tab-municipio" class="active">Municipios</button>
+      <button id="tab-empresa">Empresas</button>
+      <button id="tab-universidad">Universidades</button>
+    </nav>
+    <div class="header-admin">
+      <span id="admin-status" style="display:none;"></span>
+      <button class="btn btn-admin-chico" id="admin-login-btn" type="button">Acceso administrador</button>
+      <button class="btn btn-admin-chico" id="admin-logout-btn" type="button" style="display:none;">Cerrar sesión</button>
+    </div>
+  </div>
 </header>
+
+<!-- Acceso administrador: protege únicamente las acciones de validación
+     (Aprobar/Rechazar/Revertir) de propuestas ciudadanas en la pestaña
+     Municipios. Mostrar interés sigue siendo público para todos los
+     actores — esto NO es un login para empresas/universidades/
+     municipios, es solo para quien administra la plataforma. -->
+<div id="admin-login-overlay">
+  <div id="admin-login-modal" role="dialog" aria-label="Acceso administrador">
+    <button class="modal-cerrar" id="admin-login-cerrar" aria-label="Cerrar">&times;</button>
+    <h2>Acceso administrador</h2>
+    <p style="font-size:12.5px; color:var(--ink-600); margin:0;">Inicia sesión para validar (aprobar/rechazar) propuestas ciudadanas.</p>
+    <label for="admin-email">Correo</label>
+    <input type="email" id="admin-email" autocomplete="username">
+    <label for="admin-password">Contraseña</label>
+    <input type="password" id="admin-password" autocomplete="current-password">
+    <div class="modal-row">
+      <button class="btn" id="admin-login-cancelar" type="button">Cancelar</button>
+      <button class="btn btn-primary" id="admin-login-confirmar" type="button">Iniciar sesión</button>
+    </div>
+    <p id="admin-login-error" style="display:none;"></p>
+  </div>
+</div>
 
 <main>
   <div id="vista-municipio">
+    <p class="vista-intro">Revisa las ideas propuestas en tu comuna: valídalas oficialmente y, si corresponde, muestra interés real en desarrollar el proyecto — técnica y/o financieramente.</p>
     <div class="toolbar">
       <label for="filtro-comuna">Comuna:</label>
       <select id="filtro-comuna"></select>
       <label for="filtro-estado">Estado:</label>
       <select id="filtro-estado">
         <option value="Todos">Todos</option>
-        <option value="sin_verificar">Sin verificar</option>
-        <option value="verificado_social">Verificado (social)</option>
-        <option value="verificado_municipal">Verificado (municipio)</option>
-        <option value="rechazado">Rechazado</option>
+        <optgroup label="Ideas ciudadanas">
+          <option value="sin_verificar">Sin verificar</option>
+          <option value="verificado_social">Verificado (social)</option>
+          <option value="verificado_municipal">Verificado (municipio)</option>
+          <option value="rechazado">Rechazado</option>
+        </optgroup>
+        <optgroup label="Proyectos institucionales">
+          <option value="propuesto">Propuesto</option>
+          <option value="diseno avanzado">Diseño avanzado</option>
+          <option value="implementado">Implementado</option>
+        </optgroup>
       </select>
-      <label for="filtro-tipo">Tipo:</label>
-      <select id="filtro-tipo">
+      <label for="filtro-programa">Programa:</label>
+      <select id="filtro-programa">
         <option value="Todos">Todos</option>
-        <option value="plaza">Plaza</option>
-        <option value="sitio_eriazo">Sitio eriazo</option>
-        <option value="sede_social">Sede social</option>
-        <option value="area_verde">Área verde</option>
-        <option value="otro">Otro</option>
+        <option value="ciudadana">Ideas ciudadanas</option>
+        <option value="ehl fase 1">EHL Fase 1</option>
+        <option value="maipo resiliente">Maipo Resiliente</option>
       </select>
     </div>
-    <p class="resumen">Aprobar marca la propuesta como verificada oficialmente; rechazar la retira del listado público y pide un motivo breve.</p>
     <div id="resumen-municipio" class="resumen"></div>
     <div id="lista-municipio"></div>
+    <div class="cargar-mas-fila" id="cargar-mas-municipio"></div>
   </div>
 
   <div id="vista-empresa" style="display:none">
+    <p class="vista-intro">Descubre ideas ya verificadas y proyectos institucionales (EHL Fase 1 / Maipo Resiliente), ordenados por pertinencia, y muestra interés en financiar el que más se alinee con tu estrategia de impacto.</p>
     <div class="toolbar">
       <label for="filtro-comuna-empresa">Comuna:</label>
       <select id="filtro-comuna-empresa"></select>
-      <label for="filtro-tipo-empresa">Tipo:</label>
-      <select id="filtro-tipo-empresa">
+      <label for="filtro-estado-empresa">Estado:</label>
+      <select id="filtro-estado-empresa">
         <option value="Todos">Todos</option>
-        <option value="plaza">Plaza</option>
-        <option value="sitio_eriazo">Sitio eriazo</option>
-        <option value="sede_social">Sede social</option>
-        <option value="area_verde">Área verde</option>
-        <option value="otro">Otro</option>
+        <optgroup label="Ideas ciudadanas">
+          <option value="verificado_social">Verificado (social)</option>
+          <option value="verificado_municipal">Verificado (municipio)</option>
+        </optgroup>
+        <optgroup label="Proyectos institucionales">
+          <option value="propuesto">Propuesto</option>
+          <option value="diseno avanzado">Diseño avanzado</option>
+          <option value="implementado">Implementado</option>
+        </optgroup>
+      </select>
+      <label for="filtro-programa-empresa">Programa:</label>
+      <select id="filtro-programa-empresa">
+        <option value="Todos">Todos</option>
+        <option value="ciudadana">Ideas ciudadanas</option>
+        <option value="ehl fase 1">EHL Fase 1</option>
+        <option value="maipo resiliente">Maipo Resiliente</option>
       </select>
       <label for="orden-empresa">Orden:</label>
       <select id="orden-empresa">
-        <option value="score_desc">Score (mayor primero)</option>
-        <option value="score_asc">Score (menor primero)</option>
+        <option value="score_desc">Pertinencia (mayor primero)</option>
+        <option value="score_asc">Pertinencia (menor primero)</option>
         <option value="recientes">Más recientes</option>
       </select>
     </div>
-    <p class="resumen">Solo se listan propuestas ya verificadas (social o municipalmente).</p>
     <div id="lista-empresa"></div>
+    <div class="cargar-mas-fila" id="cargar-mas-empresa"></div>
+  </div>
+
+  <div id="vista-universidad" style="display:none">
+    <p class="vista-intro">Explora ideas y proyectos institucionales para "apadrinar": pon a disposición conocimiento técnico y suma vinculación con el medio.</p>
+    <div class="toolbar">
+      <label for="filtro-comuna-universidad">Comuna:</label>
+      <select id="filtro-comuna-universidad"></select>
+      <label for="filtro-estado-universidad">Estado:</label>
+      <select id="filtro-estado-universidad">
+        <option value="Todos">Todos</option>
+        <optgroup label="Ideas ciudadanas">
+          <option value="verificado_social">Verificado (social)</option>
+          <option value="verificado_municipal">Verificado (municipio)</option>
+        </optgroup>
+        <optgroup label="Proyectos institucionales">
+          <option value="propuesto">Propuesto</option>
+          <option value="diseno avanzado">Diseño avanzado</option>
+          <option value="implementado">Implementado</option>
+        </optgroup>
+      </select>
+      <label for="filtro-programa-universidad">Programa:</label>
+      <select id="filtro-programa-universidad">
+        <option value="Todos">Todos</option>
+        <option value="ciudadana">Ideas ciudadanas</option>
+        <option value="ehl fase 1">EHL Fase 1</option>
+        <option value="maipo resiliente">Maipo Resiliente</option>
+      </select>
+      <label for="orden-universidad">Orden:</label>
+      <select id="orden-universidad">
+        <option value="recientes">Más recientes</option>
+        <option value="score_desc">Pertinencia (mayor primero)</option>
+      </select>
+    </div>
+    <div id="lista-universidad"></div>
+    <div class="cargar-mas-fila" id="cargar-mas-universidad"></div>
   </div>
 
   <p class="note">
-    Datos de ejemplo (mock) mientras no haya propuestas reales en Supabase. "Aprobar/Rechazar/Revertir" actualizan
-    <code>propuestas.estado</code> (y <code>motivo_rechazo</code> al rechazar); "Mostrar interés" hace un
-    <code>insert into intereses_financiamiento</code>. Ver README.md.
+    "Aprobar/Rechazar/Revertir" actualizan <code>propuestas.estado</code> (y <code>motivo_rechazo</code> al rechazar);
+    "Mostrar interés / Apadrinar" hace un <code>insert into intereses_financiamiento</code>. Para ideas ciudadanas
+    dispara además una notificación de correo a la organización (ver nota de privacidad en cada ficha); para
+    proyectos institucionales (EHL Fase 1 / Maipo Resiliente) todavía no — ver nota junto al botón de interés.
   </p>
 </main>
+
+<!-- Ficha de la propuesta: mismo criterio de privacidad que el visor —
+     nunca se muestra nombre, correo o teléfono de la persona que propuso,
+     solo el nombre de la organización. -->
+<div id="modal-overlay">
+  <div id="modal-ficha" role="dialog" aria-label="Ficha de la propuesta">
+    <button class="modal-cerrar" id="cerrar-ficha" aria-label="Cerrar">&times;</button>
+    <h2 id="ficha-titulo"></h2>
+    <table class="ficha-tabla" id="ficha-tabla"></table>
+    <p class="ficha-desc" id="ficha-desc"></p>
+    <div class="modal-row" id="ficha-acciones"></div>
+    <p class="ficha-privacidad" id="ficha-privacidad-nota">Esta ficha muestra únicamente datos de la propuesta y el nombre de la organización que la presentó. Nunca se exponen datos personales (nombre, correo o teléfono) de quien la propuso.</p>
+  </div>
+</div>
+
+<!-- Vista previa de la notificación por correo (mock si no hay backend
+     de envío desplegado aún) que se dispara al mostrar interés. -->
+<div id="correo-overlay">
+  <div id="modal-correo" role="dialog" aria-label="Notificar interés">
+    <button class="modal-cerrar" id="cerrar-correo" aria-label="Cerrar">&times;</button>
+    <h2 id="correo-titulo">Notificar interés</h2>
+    <p style="font-size:12.5px; color:var(--ink-600); margin-top:2px;">Este mensaje se enviará por correo a la organización que propuso la idea (su dirección de contacto no se muestra aquí).</p>
+    <label style="display:block; font-size:12.5px; font-weight:600; margin-top:12px;">Mensaje breve (opcional)</label>
+    <textarea id="correo-mensaje" placeholder="Ej: Nos interesa financiar/apadrinar/apoyar esta idea, ¿conversamos los próximos pasos?"></textarea>
+    <div class="correo-preview" id="correo-preview"></div>
+    <div class="modal-row">
+      <button class="btn" id="correo-cancelar" type="button">Cancelar</button>
+      <button class="btn btn-primary" id="correo-confirmar" type="button">Enviar notificación</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -155,29 +419,36 @@ const SUPABASE_URL = "https://bpjfbeigsmzkyadvtupo.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Iw-Sm3aG8vLCeUL9EfpYBw_tRIe4-0f";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let sesionActual = null;
+let esAdmin = false; // true solo cuando hay una sesión de Supabase Auth activa (login de administrador)
 let MODO_REAL = false; // true cuando ya hay propuestas reales en Supabase
+const PAGINA_TAMANO = 20; // cuántos ítems se muestran por tanda ("Cargar más")
 
 /* ------------------------------------------------------------
- * Datos MOCK — se usan solo mientras la tabla propuestas esté
- * vacía, para que el panel no se vea en blanco en la demo.
+ * PROPUESTAS se llena exclusivamente desde Supabase (cargarPropuestas).
+ * Sin datos de ejemplo: si la tabla está vacía, las vistas muestran su
+ * estado vacío real ("No hay propuestas...") en vez de contenido de
+ * prueba. IMPORTANTE (privacidad): el campo mostrado es siempre
+ * "nombre_organizacion" (la organización social que propuso), nunca
+ * el nombre de una persona — ver punto 7(e) del encargo.
  * ---------------------------------------------------------- */
-function haceDias(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString();
-}
+let PROPUESTAS = [];
 
-let PROPUESTAS = [
-  { id: 1, comuna: 'La Pintana', tipo: 'sitio_eriazo', nombre: 'Marisol A.', descripcion: 'Sitio eriazo con acumulación de basura hace años, ideal para una plaza.', estado: 'sin_verificar', score: 82, created_at: haceDias(1), motivo_rechazo: null },
-  { id: 2, comuna: 'Cerro Navia', tipo: 'plaza', nombre: 'Junta de Vecinos El Retiro', descripcion: 'Plaza deteriorada, juegos rotos, falta de sombra.', estado: 'verificado_social', score: 76, created_at: haceDias(4), motivo_rechazo: null },
-  { id: 3, comuna: 'Puente Alto', tipo: 'sede_social', nombre: 'Comité Vecinal Bajos de Mena', descripcion: 'Sede social sin techo en buen estado, se llueve entera.', estado: 'verificado_municipal', score: 61, created_at: haceDias(9), motivo_rechazo: null },
-  { id: 4, comuna: 'Providencia', tipo: 'area_verde', nombre: 'Tomás R.', descripcion: 'Bandejón sin mantención, oportunidad de jardín de lluvia.', estado: 'sin_verificar', score: 28, created_at: haceDias(2), motivo_rechazo: null },
-  { id: 5, comuna: 'Lo Barnechea', tipo: 'plaza', nombre: 'Fundación Cerro Verde', descripcion: 'Terreno municipal disponible junto a quebrada, potencial corredor.', estado: 'verificado_municipal', score: 45, created_at: haceDias(14), motivo_rechazo: null },
-  { id: 6, comuna: 'Maipú', tipo: 'otro', nombre: 'Club Deportivo Los Robles', descripcion: 'Cierre perimetral de cancha ya intervenida por otro proyecto municipal.', estado: 'rechazado', score: 22, created_at: haceDias(20), motivo_rechazo: 'Terreno ya comprometido con otro proyecto en curso.' },
-];
+// Proyectos institucionales (capas 13/14 del visor: EHL Fase 1 / Maipo
+// Resiliente), cargados desde capa_features vía la misma RPC que usa
+// visor.html (capa_features_geojson). Son ~500 fichas oficiales sin
+// datos de personas — no llevan verificación municipal, solo su propio
+// "estado" de obra (propuesto/diseño avanzado/implementado).
+let PROYECTOS_INSTITUCIONALES = [];
 
-let INTERESES_COUNT = {};   // propuesta_id -> total de empresas interesadas
-let MIS_INTERESES = new Set(); // propuesta_id donde la empresa logueada ya mostró interés
+let INTERESES_COUNT = {};      // propuesta_id -> total de actores interesados
+let MIS_INTERESES = new Set(); // propuesta_id donde el actor logueado ya mostró interés
+let MIS_INTERESES_INSTITUCIONAL = new Set(); // capa_feature_id donde el actor ya mostró interés
+
+// Cuántos ítems ya se muestran por lista (paginación "Cargar más"): con
+// ~500 proyectos institucionales sumados a las propuestas ciudadanas no
+// se puede pintar todo de una vez. Se reinicia a PAGINA_TAMANO cada vez
+// que cambian los filtros o se cambia de pestaña.
+let paginaMostrada = { municipio: PAGINA_TAMANO, empresa: PAGINA_TAMANO, universidad: PAGINA_TAMANO };
 
 function textoAntiguedad(iso) {
   if (!iso) return '';
@@ -185,6 +456,10 @@ function textoAntiguedad(iso) {
   if (dias <= 0) return 'hoy';
   if (dias === 1) return 'hace 1 día';
   return `hace ${dias} días`;
+}
+function fechaCompleta(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 const badgeLabel = {
@@ -198,24 +473,65 @@ const tipoLabel = {
   area_verde: 'Área verde', otro: 'Otro'
 };
 
+// Etiquetas de los proyectos institucionales (capas 13/14 del visor:
+// Estrategias Hídricas Locales - Fase 1 / Programa Maipo Resiliente).
+// Claves normalizadas (minúsculas, sin tildes) porque no controlamos el
+// texto exacto cargado en capa_features.atributos.
+function normalizarClave(texto) {
+  return String(texto || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+}
+const PROGRAMA_ORIGEN_LABEL = {
+  'ehl fase 1': 'EHL Fase 1',
+  'estrategias hidricas locales - fase 1': 'EHL Fase 1',
+  'estrategias hidricas locales fase 1': 'EHL Fase 1',
+  'maipo resiliente': 'Maipo Resiliente',
+  'programa maipo resiliente': 'Maipo Resiliente'
+};
+const ESTADO_INSTITUCIONAL_LABEL = {
+  propuesto: 'Propuesto',
+  'diseno avanzado': 'Diseño avanzado',
+  implementado: 'Implementado'
+};
+const ESTADO_INSTITUCIONAL_CLASE = {
+  propuesto: 'badge-estado-propuesto',
+  'diseno avanzado': 'badge-estado-diseno-avanzado',
+  implementado: 'badge-estado-implementado'
+};
+function formatearCosto(valor) {
+  if (valor === null || valor === undefined || valor === '') return null;
+  const numero = Number(valor);
+  if (Number.isNaN(numero)) return String(valor);
+  return '$' + numero.toLocaleString('es-CL');
+}
+
+function escaparHTML(texto) {
+  return String(texto)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 /* ------------------------------------------------------------
  * Tabs
  * ---------------------------------------------------------- */
 const tabMunicipio = document.getElementById('tab-municipio');
 const tabEmpresa = document.getElementById('tab-empresa');
+const tabUniversidad = document.getElementById('tab-universidad');
 const vistaMunicipio = document.getElementById('vista-municipio');
 const vistaEmpresa = document.getElementById('vista-empresa');
+const vistaUniversidad = document.getElementById('vista-universidad');
 
 tabMunicipio.addEventListener('click', () => cambiarVista('municipio'));
 tabEmpresa.addEventListener('click', () => cambiarVista('empresa'));
+tabUniversidad.addEventListener('click', () => cambiarVista('universidad'));
 
 function cambiarVista(vista) {
-  const esMunicipio = vista === 'municipio';
-  tabMunicipio.classList.toggle('active', esMunicipio);
-  tabEmpresa.classList.toggle('active', !esMunicipio);
-  vistaMunicipio.style.display = esMunicipio ? 'block' : 'none';
-  vistaEmpresa.style.display = esMunicipio ? 'none' : 'block';
-  if (!esMunicipio) cargarIntereses();
+  tabMunicipio.classList.toggle('active', vista === 'municipio');
+  tabEmpresa.classList.toggle('active', vista === 'empresa');
+  tabUniversidad.classList.toggle('active', vista === 'universidad');
+  vistaMunicipio.style.display = vista === 'municipio' ? 'block' : 'none';
+  vistaEmpresa.style.display = vista === 'empresa' ? 'block' : 'none';
+  vistaUniversidad.style.display = vista === 'universidad' ? 'block' : 'none';
+  if (vista !== 'municipio') cargarIntereses();
 }
 
 /* ------------------------------------------------------------
@@ -223,82 +539,182 @@ function cambiarVista(vista) {
  * ---------------------------------------------------------- */
 const filtroComuna = document.getElementById('filtro-comuna');
 const filtroEstado = document.getElementById('filtro-estado');
-const filtroTipo = document.getElementById('filtro-tipo');
+const filtroPrograma = document.getElementById('filtro-programa');
 const listaMunicipio = document.getElementById('lista-municipio');
 const resumenMunicipio = document.getElementById('resumen-municipio');
+const cargarMasMunicipio = document.getElementById('cargar-mas-municipio');
+
+// item.estado normalizado (institucional) o tal cual (ciudadana), para
+// poder filtrar/comparar ambos orígenes con el mismo valor de <select>.
+function estadoFiltrable(item) {
+  return item.origen === 'ciudadana' ? item.estado : normalizarClave(item.estado);
+}
+function programaFiltrable(item) {
+  return item.origen === 'ciudadana' ? 'ciudadana' : normalizarClave(item.programaOrigen);
+}
+// Algunos proyectos institucionales traen varias comunas en un solo
+// campo separadas por coma (p.ej. programas regionales tipo "Alhué,
+// Curacaví,Isla de Maipo..."). Se listan por separado para que el
+// filtro de comuna encuentre el proyecto sin importar en qué posición
+// de esa lista esté.
+function comunasDe(item) {
+  return String(item.comuna || '').split(',').map(c => c.trim()).filter(Boolean);
+}
+function pasaFiltros(item, { comunaSel, estadoSel, programaSel }) {
+  if (comunaSel && comunaSel !== 'Todas' && !comunasDe(item).includes(comunaSel)) return false;
+  if (estadoSel && estadoSel !== 'Todos' && estadoFiltrable(item) !== estadoSel) return false;
+  if (programaSel && programaSel !== 'Todos' && programaFiltrable(item) !== programaSel) return false;
+  return true;
+}
+function labelPrograma(item) {
+  if (item.origen === 'ciudadana') return null;
+  return PROGRAMA_ORIGEN_LABEL[normalizarClave(item.programaOrigen)] || item.programaOrigen || 'Programa institucional';
+}
+function labelEstadoInstitucional(item) {
+  const clave = normalizarClave(item.estado);
+  return ESTADO_INSTITUCIONAL_LABEL[clave] || item.estado || '';
+}
+function claseEstadoInstitucional(item) {
+  return ESTADO_INSTITUCIONAL_CLASE[normalizarClave(item.estado)] || 'badge-estado-propuesto';
+}
+// id compuesto para distinguir en el DOM (data-id) una propuesta
+// ciudadana (numérica) de un proyecto institucional (prefijo "inst_" +
+// capa_feature_id), sin tener que mantener dos atributos data-* aparte.
+function idDom(item) { return item.origen === 'ciudadana' ? String(item.id) : `inst_${item.id}`; }
 
 function poblarFiltroComunas() {
-  const comunas = ['Todas', ...new Set(PROPUESTAS.map(p => p.comuna))];
-  filtroComuna.innerHTML = comunas.map(c => `<option value="${c}">${c}</option>`).join('');
-
-  const comunasEmpresa = ['Todas', ...new Set(PROPUESTAS.map(p => p.comuna))];
-  const filtroComunaEmpresa = document.getElementById('filtro-comuna-empresa');
-  if (filtroComunaEmpresa) {
-    filtroComunaEmpresa.innerHTML = comunasEmpresa.map(c => `<option value="${c}">${c}</option>`).join('');
-  }
+  const todasLasComunas = [...PROPUESTAS, ...PROYECTOS_INSTITUCIONALES].flatMap(comunasDe);
+  const comunas = ['Todas', ...new Set(todasLasComunas)].sort((a, b) => a === 'Todas' ? -1 : b === 'Todas' ? 1 : String(a).localeCompare(String(b), 'es'));
+  const opciones = comunas.map(c => `<option value="${c}">${c}</option>`).join('');
+  filtroComuna.innerHTML = opciones;
+  document.getElementById('filtro-comuna-empresa').innerHTML = opciones;
+  document.getElementById('filtro-comuna-universidad').innerHTML = opciones;
 }
-filtroComuna.addEventListener('change', renderMunicipio);
-filtroEstado.addEventListener('change', renderMunicipio);
-filtroTipo.addEventListener('change', renderMunicipio);
+filtroComuna.addEventListener('change', () => { paginaMostrada.municipio = PAGINA_TAMANO; renderMunicipio(); });
+filtroEstado.addEventListener('change', () => { paginaMostrada.municipio = PAGINA_TAMANO; renderMunicipio(); });
+filtroPrograma.addEventListener('change', () => { paginaMostrada.municipio = PAGINA_TAMANO; renderMunicipio(); });
+
+// Tarjeta de un proyecto institucional: sin aprobar/rechazar (no pasan
+// por validación municipal, son fichas oficiales) — solo ficha + interés
+// en desarrollarlo, deshabilitado si todavía falta el nombre o está en
+// revisión (ver necesitaRevision).
+function tarjetaInstitucional(item, modo, textoBotonInteres) {
+  const yaInteresado = MIS_INTERESES_INSTITUCIONAL.has(item.id);
+  const deshabilitado = !item.nombre || !!item.necesitaRevision;
+  const tituloAtributo = deshabilitado ? ' title="Esta ficha todavía está en revisión, vuelve más adelante"' : '';
+  const esMaipo = normalizarClave(item.programaOrigen).indexOf('maipo') !== -1;
+  return `
+    <div class="card">
+      <div class="score score-institucional" style="background:${esMaipo ? 'rgba(244,162,97,.18)' : 'rgba(0,129,167,.14)'}; color:${esMaipo ? '#c2703a' : '#0081a7'};">${esMaipo ? 'MR' : 'EHL'}</div>
+      <div class="info">
+        <h3>${escaparHTML(item.nombre || 'Nombre del proyecto por definir')} — ${escaparHTML(item.comuna)}</h3>
+        <p><span class="badge-programa">${escaparHTML(labelPrograma(item))}</span><span class="badge-estado-institucional ${claseEstadoInstitucional(item)}">${escaparHTML(labelEstadoInstitucional(item))}</span></p>
+        <p class="card-desc-clamp">${escaparHTML(item.descripcion || '')}</p>
+      </div>
+      <div class="actions">
+        <button class="ficha" data-id="${idDom(item)}" data-modo="${modo}">Ver ficha</button>
+        <button class="interes" data-id="${idDom(item)}" ${(deshabilitado || yaInteresado) ? 'disabled' : ''}${tituloAtributo}>${yaInteresado ? 'Ya mostraste interés' : textoBotonInteres}</button>
+      </div>
+    </div>
+  `;
+}
 
 function renderMunicipio() {
   const comunaSel = filtroComuna.value;
   const estadoSel = filtroEstado.value;
-  const tipoSel = filtroTipo.value;
-  const filtradas = PROPUESTAS.filter(p =>
-    (comunaSel === 'Todas' || p.comuna === comunaSel) &&
-    (estadoSel === 'Todos' || p.estado === estadoSel) &&
-    (tipoSel === 'Todos' || p.tipo === tipoSel)
-  );
+  const programaSel = filtroPrograma.value;
+  const filtro = { comunaSel, estadoSel, programaSel };
+
+  const ciudadanas = PROPUESTAS.filter(p => pasaFiltros({ ...p, origen: 'ciudadana' }, filtro));
+  const institucionales = PROYECTOS_INSTITUCIONALES.filter(p => pasaFiltros(p, filtro));
+  const combinadas = [...ciudadanas.map(p => ({ ...p, origen: 'ciudadana' })), ...institucionales];
 
   const sinVerificar = PROPUESTAS.filter(p => p.estado === 'sin_verificar').length;
-  resumenMunicipio.textContent = `${PROPUESTAS.length} propuestas en total — ${sinVerificar} sin verificar.`;
+  resumenMunicipio.textContent = `${PROPUESTAS.length} ideas ciudadanas (${sinVerificar} sin verificar) + ${PROYECTOS_INSTITUCIONALES.length} proyectos institucionales en total.`;
 
-  if (filtradas.length === 0) {
-    listaMunicipio.innerHTML = '<div class="empty">No hay propuestas con estos filtros.</div>';
+  if (combinadas.length === 0) {
+    listaMunicipio.innerHTML = '<div class="empty">No hay propuestas ni proyectos con estos filtros.</div>';
+    cargarMasMunicipio.innerHTML = '';
     return;
   }
 
-  listaMunicipio.innerHTML = filtradas.map(p => `
+  const visibles = combinadas.slice(0, paginaMostrada.municipio);
+  listaMunicipio.innerHTML = visibles.map(item => {
+    if (item.origen !== 'ciudadana') return tarjetaInstitucional(item, 'municipio', 'Interés en desarrollar');
+    const p = item;
+    return `
     <div class="card">
       <div class="score">${p.score}</div>
       <div class="info">
         <h3>${tipoLabel[p.tipo] || p.tipo} — ${p.comuna}</h3>
-        <p><span class="badge ${p.estado}">${badgeLabel[p.estado]}</span> Propuesto por ${p.nombre}
+        <p><span class="badge ${p.estado}">${badgeLabel[p.estado]}</span> <span class="organizacion">${escaparHTML(p.nombre_organizacion)}</span>
           <span class="antiguedad">· ${textoAntiguedad(p.created_at)}</span></p>
-        <p>${p.descripcion}</p>
-        ${p.estado === 'rechazado' && p.motivo_rechazo ? `<p class="motivo">Motivo: ${p.motivo_rechazo}</p>` : ''}
+        <p class="card-desc-clamp">${escaparHTML(p.descripcion)}</p>
+        ${p.estado === 'rechazado' && p.motivo_rechazo ? `<p class="motivo">Motivo: ${escaparHTML(p.motivo_rechazo)}</p>` : ''}
       </div>
       <div class="actions">
-        <button class="aprobar" data-id="${p.id}" ${p.estado === 'verificado_municipal' ? 'disabled' : ''}>Aprobar</button>
-        <button class="rechazar" data-id="${p.id}" ${p.estado === 'rechazado' ? 'disabled' : ''}>Rechazar</button>
-        ${p.estado !== 'sin_verificar' ? `<button class="revertir" data-id="${p.id}">Revertir a sin verificar</button>` : ''}
+        <button class="ficha" data-id="${p.id}" data-modo="municipio">Ver ficha</button>
+        ${esAdmin ? `
+          <button class="aprobar" data-id="${p.id}" ${p.estado === 'verificado_municipal' ? 'disabled' : ''}>Aprobar</button>
+          <button class="rechazar" data-id="${p.id}" ${p.estado === 'rechazado' ? 'disabled' : ''}>Rechazar</button>
+        ` : `<button class="btn-requiere-admin" type="button">Inicia sesión para validar</button>`}
+        <button class="interes" data-id="${p.id}" ${MIS_INTERESES.has(p.id) ? 'disabled' : ''}>${MIS_INTERESES.has(p.id) ? 'Ya mostraste interés' : 'Interés en desarrollar'}</button>
+        ${esAdmin && p.estado !== 'sin_verificar' ? `<button class="revertir" data-id="${p.id}">Revertir a sin verificar</button>` : ''}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
+  cargarMasMunicipio.innerHTML = combinadas.length > visibles.length
+    ? `<button class="btn-cargar-mas" type="button">Cargar más (quedan ${combinadas.length - visibles.length})</button>`
+    : '';
+  const btnCargarMas = cargarMasMunicipio.querySelector('.btn-cargar-mas');
+  if (btnCargarMas) btnCargarMas.addEventListener('click', () => { paginaMostrada.municipio += PAGINA_TAMANO; renderMunicipio(); });
+
+  listaMunicipio.querySelectorAll('.ficha').forEach(btn => btn.addEventListener('click', () => abrirFicha(btn.dataset.id, 'municipio')));
   listaMunicipio.querySelectorAll('.aprobar').forEach(btn =>
     btn.addEventListener('click', () => actualizarEstado(btn.dataset.id, 'verificado_municipal')));
   listaMunicipio.querySelectorAll('.rechazar').forEach(btn =>
     btn.addEventListener('click', () => {
       const motivo = prompt('Motivo del rechazo (opcional):', '');
-      if (motivo === null) return; // canceló
+      if (motivo === null) return;
       actualizarEstado(btn.dataset.id, 'rechazado', motivo || null);
     }));
   listaMunicipio.querySelectorAll('.revertir').forEach(btn =>
     btn.addEventListener('click', () => actualizarEstado(btn.dataset.id, 'sin_verificar', null)));
+  listaMunicipio.querySelectorAll('.btn-requiere-admin').forEach(btn => btn.addEventListener('click', abrirLoginAdmin));
+  listaMunicipio.querySelectorAll('.interes:not(:disabled)').forEach(btn =>
+    btn.addEventListener('click', () => {
+      if (btn.dataset.id.startsWith('inst_')) abrirNotificacionInteresInstitucional(btn.dataset.id.slice(5), 'municipio');
+      else abrirNotificacionInteres(btn.dataset.id, 'municipio');
+    }));
 }
 
 async function actualizarEstado(id, nuevoEstado, motivo) {
+  // Defensa en el cliente (la protección real depende de la política RLS
+  // de UPDATE sobre "propuestas" en Supabase — ver nota junto a
+  // actualizarEstadoAuth). Esto solo evita llamadas accidentales.
+  if (!esAdmin) { mostrarToast('Debes iniciar sesión como administrador para validar propuestas.'); abrirLoginAdmin(); return; }
+
   const propuesta = PROPUESTAS.find(p => p.id === Number(id));
   if (!propuesta) return;
 
   if (MODO_REAL) {
     const payload = { estado: nuevoEstado, motivo_rechazo: nuevoEstado === 'rechazado' ? motivo : null };
-    const { error } = await sb.from('propuestas').update(payload).eq('id', id);
+    // .select() es necesario para poder distinguir "RLS bloqueó la fila"
+    // de "se actualizó de verdad": si la política USING no matchea, Postgres
+    // no lanza error — devuelve éxito con 0 filas afectadas. Sin este
+    // chequeo, el código seguía de largo y actualizaba el estado en
+    // memoria igual, mostrando "Verificado" aunque la base no cambió.
+    const { data, error } = await sb.from('propuestas').update(payload).eq('id', id).select();
     if (error) {
-      alert('No se pudo actualizar en Supabase: ' + error.message);
+      mostrarToast('No se pudo actualizar en Supabase: ' + error.message);
       console.error(error);
+      return;
+    }
+    if (!data || data.length === 0) {
+      mostrarToast('No se pudo actualizar: la política de la base de datos rechazó el cambio (revisa permisos).');
+      console.error('actualizarEstado: UPDATE no afectó ninguna fila (posible bloqueo de RLS) para propuesta', id);
       return;
     }
   } else {
@@ -311,36 +727,89 @@ async function actualizarEstado(id, nuevoEstado, motivo) {
 }
 
 /* ------------------------------------------------------------
- * Vista Empresa
+ * Vista Empresa — financiar
  * ---------------------------------------------------------- */
 const listaEmpresa = document.getElementById('lista-empresa');
 const filtroComunaEmpresa = document.getElementById('filtro-comuna-empresa');
-const filtroTipoEmpresa = document.getElementById('filtro-tipo-empresa');
+const filtroEstadoEmpresa = document.getElementById('filtro-estado-empresa');
+const filtroProgramaEmpresa = document.getElementById('filtro-programa-empresa');
 const ordenEmpresa = document.getElementById('orden-empresa');
-[filtroComunaEmpresa, filtroTipoEmpresa, ordenEmpresa].forEach(el =>
-  el.addEventListener('change', renderEmpresa));
+const cargarMasEmpresa = document.getElementById('cargar-mas-empresa');
+[filtroComunaEmpresa, filtroEstadoEmpresa, filtroProgramaEmpresa, ordenEmpresa].forEach(el =>
+  el.addEventListener('change', () => { paginaMostrada.empresa = PAGINA_TAMANO; renderEmpresa(); }));
 
 function renderEmpresa() {
-  const comunaSel = filtroComunaEmpresa.value || 'Todas';
-  const tipoSel = filtroTipoEmpresa.value || 'Todos';
-  const orden = ordenEmpresa.value || 'score_desc';
+  renderOportunidades({
+    contenedor: listaEmpresa, cargarMasEl: cargarMasEmpresa, clavePagina: 'empresa',
+    comunaSel: filtroComunaEmpresa.value || 'Todas',
+    estadoSel: filtroEstadoEmpresa.value || 'Todos',
+    programaSel: filtroProgramaEmpresa.value || 'Todos',
+    orden: ordenEmpresa.value || 'score_desc',
+    modo: 'empresa',
+    textoBotonInteres: 'Mostrar interés en financiar',
+    vacio: 'Aún no hay propuestas ni proyectos con estos filtros.'
+  });
+}
 
-  let oportunidades = PROPUESTAS.filter(p =>
-    (p.estado === 'verificado_social' || p.estado === 'verificado_municipal') &&
-    (comunaSel === 'Todas' || p.comuna === comunaSel) &&
-    (tipoSel === 'Todos' || p.tipo === tipoSel)
-  );
+/* ------------------------------------------------------------
+ * Vista Universidad — apadrinar
+ * ---------------------------------------------------------- */
+const listaUniversidad = document.getElementById('lista-universidad');
+const filtroComunaUniversidad = document.getElementById('filtro-comuna-universidad');
+const filtroEstadoUniversidad = document.getElementById('filtro-estado-universidad');
+const filtroProgramaUniversidad = document.getElementById('filtro-programa-universidad');
+const ordenUniversidad = document.getElementById('orden-universidad');
+const cargarMasUniversidad = document.getElementById('cargar-mas-universidad');
+[filtroComunaUniversidad, filtroEstadoUniversidad, filtroProgramaUniversidad, ordenUniversidad].forEach(el =>
+  el.addEventListener('change', () => { paginaMostrada.universidad = PAGINA_TAMANO; renderUniversidad(); }));
 
-  if (orden === 'score_desc') oportunidades.sort((a, b) => b.score - a.score);
-  else if (orden === 'score_asc') oportunidades.sort((a, b) => a.score - b.score);
-  else if (orden === 'recientes') oportunidades.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+function renderUniversidad() {
+  renderOportunidades({
+    contenedor: listaUniversidad, cargarMasEl: cargarMasUniversidad, clavePagina: 'universidad',
+    comunaSel: filtroComunaUniversidad.value || 'Todas',
+    estadoSel: filtroEstadoUniversidad.value || 'Todos',
+    programaSel: filtroProgramaUniversidad.value || 'Todos',
+    orden: ordenUniversidad.value || 'recientes',
+    modo: 'universidad',
+    textoBotonInteres: 'Apadrinar esta idea',
+    vacio: 'Aún no hay ideas ni proyectos para apadrinar con estos filtros.'
+  });
+}
+
+// Empresas y universidades comparten el mismo criterio de listado: ideas
+// ciudadanas ya verificadas + TODOS los proyectos institucionales
+// (capas 13/14 — son fichas oficiales, no pasan por verificación).
+// Difieren en el copy del botón de interés y en qué se notifica al
+// organizarlo. Paginado con "Cargar más" porque institucionales solo ya
+// suman ~500 filas.
+function renderOportunidades({ contenedor, cargarMasEl, clavePagina, comunaSel, estadoSel, programaSel, orden, modo, textoBotonInteres, vacio }) {
+  const filtro = { comunaSel, estadoSel, programaSel };
+  const ciudadanas = PROPUESTAS
+    .filter(p => p.estado === 'verificado_social' || p.estado === 'verificado_municipal')
+    .filter(p => pasaFiltros({ ...p, origen: 'ciudadana' }, filtro))
+    .map(p => ({ ...p, origen: 'ciudadana' }));
+  const institucionales = PROYECTOS_INSTITUCIONALES.filter(p => pasaFiltros(p, filtro));
+  let oportunidades = [...ciudadanas, ...institucionales];
+
+  // Los proyectos institucionales no tienen score ni created_at "real":
+  // en orden por pertinencia quedan al final; en "recientes" se tratan
+  // como antiguos (no hay forma de saber cuál institucional es más nueva).
+  if (orden === 'score_desc') oportunidades.sort((a, b) => (b.origen === 'ciudadana' ? b.score : -1) - (a.origen === 'ciudadana' ? a.score : -1));
+  else if (orden === 'score_asc') oportunidades.sort((a, b) => (a.origen === 'ciudadana' ? a.score : -1) - (b.origen === 'ciudadana' ? b.score : -1));
+  else if (orden === 'recientes') oportunidades.sort((a, b) => (b.origen === 'ciudadana' ? new Date(b.created_at) : new Date(0)) - (a.origen === 'ciudadana' ? new Date(a.created_at) : new Date(0)));
 
   if (oportunidades.length === 0) {
-    listaEmpresa.innerHTML = '<div class="empty">Aún no hay propuestas verificadas con estos filtros.</div>';
+    contenedor.innerHTML = `<div class="empty">${vacio}</div>`;
+    cargarMasEl.innerHTML = '';
     return;
   }
 
-  listaEmpresa.innerHTML = oportunidades.map(p => {
+  const cantidadMostrada = paginaMostrada[clavePagina];
+  const visibles = oportunidades.slice(0, cantidadMostrada);
+
+  contenedor.innerHTML = visibles.map(item => {
+    if (item.origen !== 'ciudadana') return tarjetaInstitucional(item, modo, textoBotonInteres);
+    const p = item;
     const total = INTERESES_COUNT[p.id] || 0;
     const yaInteresado = MIS_INTERESES.has(p.id);
     return `
@@ -350,61 +819,304 @@ function renderEmpresa() {
         <h3>${tipoLabel[p.tipo] || p.tipo} — ${p.comuna}</h3>
         <p><span class="badge ${p.estado}">${badgeLabel[p.estado]}</span>
           <span class="antiguedad">${textoAntiguedad(p.created_at)}</span>
-          ${total > 0 ? `<span class="chip-interes">${total} empresa${total === 1 ? '' : 's'} interesada${total === 1 ? '' : 's'}</span>` : ''}
+          ${total > 0 ? `<span class="chip-interes">${total} interesado${total === 1 ? '' : 's'}</span>` : ''}
         </p>
-        <p>${p.descripcion}</p>
+        <p class="card-desc-clamp">${escaparHTML(p.descripcion)}</p>
       </div>
       <div class="actions">
-        <button class="interes" data-id="${p.id}" ${yaInteresado ? 'disabled' : ''}>${yaInteresado ? 'Ya mostraste interés' : 'Mostrar interés'}</button>
+        <button class="ficha" data-id="${p.id}" data-modo="${modo}">Ver ficha</button>
+        <button class="interes" data-id="${p.id}" ${yaInteresado ? 'disabled' : ''}>${yaInteresado ? 'Ya mostraste interés' : textoBotonInteres}</button>
       </div>
     </div>
   `;
   }).join('');
 
-  listaEmpresa.querySelectorAll('.interes:not(:disabled)').forEach(btn =>
-    btn.addEventListener('click', () => mostrarInteres(btn.dataset.id)));
-}
+  cargarMasEl.innerHTML = oportunidades.length > visibles.length
+    ? `<button class="btn-cargar-mas" type="button">Cargar más (quedan ${oportunidades.length - visibles.length})</button>`
+    : '';
+  const btnCargarMas = cargarMasEl.querySelector('.btn-cargar-mas');
+  if (btnCargarMas) btnCargarMas.addEventListener('click', () => {
+    paginaMostrada[clavePagina] += PAGINA_TAMANO;
+    if (modo === 'empresa') renderEmpresa(); else renderUniversidad();
+  });
 
-async function mostrarInteres(id) {
-  const mensaje = prompt('Mensaje breve para el municipio/proponente (opcional):', '');
-  if (mensaje === null) return;
-
-  if (MODO_REAL) {
-    if (!sesionActual) {
-      alert('Primero inicia sesión (arriba a la derecha) para registrar tu interés.');
-      return;
-    }
-    const { error } = await sb.from('intereses_financiamiento').insert({
-      propuesta_id: Number(id), empresa_id: sesionActual.user.id, mensaje
-    });
-    if (error) {
-      alert('No se pudo registrar el interés: ' + error.message);
-      console.error(error);
-      return;
-    }
-    alert('Interés registrado.');
-    MIS_INTERESES.add(Number(id));
-    INTERESES_COUNT[id] = (INTERESES_COUNT[id] || 0) + 1;
-  } else {
-    console.log(`[modo demo] Interés registrado para propuesta ${id}:`, mensaje);
-    alert('Interés registrado (modo demo — aún no hay propuestas reales).');
-    MIS_INTERESES.add(Number(id));
-    INTERESES_COUNT[id] = (INTERESES_COUNT[id] || 0) + 1;
-  }
-  renderEmpresa();
+  contenedor.querySelectorAll('.ficha').forEach(btn => btn.addEventListener('click', () => abrirFicha(btn.dataset.id, modo)));
+  contenedor.querySelectorAll('.interes:not(:disabled)').forEach(btn =>
+    btn.addEventListener('click', () => {
+      if (btn.dataset.id.startsWith('inst_')) abrirNotificacionInteresInstitucional(btn.dataset.id.slice(5), modo);
+      else abrirNotificacionInteres(btn.dataset.id, modo);
+    }));
 }
 
 /* ------------------------------------------------------------
- * Conteo de intereses por propuesta (vía RPC, no expone qué
- * empresa es cada una) + cuáles ya mostró interés la empresa
- * logueada actualmente (esto sí es visible por RLS: cada quien
- * lee sus propias filas de intereses_financiamiento).
+ * Ficha de la propuesta (detalle) — mismo criterio de privacidad
+ * que construirPopupPropuesta() en visor.html: nunca expone datos
+ * de la persona que propuso, solo de la organización y la fecha.
+ * ---------------------------------------------------------- */
+const modalOverlay = document.getElementById('modal-overlay');
+const fichaTitulo = document.getElementById('ficha-titulo');
+const fichaTabla = document.getElementById('ficha-tabla');
+const fichaDesc = document.getElementById('ficha-desc');
+const fichaAcciones = document.getElementById('ficha-acciones');
+
+const fichaPrivacidadNota = document.getElementById('ficha-privacidad-nota');
+
+function abrirFicha(idRaw, modo) {
+  const id = String(idRaw);
+  if (id.startsWith('inst_')) { abrirFichaInstitucional(id.slice(5), modo); return; }
+
+  const p = PROPUESTAS.find(x => x.id === Number(id));
+  if (!p) return;
+  fichaPrivacidadNota.style.display = '';
+  fichaTitulo.textContent = `${tipoLabel[p.tipo] || p.tipo} — ${p.comuna}`;
+
+  const filas = [
+    ['Organización', escaparHTML(p.nombre_organizacion)],
+    ['Estado', badgeLabel[p.estado]],
+    ['Fecha de la propuesta', fechaCompleta(p.created_at)],
+    ['Pertinencia', `${p.score}/100`]
+  ];
+  fichaTabla.innerHTML = filas.map(([k, v]) => `<tr><td class="clave">${k}</td><td class="valor">${v}</td></tr>`).join('');
+  fichaDesc.textContent = p.descripcion;
+
+  let botones = '';
+  if (modo === 'municipio') {
+    botones = `
+      ${esAdmin ? `
+        <button class="btn" data-accion="aprobar">Aprobar</button>
+        <button class="btn" data-accion="rechazar">Rechazar</button>
+      ` : `<button class="btn" data-accion="login-admin">Inicia sesión para validar</button>`}
+      ${(p.estado === 'verificado_social' || p.estado === 'verificado_municipal') ? `<button class="btn btn-primary" data-accion="interes">Interés en desarrollar</button>` : ''}
+    `;
+  } else {
+    const yaInteresado = MIS_INTERESES.has(p.id);
+    botones = `<button class="btn btn-primary" data-accion="interes" ${yaInteresado ? 'disabled' : ''}>${yaInteresado ? 'Ya mostraste interés' : (modo === 'universidad' ? 'Apadrinar esta idea' : 'Mostrar interés en financiar')}</button>`;
+  }
+  fichaAcciones.innerHTML = botones;
+  fichaAcciones.querySelectorAll('[data-accion]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const accion = btn.dataset.accion;
+      if (accion === 'aprobar') { actualizarEstado(p.id, 'verificado_municipal'); cerrarFicha(); }
+      else if (accion === 'rechazar') { const motivo = prompt('Motivo del rechazo (opcional):', ''); if (motivo !== null) { actualizarEstado(p.id, 'rechazado', motivo || null); cerrarFicha(); } }
+      else if (accion === 'interes') { cerrarFicha(); abrirNotificacionInteres(p.id, modo); }
+      else if (accion === 'login-admin') { cerrarFicha(); abrirLoginAdmin(); }
+    });
+  });
+
+  modalOverlay.classList.add('abierto');
+}
+
+// Ficha de un proyecto institucional (capas 13/14): sin nota de
+// privacidad de propuestas (no aplica — son fichas oficiales, no de
+// personas) y sin aprobar/rechazar (no pasan por validación municipal).
+function abrirFichaInstitucional(capaFeatureId, modo) {
+  const item = PROYECTOS_INSTITUCIONALES.find(x => String(x.id) === String(capaFeatureId));
+  if (!item) return;
+  fichaPrivacidadNota.style.display = 'none';
+  fichaTitulo.textContent = `${item.nombre || 'Nombre del proyecto por definir'} — ${item.comuna}`;
+
+  const filas = [
+    ['Programa', labelPrograma(item)],
+    ['Estado', labelEstadoInstitucional(item)],
+    ['Intervención', tipoLabel[item.tipo] || item.tipo],
+    ['Costo estimado', formatearCosto(item.costoEstimado)]
+  ].filter(([, v]) => v !== undefined && v !== null && v !== '');
+  fichaTabla.innerHTML = filas.map(([k, v]) => `<tr><td class="clave">${k}</td><td class="valor">${escaparHTML(v)}</td></tr>`).join('');
+  fichaDesc.textContent = item.descripcion || '';
+
+  const deshabilitado = !item.nombre || !!item.necesitaRevision;
+  const yaInteresado = MIS_INTERESES_INSTITUCIONAL.has(item.id);
+  const textoBoton = modo === 'universidad' ? 'Apadrinar este proyecto' : (modo === 'municipio' ? 'Interés en desarrollar' : 'Mostrar interés en financiar');
+
+  let botones = '';
+  if (item.fichaPdfUrl) {
+    botones += `<a class="btn" href="${escaparHTML(item.fichaPdfUrl)}" target="_blank" rel="noopener">Leer ficha completa (PDF)</a>`;
+  }
+  botones += `<button class="btn btn-primary" data-accion="interes-inst" ${(deshabilitado || yaInteresado) ? 'disabled' : ''} ${deshabilitado ? 'title="Esta ficha todavía está en revisión, vuelve más adelante"' : ''}>${yaInteresado ? 'Ya mostraste interés' : textoBoton}</button>`;
+  fichaAcciones.innerHTML = botones;
+  fichaAcciones.querySelectorAll('[data-accion="interes-inst"]').forEach(btn => {
+    btn.addEventListener('click', () => { cerrarFicha(); abrirNotificacionInteresInstitucional(item.id, modo); });
+  });
+
+  modalOverlay.classList.add('abierto');
+}
+function cerrarFicha() { modalOverlay.classList.remove('abierto'); }
+document.getElementById('cerrar-ficha').addEventListener('click', cerrarFicha);
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) cerrarFicha(); });
+
+/* ------------------------------------------------------------
+ * Notificación de interés por correo. Muestra una vista previa del
+ * mensaje (sin exponer nunca la dirección real de la organización)
+ * y, al confirmar, registra el interés + intenta invocar la Edge
+ * Function "notificar-interes-organizacion" (mismo patrón que
+ * "enviar-confirmacion-propuesta" en visor.html). Si esa función aún
+ * no está desplegada, el flujo queda igual pero avisa que el envío
+ * de correo es un mock pendiente de backend.
+ * ---------------------------------------------------------- */
+const correoOverlay = document.getElementById('correo-overlay');
+const correoTitulo = document.getElementById('correo-titulo');
+const correoMensaje = document.getElementById('correo-mensaje');
+const correoPreview = document.getElementById('correo-preview');
+let correoContexto = null; // { tipo: 'ciudadana'|'institucional', propuestaId|capaFeatureId, modo }
+
+const ACCION_LABEL = { empresa: 'financiar', universidad: 'apadrinar', municipio: 'desarrollar (técnica y/o financieramente)' };
+const ACTOR_LABEL = { empresa: 'una empresa', universidad: 'una universidad', municipio: 'un municipio / institución pública' };
+
+function abrirNotificacionInteres(id, modo) {
+  const p = PROPUESTAS.find(x => x.id === Number(id));
+  if (!p) return;
+  correoContexto = { tipo: 'ciudadana', propuestaId: p.id, modo };
+  correoTitulo.textContent = modo === 'universidad' ? 'Apadrinar esta idea' : (modo === 'municipio' ? 'Interés en desarrollar' : 'Mostrar interés en financiar');
+  correoMensaje.value = '';
+  actualizarVistaPreviaCorreo(p, modo);
+  correoOverlay.classList.add('abierto');
+}
+function actualizarVistaPreviaCorreo(p, modo) {
+  const asunto = `Interés de ${ACTOR_LABEL[modo]} en tu propuesta: ${tipoLabel[p.tipo] || p.tipo} — ${p.comuna}`;
+  const cuerpo = `Hola, equipo de "${escaparHTML(p.nombre_organizacion)}": ${ACTOR_LABEL[modo]} mostró interés en ${ACCION_LABEL[modo]} la idea que propusieron el ${fechaCompleta(p.created_at)}. ${correoMensaje.value ? escaparHTML(correoMensaje.value) : 'Pronto se pondrán en contacto para conversar los próximos pasos.'}`;
+  correoPreview.innerHTML = `
+    <div class="correo-linea"><span class="correo-etiqueta">Para:</span> contacto registrado de "${escaparHTML(p.nombre_organizacion)}" (no se muestra la dirección aquí)</div>
+    <div class="correo-linea"><span class="correo-etiqueta">Asunto:</span> ${escaparHTML(asunto)}</div>
+    <div class="correo-linea" style="margin-top:6px;">${cuerpo}</div>
+  `;
+}
+
+// Proyecto institucional (capas 13/14): a diferencia de una propuesta
+// ciudadana, todavía no hay contacto institucional configurado, así que
+// NO se arma una vista previa de correo — solo se avisa que el interés
+// queda guardado en la base de datos (ver confirmarInteresInstitucional).
+function abrirNotificacionInteresInstitucional(capaFeatureId, modo) {
+  const item = PROYECTOS_INSTITUCIONALES.find(x => String(x.id) === String(capaFeatureId));
+  if (!item) return;
+  correoContexto = { tipo: 'institucional', capaFeatureId: item.id, modo };
+  correoTitulo.textContent = modo === 'universidad' ? 'Apadrinar este proyecto' : (modo === 'municipio' ? 'Interés en desarrollar' : 'Mostrar interés en financiar');
+  correoMensaje.value = '';
+  correoPreview.innerHTML = `
+    <div class="correo-linea"><span class="correo-etiqueta">Proyecto:</span> ${escaparHTML(item.nombre || 'Nombre del proyecto por definir')} — ${escaparHTML(item.comuna)}</div>
+    <div class="correo-linea" style="margin-top:6px;">Por ahora este interés queda guardado en la base de datos. La notificación por correo a la institución responsable (EHL Fase 1 / Maipo Resiliente) todavía no está activada — aún no hay un contacto configurado.</div>
+  `;
+  correoOverlay.classList.add('abierto');
+}
+
+correoMensaje.addEventListener('input', () => {
+  if (!correoContexto || correoContexto.tipo !== 'ciudadana') return;
+  const p = PROPUESTAS.find(x => x.id === correoContexto.propuestaId);
+  if (p) actualizarVistaPreviaCorreo(p, correoContexto.modo);
+});
+document.getElementById('cerrar-correo').addEventListener('click', cerrarNotificacion);
+document.getElementById('correo-cancelar').addEventListener('click', cerrarNotificacion);
+correoOverlay.addEventListener('click', (e) => { if (e.target === correoOverlay) cerrarNotificacion(); });
+function cerrarNotificacion() { correoOverlay.classList.remove('abierto'); correoContexto = null; }
+
+document.getElementById('correo-confirmar').addEventListener('click', async () => {
+  if (!correoContexto) return;
+  if (correoContexto.tipo === 'institucional') {
+    await confirmarInteresInstitucional(correoContexto.capaFeatureId, correoContexto.modo, correoMensaje.value.trim());
+  } else {
+    await confirmarInteres(correoContexto.propuestaId, correoContexto.modo, correoMensaje.value.trim());
+  }
+  cerrarNotificacion();
+});
+
+async function confirmarInteres(id, modo, mensaje) {
+  let notificacionEnviada = false;
+  let notaBackend = '';
+
+  if (MODO_REAL) {
+    const { error } = await sb.from('intereses_financiamiento').insert({
+      propuesta_id: Number(id), empresa_id: sesionActual ? sesionActual.user.id : null, mensaje, actor_tipo: modo
+    });
+    if (error) {
+      mostrarToast('No se pudo registrar el interés: ' + error.message);
+      console.error(error);
+      return;
+    }
+    // Notificación real por correo: requiere una Edge Function desplegada
+    // (mismo patrón que "enviar-confirmacion-propuesta" en visor.html) que,
+    // del lado del servidor, busque el contacto de la organización y le
+    // escriba — así el correo nunca se expone en el cliente.
+    try {
+      const { error: errFn } = await sb.functions.invoke('notificar-interes-organizacion', {
+        body: { propuesta_id: Number(id), actor_tipo: modo, mensaje }
+      });
+      notificacionEnviada = !errFn;
+      if (errFn) notaBackend = ' (la función de envío de correo aún no está desplegada — el interés sí quedó registrado)';
+    } catch (e) {
+      notaBackend = ' (la función de envío de correo aún no está desplegada — el interés sí quedó registrado)';
+      console.warn('No se pudo invocar notificar-interes-organizacion:', e);
+    }
+  } else {
+    console.log(`[modo demo] Interés (${modo}) registrado para propuesta ${id}:`, mensaje);
+    notaBackend = ' (modo demo — aún no hay backend de correo real conectado)';
+  }
+
+  MIS_INTERESES.add(Number(id));
+  INTERESES_COUNT[id] = (INTERESES_COUNT[id] || 0) + 1;
+  mostrarToast(`Interés registrado. Se notificó por correo a la organización${notaBackend}.`);
+  renderMunicipio();
+  renderEmpresa();
+  renderUniversidad();
+}
+
+// Interés en un proyecto institucional (capas 13/14): mismo insert que
+// confirmarInteres() pero con capa_feature_id en vez de propuesta_id
+// (la tabla exige que se llene exactamente uno de los dos). A propósito
+// NO se invoca ninguna función de correo acá — todavía no hay un
+// contacto institucional configurado para EHL Fase 1 / Maipo Resiliente.
+// Pendiente: cuando exista ese contacto, agregar el mismo patrón de
+// sb.functions.invoke(...) que usa confirmarInteres().
+async function confirmarInteresInstitucional(capaFeatureId, modo, mensaje) {
+  const { error } = await sb.from('intereses_financiamiento').insert({
+    capa_feature_id: capaFeatureId,
+    propuesta_id: null,
+    empresa_id: sesionActual ? sesionActual.user.id : null,
+    actor_tipo: modo,
+    mensaje: mensaje || null
+  });
+  if (error) {
+    mostrarToast('No se pudo registrar el interés: ' + error.message);
+    console.error(error);
+    return;
+  }
+  MIS_INTERESES_INSTITUCIONAL.add(capaFeatureId);
+  mostrarToast('Interés registrado. Por ahora no enviamos notificación automática a la institución (falta configurar el contacto).');
+  renderMunicipio();
+  renderEmpresa();
+  renderUniversidad();
+}
+
+let toastTimeout = null;
+function mostrarToast(texto) {
+  const toast = document.getElementById('toast');
+  toast.textContent = texto;
+  toast.classList.add('visible');
+  if (toastTimeout) window.clearTimeout(toastTimeout);
+  toastTimeout = window.setTimeout(() => toast.classList.remove('visible'), 5000);
+}
+
+/* ------------------------------------------------------------
+ * Conteo de intereses por propuesta (vía RPC, no expone qué actor
+ * es cada uno) + cuáles ya mostró interés el actor logueado
+ * actualmente (visible por RLS: cada quien lee sus propias filas).
  * ---------------------------------------------------------- */
 async function cargarIntereses() {
+  // Institucionales: independiente de MODO_REAL (que solo describe si hay
+  // propuestas ciudadanas reales) — los proyectos institucionales tienen
+  // su propia fuente (cargarProyectosInstitucionales).
+  if (sesionActual) {
+    const { data: miosInst, error: errMiosInst } = await sb
+      .from('intereses_financiamiento')
+      .select('capa_feature_id')
+      .eq('empresa_id', sesionActual.user.id)
+      .not('capa_feature_id', 'is', null);
+    if (!errMiosInst && miosInst) {
+      miosInst.forEach(row => MIS_INTERESES_INSTITUCIONAL.add(row.capa_feature_id));
+    }
+  }
+
   if (!MODO_REAL) {
-    // En modo demo no hay tabla real que consultar; se conserva
-    // el estado que haya dejado mostrarInteres() en esta sesión.
     renderEmpresa();
+    renderUniversidad();
     return;
   }
 
@@ -425,46 +1137,91 @@ async function cargarIntereses() {
     }
   }
   renderEmpresa();
+  renderUniversidad();
 }
 
 /* ------------------------------------------------------------
- * Autenticación simple (igual que en visor.html): magic link
- * por correo, sin contraseña.
+ * Acceso administrador — protege SOLO las acciones de validación
+ * (Aprobar/Rechazar/Revertir) de propuestas ciudadanas. No es un login
+ * para empresas/universidades/municipios: "Mostrar interés" sigue
+ * siendo público para cualquier actor, sin sesión.
+ *
+ * IMPORTANTE (seguridad real): ocultar los botones en el cliente es
+ * solo UX — cualquiera podría llamar a la API de Supabase directo y
+ * saltarse esto. La protección de verdad tiene que estar en la política
+ * RLS de UPDATE sobre "propuestas" (hoy, según lo conversado, es
+ * pública). Eso hay que ajustarlo en Supabase — no lo toco yo, ver
+ * mensaje aparte con el detalle exacto de qué cambiar.
  * ---------------------------------------------------------- */
-const authStatusEl = document.getElementById('auth-status');
-const authBtn = document.getElementById('auth-btn');
-
-authBtn.addEventListener('click', async () => {
-  if (sesionActual) {
-    await sb.auth.signOut();
-    return;
-  }
-  const correo = prompt('Ingresa tu correo (empresa/municipio) para recibir un enlace de acceso:');
-  if (!correo) return;
-  const { error } = await sb.auth.signInWithOtp({ email: correo, options: { emailRedirectTo: window.location.href } });
-  if (error) { alert('No se pudo enviar el enlace: ' + error.message); return; }
-  alert('Te enviamos un enlace a ' + correo + '. Ábrelo desde este mismo dispositivo.');
-});
-
 function actualizarEstadoAuth(session) {
   sesionActual = session;
-  authStatusEl.textContent = session ? `Conectado: ${session.user.email}` : 'Sin iniciar sesión';
-  authBtn.textContent = session ? 'Cerrar sesión' : 'Iniciar sesión';
-  if (vistaEmpresa.style.display !== 'none') cargarIntereses();
+  esAdmin = !!session;
+
+  document.getElementById('admin-login-btn').style.display = esAdmin ? 'none' : '';
+  const statusEl = document.getElementById('admin-status');
+  const logoutBtn = document.getElementById('admin-logout-btn');
+  if (esAdmin) {
+    statusEl.textContent = `Admin: ${session.user.email}`;
+    statusEl.style.display = '';
+    logoutBtn.style.display = '';
+  } else {
+    statusEl.style.display = 'none';
+    logoutBtn.style.display = 'none';
+  }
+
+  renderMunicipio();
+  if (vistaEmpresa.style.display !== 'none' || vistaUniversidad.style.display !== 'none') cargarIntereses();
 }
 
 sb.auth.getSession().then(({ data }) => actualizarEstadoAuth(data.session));
 sb.auth.onAuthStateChange((_event, session) => actualizarEstadoAuth(session));
 
+const adminLoginOverlay = document.getElementById('admin-login-overlay');
+const adminLoginError = document.getElementById('admin-login-error');
+
+function abrirLoginAdmin() {
+  adminLoginError.style.display = 'none';
+  document.getElementById('admin-password').value = '';
+  adminLoginOverlay.classList.add('abierto');
+}
+function cerrarLoginAdmin() { adminLoginOverlay.classList.remove('abierto'); }
+
+document.getElementById('admin-login-btn').addEventListener('click', abrirLoginAdmin);
+document.getElementById('admin-login-cerrar').addEventListener('click', cerrarLoginAdmin);
+document.getElementById('admin-login-cancelar').addEventListener('click', cerrarLoginAdmin);
+adminLoginOverlay.addEventListener('click', (e) => { if (e.target === adminLoginOverlay) cerrarLoginAdmin(); });
+
+document.getElementById('admin-login-confirmar').addEventListener('click', async () => {
+  const email = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+  if (!email || !password) return;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    adminLoginError.textContent = 'No se pudo iniciar sesión: ' + error.message;
+    adminLoginError.style.display = '';
+    return;
+  }
+  cerrarLoginAdmin();
+  mostrarToast('Sesión de administrador iniciada.');
+});
+
+document.getElementById('admin-logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  mostrarToast('Sesión de administrador cerrada.');
+});
+
 /* ------------------------------------------------------------
  * Carga real de propuestas. Si la tabla está vacía (aún no hay
  * propuestas reales enviadas desde visor.html), se mantiene el
  * listado mock para que el panel no se vea en blanco.
+ * IMPORTANTE (privacidad): se selecciona nombre_organizacion —
+ * columna propia de "propuestas" — y nunca un join a perfiles
+ * (que contendría el nombre personal de la persona representante).
  * ---------------------------------------------------------- */
 async function cargarPropuestas() {
   const { data, error } = await sb
     .from('propuestas')
-    .select('id, comuna, tipo_intervencion, descripcion, estado, score, created_at, motivo_rechazo, perfiles(nombre)')
+    .select('id, comuna, tipo_intervencion, descripcion, estado, score, created_at, motivo_rechazo, nombre_organizacion')
     .order('score', { ascending: false });
 
   if (error) {
@@ -481,7 +1238,7 @@ async function cargarPropuestas() {
     id: p.id,
     comuna: p.comuna || 'Sin comuna',
     tipo: p.tipo_intervencion,
-    nombre: (p.perfiles && p.perfiles.nombre) || 'Anónimo',
+    nombre_organizacion: p.nombre_organizacion || 'Organización social',
     descripcion: p.descripcion || '',
     estado: p.estado,
     score: p.score || 0,
@@ -493,15 +1250,72 @@ async function cargarPropuestas() {
 }
 
 /* ------------------------------------------------------------
- * Init — soporta ?vista=empresa|municipio para llegar directo
- * desde la portada (index.html) a la pestaña correcta.
+ * Carga de proyectos institucionales (capas 13/14) — misma RPC
+ * paginada que usa visor.html, porque capas grandes vienen truncadas a
+ * 1000 filas por respuesta. _capa_feature_id no es necesario acá (a
+ * diferencia del popup del visor): usamos directamente f.id.
+ * ---------------------------------------------------------- */
+async function obtenerFeaturesCapaInstitucional(capaId) {
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let todos = [];
+  while (true) {
+    const { data, error } = await sb
+      .rpc('capa_features_geojson', { p_capa_id: capaId })
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (error) {
+      console.warn(`No se pudieron cargar los proyectos institucionales de la capa ${capaId}:`, error.message);
+      return todos;
+    }
+    todos = todos.concat(data || []);
+    if (!data || data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return todos;
+}
+
+async function cargarProyectosInstitucionales() {
+  const [f13, f14] = await Promise.all([
+    obtenerFeaturesCapaInstitucional(13),
+    obtenerFeaturesCapaInstitucional(14)
+  ]);
+  PROYECTOS_INSTITUCIONALES = [...f13, ...f14].map(f => {
+    const a = f.atributos || {};
+    return {
+      origen: 'institucional',
+      id: f.id,
+      nombre: a.nombre_proyecto || null,
+      comuna: a.comuna || 'Sin comuna',
+      tipo: a.tipo_intervencion || null,
+      descripcion: a.descripcion || '',
+      estado: a.estado || null,
+      programaOrigen: a.programa_origen || null,
+      costoEstimado: a.costo_estimado !== undefined ? a.costo_estimado : null,
+      fichaPdfUrl: a.ficha_pdf_url || null,
+      necesitaRevision: a.necesita_revision || null
+    };
+  });
+  poblarFiltroComunas();
+  renderMunicipio();
+  renderEmpresa();
+  renderUniversidad();
+}
+
+/* ------------------------------------------------------------
+ * Init — soporta ?vista=empresa|municipio|universidad para llegar
+ * directo desde la portada (index.html) a la pestaña correcta.
  * ---------------------------------------------------------- */
 poblarFiltroComunas();
 renderMunicipio();
+renderEmpresa();
+renderUniversidad();
 cargarPropuestas();
+cargarProyectosInstitucionales();
 
 const vistaInicial = new URLSearchParams(window.location.search).get('vista');
-if (vistaInicial === 'empresa') cambiarVista('empresa');
+if (vistaInicial === 'empresa' || vistaInicial === 'universidad' || vistaInicial === 'municipio') {
+  cambiarVista(vistaInicial);
+}
 </script>
 </body>
 </html>
