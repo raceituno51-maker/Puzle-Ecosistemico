@@ -3,1016 +3,895 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plataforma SIG Colaborativa RM</title>
-<meta name="description" content="Plataforma bidireccional de información geográfica para la Región Metropolitana: ciudadanos proponen lugares, empresas financian, municipios coordinan.">
+<title>Puzle Ecosistémico — Región Metropolitana</title>
+<meta name="description" content="Puzle Ecosistémico conecta organizaciones sociales, universidades, empresas y municipios para hacer realidad proyectos contra el cambio climático en la Región Metropolitana.">
+<link rel="icon" type="image/png" href="assets/img/qinti-gradient.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
 <style>
+  :root {
+    /* ---------- Color tokens ---------- */
+    --teal: #0EA5A3;
+    --blue: #3B82F6;
+    --violet: #7C6FF0;
+    --grad-135: linear-gradient(135deg, var(--teal) 0%, var(--blue) 52%, var(--violet) 100%);
+
+    --ink-900: #0F172A;
+    --ink-700: #334155;
+    --ink-600: #475569;
+    --ink-500: #64748B;
+
+    --bg: #FFFFFF;
+    --bg-subtle: #F8FAFC;
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+
+    /* ---------- Type scale ---------- */
+    --text-xs: 12px;
+    --text-sm: 13.5px;
+    --text-base: 16px;
+    --text-lg: 18px;
+    --text-xl: 20px;
+    --text-2xl: 24px;
+
+    --font-body: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    --font-qinti: 'Fredoka', 'Inter', system-ui, sans-serif;
+
+    /* ---------- Spacing rhythm ---------- */
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-24: 96px;
+
+    /* ---------- Radius ---------- */
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-full: 999px;
+
+    /* ---------- Shadow ---------- */
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.05);
+    --shadow-md: 0 4px 16px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-lg: 0 24px 48px -16px rgba(15,23,42,.18);
+
+    /* ---------- Motion ---------- */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   html, body {
     margin: 0; min-height: 100%;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: #f4f5f4; color: #1a2e22;
+    font-family: var(--font-body);
+    background: var(--bg); color: var(--ink-900);
+    font-size: var(--text-base); line-height: 1.6;
+    overflow-x: hidden;
   }
   a { color: inherit; }
   button { font-family: inherit; }
-  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
-    outline: 2.5px solid #1a7f37; outline-offset: 2px; border-radius: 4px;
+  img { max-width: 100%; }
+  a:focus-visible, button:focus-visible {
+    outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 4px;
   }
+  h1, h2, h3 { font-family: var(--font-heading); }
+
+  .grad-text {
+    background: var(--grad-135);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- Marca Qinti: PNG real con la silueta ya coloreada con el
+     degradé de marca (pre-procesado una sola vez desde la foto/acuarela
+     original). Se usa como <img> normal: nada de mask-image en vivo, que
+     resultó no renderizar de forma confiable entre navegadores. ---------- */
+  .qinti-badge { display: block; flex-shrink: 0; }
+
+  /* Aleteo honesto: no fingimos alas separadas (no hay cuadros de animación
+     reales), solo un flotar/inclinar sutil. Únicamente en tamaños grandes
+     donde Qinti actúa como personaje/guía/chat — nunca en el logo chico. */
+  @keyframes qintiFlutter {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-6px) rotate(2deg); }
+  }
+  .qinti-flutter { animation: qintiFlutter 1.8s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .qinti-flutter { animation: none; }
+  }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner {
+    max-width: 1180px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+  .brand-badge { width: 32px; height: 32px; }
+  .brand-word { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; color: var(--ink-900); font-family: var(--font-heading); }
+
+  .main-nav { display: flex; align-items: center; gap: 28px; }
+  .main-nav a {
+    text-decoration: none; color: var(--ink-600); font-weight: 600; font-size: var(--text-sm);
+    position: relative; padding-bottom: 3px;
+  }
+  .main-nav a::after {
+    content: ''; position: absolute; left: 0; right: 100%; bottom: 0; height: 2px;
+    background: var(--grad-135); border-radius: 2px; transition: right .25s var(--ease-out);
+  }
+  .main-nav a:hover { color: var(--ink-900); }
+  .main-nav a:hover::after { right: 0; }
+
+  .header-ctas { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-weight: 600; font-size: var(--text-sm); text-decoration: none;
+    padding: 10px 18px; border-radius: var(--radius-md); border: 1.5px solid transparent;
+    cursor: pointer; transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out), filter 200ms var(--ease-out), border-color 200ms var(--ease-out), background 200ms var(--ease-out);
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--grad-135); color: #fff;
+    box-shadow: 0 10px 24px -8px rgba(59,130,246,.5);
+  }
+  .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 14px 28px -8px rgba(59,130,246,.6); }
+  .btn-outline {
+    background: #fff; border-color: var(--border-strong); color: var(--ink-900);
+  }
+  .btn-outline:hover { border-color: var(--ink-500); background: var(--bg-subtle); }
+  .btn-lg { padding: 13px 24px; font-size: var(--text-base); border-radius: var(--radius-md); }
+
+  @media (max-width: 860px) {
+    .main-nav { display: none; }
+    .btn-lg.hide-mobile { display: none; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative; overflow: hidden;
+    padding: var(--space-24) 24px var(--space-16);
+  }
+  .hero-blob {
+    position: absolute; border-radius: 50%; filter: blur(90px);
+    opacity: .35; z-index: 0; pointer-events: none;
+  }
+  .hero-blob.b1 { width: 480px; height: 480px; background: var(--teal); top: -180px; left: -120px; }
+  .hero-blob.b2 { width: 420px; height: 420px; background: var(--violet); top: -100px; right: -140px; }
+  .hero-blob.b3 { width: 380px; height: 380px; background: var(--blue); bottom: -220px; left: 38%; opacity: .25; }
+
+  .hero-inner {
+    position: relative; z-index: 1;
+    max-width: 800px; margin: 0 auto; text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.3rem, 3.6vw + 1rem, 3.4rem);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.12;
+    margin: 0 0 var(--space-6);
+  }
+  .hero .lead {
+    font-size: var(--text-lg); color: var(--ink-600); line-height: 1.6;
+    max-width: 580px; margin: 0 auto var(--space-8);
+  }
+  /* ---------- Hero visual: franja panorámica a todo el ancho del
+     sitio (full-bleed), no una tarjeta contenida — por eso rompe el
+     max-width del resto del layout con el truco 100vw/50vw. ---------- */
+  .hero-visual {
+    position: relative; width: 100vw; margin-left: calc(50% - 50vw);
+  }
+  .hero-card {
+    position: relative; overflow: hidden;
+    height: clamp(220px, 34vw, 480px);
+    background: var(--bg-subtle);
+    opacity: 0;
+    animation: heroCardIn 720ms var(--ease-out) 120ms both;
+  }
+  .hero-card img {
+    display: block; width: 100%; height: 100%;
+    object-fit: contain; object-position: 50% 50%;
+  }
+  @keyframes heroCardIn {
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-card { animation: none; opacity: 1; }
+    .feature-card.fade-in { animation: none; opacity: 1; transform: none; }
+  }
+
+  /* ---------- Actores ---------- */
+  .features {
+    max-width: 1180px; margin: 0 auto; padding: var(--space-16) 24px var(--space-24);
+  }
+  .features h2 {
+    text-align: center; font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.01em;
+    margin: 0 0 var(--space-2);
+  }
+  .features .sub { text-align: center; color: var(--ink-500); font-size: var(--text-base); margin: 0; }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-6); margin-top: var(--space-8);
+  }
+
+  .feature-card {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: var(--space-6); box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column;
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out), border-color 220ms var(--ease-out);
+  }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: var(--space-4);
+  }
+  .feature-card h3 { font-size: var(--text-base); font-weight: 700; margin: 0 0 6px; }
+  .feature-card p { font-size: var(--text-sm); color: var(--ink-500); line-height: 1.55; margin: 0 0 var(--space-4); flex: 1; }
+  .feature-card .actor-cta {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font-size: var(--text-sm); font-weight: 600; color: var(--blue);
+  }
+  .feature-card .actor-cta svg { transition: transform .18s ease; }
+  .feature-card .actor-cta:hover svg { transform: translateX(3px); }
+
+  .feature-card.rol-organizacion .feature-icon { background: rgba(14,165,163,.12); color: var(--teal); }
+  .feature-card.rol-organizacion .actor-cta { color: var(--teal); }
+  .feature-card.rol-universidad .feature-icon { background: rgba(59,130,246,.12); color: var(--blue); }
+  .feature-card.rol-universidad .actor-cta { color: var(--blue); }
+  .feature-card.rol-empresa .feature-icon { background: rgba(124,111,240,.12); color: var(--violet); }
+  .feature-card.rol-empresa .actor-cta { color: var(--violet); }
+  .feature-card.rol-municipio .feature-icon { background: linear-gradient(135deg, rgba(14,165,163,.14), rgba(124,111,240,.14)); color: var(--ink-700); }
+  .feature-card.rol-municipio .actor-cta { color: #5B4FD6; }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .fade-in { animation: fadeUp .7s ease both; }
-  .fade-in.d1 { animation-delay: .08s; }
-  .fade-in.d2 { animation-delay: .16s; }
-  .fade-in.d3 { animation-delay: .24s; }
+  .feature-card.fade-in { animation: fadeUp 500ms var(--ease-out) both; }
+  .feature-card.fade-in.d1 { animation-delay: .08s; }
+  .feature-card.fade-in.d2 { animation-delay: .14s; }
+  .feature-card.fade-in.d3 { animation-delay: .20s; }
+  .feature-card.fade-in.d4 { animation-delay: .26s; }
 
-  /* ---------- Topbar ---------- */
-  .topbar-wrap {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(244,245,244,.72);
-    backdrop-filter: blur(14px) saturate(160%);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    border-bottom: 1px solid rgba(26,46,34,.06);
-  }
-  @media (prefers-reduced-transparency: reduce) {
-    .topbar-wrap { background: #f4f5f4; backdrop-filter: none; -webkit-backdrop-filter: none; }
-  }
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 24px; max-width: 1120px; margin: 0 auto; position: relative;
-  }
-  .topbar .marca-grupo { display: flex; align-items: center; gap: 10px; }
-  .topbar .logo-mark { flex-shrink: 0; }
-  .topbar .marca { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
-  .topbar .marca small { display: block; font-weight: 500; font-size: 11px; color: #666; }
-  .topbar .nav-links { display: flex; gap: 22px; font-size: 13.5px; }
-  .topbar .nav-links a {
-    text-decoration: none; color: #3a4a3f; font-weight: 600; position: relative; padding-bottom: 3px;
-  }
-  .topbar .nav-links a::after {
-    content: ''; position: absolute; left: 0; right: 100%; bottom: 0; height: 2px;
-    background: linear-gradient(90deg, #1a7f37, #70e000);
-    border-radius: 2px; transition: right .28s cubic-bezier(.16,1,.3,1);
-  }
-  .topbar .nav-links a:hover { color: #1a7f37; }
-  .topbar .nav-links a:hover::after { right: 0; }
-  @media (max-width: 560px) {
-    .topbar .marca small { display: none; }
-    .topbar .nav-links { gap: 12px; font-size: 12px; }
-  }
-
-  /* ---------- Hero + paisaje ilustrado ---------- */
-  .hero-wrap {
-    position: relative; overflow: hidden;
-    background:
-      radial-gradient(600px 300px at 15% -10%, rgba(112,224,0,.16), transparent 60%),
-      radial-gradient(500px 260px at 90% 0%, rgba(26,92,156,.10), transparent 60%),
-      linear-gradient(180deg, #eef2ee 0%, #f4f5f4 55%);
-  }
-  .paisaje {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 264px;
-    z-index: 0; pointer-events: none;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
-    mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
-  }
-  .paisaje svg { width: 100%; height: 100%; display: block; }
-  .fauna-flotante { position: absolute; z-index: 0; pointer-events: none; }
-  @keyframes flotar { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-  .fauna-flotante svg { animation: flotar 4.5s ease-in-out infinite; }
-  .fauna-flotante.f2 svg { animation-duration: 5.5s; animation-delay: .6s; }
-
-  /* ---------- Vida del paisaje: parallax suave, río, aves y fauna nativa ---------- */
-  @keyframes derivaLejana { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-14px); } }
-  @keyframes derivaCercana { 0%,100% { transform: translateX(0); } 50% { transform: translateX(9px); } }
-  @keyframes fluirRio { to { stroke-dashoffset: -160; } }
-  @keyframes planear { 0%,100% { transform: translate(0,0); } 50% { transform: translate(70px,-8px); } }
-  @keyframes picoteo { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
-  @keyframes picoteoSuave { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-  .capa-lejana { animation: derivaLejana 26s ease-in-out infinite; }
-  .capa-cercana { animation: derivaCercana 22s ease-in-out infinite; }
-  .rio-brillo { animation: fluirRio 5s linear infinite; }
-  .ave-planeando { animation: planear 17s ease-in-out infinite; }
-  .tricahue { transform-origin: 4px -2px; animation: picoteo 3.4s ease-in-out infinite; }
-  .loica { animation: picoteoSuave 2.8s ease-in-out infinite; }
-
-  .hero {
-    position: relative; z-index: 2; text-align: center; padding: 40px 20px 46px;
-    max-width: 680px; margin: 0 auto;
-  }
-  .hero .logo-mark.grande { margin-bottom: 16px; }
-  .hero h1 { font-size: clamp(24px, 5vw, 34px); margin: 0 0 12px; line-height: 1.22; letter-spacing: -0.01em; }
-  .hero h1 .resalte { color: #1a7f37; }
-  .hero p { font-size: 14.5px; line-height: 1.65; color: #444; margin: 0 auto 8px; max-width: 540px; }
-  .hero .region {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 16px; font-size: 12px; font-weight: 600; color: #1a7f37;
-    background: #e3f3e6; padding: 6px 14px; border-radius: 20px;
-    border: 1px solid rgba(26,127,55,.15);
-  }
-  .hero .region .dot { width: 6px; height: 6px; border-radius: 50%; background: #1a7f37; }
-
-  /* ---------- Cómo funciona ---------- */
-  .como-funciona {
-    position: relative; z-index: 2;
-    max-width: 780px; margin: 34px auto 0; padding: 0 20px;
-    display: flex; align-items: flex-start; justify-content: center; gap: 6px;
-  }
-  .paso { flex: 1; max-width: 190px; text-align: center; position: relative; padding: 0 6px; }
-  .paso .num {
-    width: 30px; height: 30px; border-radius: 50%; background: #1a2e22; color: #70e000;
-    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
-    margin: 0 auto 8px; position: relative; z-index: 1;
-  }
-  .paso p {
-    margin: 0; font-size: 12px; color: #2f3f36; line-height: 1.4;
-    background: rgba(255,255,255,.94); padding: 5px 10px; border-radius: 10px;
-    display: inline-block;
-  }
-  .paso-conector {
-    position: absolute; top: 15px; left: calc(50% + 25px); right: calc(-50% + 25px);
-    height: 2px; background: repeating-linear-gradient(90deg, #cfd8d1 0 6px, transparent 6px 11px);
-  }
-  @media (max-width: 620px) {
-    .como-funciona { flex-direction: column; align-items: stretch; gap: 14px; max-width: 320px; }
-    .paso { max-width: none; display: flex; align-items: center; gap: 10px; text-align: left; }
-    .paso .num { margin: 0; flex-shrink: 0; }
-    .paso-conector { display: none; }
-  }
-
-  /* ---------- Capas oficiales strip ---------- */
-  .capas-strip {
-    position: relative; z-index: 2;
-    max-width: 780px; margin: 30px auto 0; padding: 0 20px 6px;
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
-  }
-  .capas-strip span {
-    font-size: 11.5px; color: #3a4a3f; background: #fff; border: 1px solid #e2e6e2;
-    padding: 5px 11px; border-radius: 20px; white-space: nowrap;
-  }
-
-  /* ---------- Roles ---------- */
-  main { max-width: 960px; margin: 0 auto; padding: 44px 20px 56px; position: relative; }
-  main > h2 { text-align: center; font-size: 18px; margin: 0 0 4px; }
-  main > p.sub { text-align: center; font-size: 13px; color: #6b6b6b; margin: 0 0 28px; }
-
-  .roles {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 18px;
-  }
-  .card-rol {
-    background: #fff; border-radius: 14px; padding: 24px 22px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 8px 20px rgba(20,30,20,.05);
-    border: 1px solid rgba(0,0,0,.04);
-    display: flex; flex-direction: column; text-align: left;
-    transition: transform .22s ease, box-shadow .22s ease;
-  }
-  .card-rol:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,.06), 0 16px 30px rgba(20,30,20,.09); }
-  .card-rol .icono {
-    width: 44px; height: 44px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 14px;
-  }
-  .card-rol h3 { font-size: 15.5px; margin: 0 0 6px; }
-  .card-rol p { font-size: 12.5px; color: #666; line-height: 1.55; margin: 0 0 18px; flex: 1; }
-  .card-rol a {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 14px; border-radius: 9px;
-    color: #fff; transition: gap .18s ease, filter .18s ease;
-  }
-  .card-rol a:hover { gap: 10px; filter: brightness(1.06); }
-  .card-rol a svg { transition: transform .18s ease; }
-  .card-rol a:hover svg { transform: translateX(2px); }
-
-  .card-rol.ciudadano .icono { background: #e3f3e6; }
-  .card-rol.ciudadano a { background: #1a7f37; }
-  .card-rol.empresa .icono { background: #e6ecf7; }
-  .card-rol.empresa a { background: #1a5c9c; }
-  .card-rol.municipio .icono { background: #ece3f7; }
-  .card-rol.municipio a { background: #5a189a; }
-
+  /* ---------- Footer ---------- */
   footer {
-    text-align: center; font-size: 11px; color: #767676;
-    padding: 22px 20px; border-top: 1px solid #e5e5e5;
-    max-width: 960px; margin: 0 auto;
+    text-align: center; font-size: var(--text-xs); color: var(--ink-500);
+    padding: var(--space-8) 20px; border-top: 1px solid var(--border);
   }
+  .footer-logos {
+    display: flex; align-items: center; justify-content: center; gap: var(--space-8);
+    margin-bottom: var(--space-4);
+  }
+  .footer-logos img { height: 88px; width: auto; display: block; }
 
   @media (max-width: 480px) {
-    .hero { padding: 28px 16px 30px; }
-    .card-rol { padding: 20px 18px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .fade-in, .fade-in.d1, .fade-in.d2, .fade-in.d3 { animation: none; opacity: 1; transform: none; }
-    .capa-lejana, .capa-cercana, .rio-brillo, .ave-planeando, .tricahue, .loica,
-    .fauna-flotante svg, .colibri-svg, .colibri-svg .ala-izq, .colibri-svg .ala-der {
-      animation: none !important;
-    }
-    #colibri-guia, #burbuja-dialogo { transition: opacity .2s ease; }
+    .hero { padding: var(--space-16) 16px var(--space-12); }
   }
 
   /* ================================================================
-   * COLIBRÍ — mascota / guía / disparador de chat
+   * QINTI — recorrido guiado por distintos rincones del sitio +
+   * lanzador de chat flotante. Qinti (imagen + burbuja) se mueve junto
+   * a cada punto de interés en vez de quedar fija en una esquina.
    * ================================================================ */
-  @keyframes aleteo {
-    0%, 100% { transform: rotate(0deg); }
-    50% { transform: rotate(-26deg); }
-  }
-  @keyframes aleteoDer {
-    0%, 100% { transform: rotate(0deg); }
-    50% { transform: rotate(26deg); }
-  }
-  @keyframes chiriFlota { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-  .colibri-svg { animation: chiriFlota 3.2s ease-in-out infinite; }
-  .colibri-svg .ala-izq { transform-origin: 35px 33px; animation: aleteo .18s ease-in-out infinite; }
-  .colibri-svg .ala-der { transform-origin: 55px 33px; animation: aleteoDer .18s ease-in-out infinite; }
-
-  #colibri-guia {
-    position: fixed; top: 0; left: 0; z-index: 1200;
-    width: 74px; height: 74px; pointer-events: none;
-    transform: translate(-200px, 40px);
-    transition: transform .6s cubic-bezier(.16,1,.3,1);
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,.25));
-    opacity: 0; visibility: hidden;
-  }
-  #colibri-guia.visible { opacity: 1; visibility: visible; }
-
-  #burbuja-dialogo {
-    position: fixed; top: 0; left: 0; z-index: 1201; max-width: 260px;
-    background: #fff; border-radius: 18px 18px 18px 4px; padding: 14px 16px 12px;
-    box-shadow: 0 8px 26px rgba(0,0,0,.18); border: 1px solid #e5e5e5;
-    font-size: 13px; line-height: 1.5; color: #1a2e22;
-    transform: translate(-200px, 40px);
-    transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .3s ease;
-    opacity: 0; visibility: hidden;
-  }
-  #burbuja-dialogo.visible { opacity: 1; visibility: visible; }
-  #burbuja-dialogo .fila-botones { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
-  #burbuja-dialogo button {
-    border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
-    min-height: 36px; padding: 9px 14px;
-  }
-  #burbuja-dialogo .btn-siguiente { background: #1a7f37; color: #fff; }
-  #burbuja-dialogo .btn-saltar { background: transparent; color: #666; padding: 7px 4px; }
-
-  /* Botón flotante permanente (idle) */
-  #colibri-fab {
-    position: fixed; bottom: 20px; right: 20px; z-index: 1100;
-    width: 58px; height: 58px; border-radius: 50%;
-    background: #1a2e22; border: none; cursor: pointer;
+  #qinti-fab {
+    position: fixed; bottom: 22px; right: 22px; z-index: 1100;
+    width: 76px; height: 76px; border-radius: 50%;
+    background: #fff; border: 2px solid transparent; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 16px rgba(0,0,0,.28);
-    transition: transform .2s ease;
+    box-shadow: var(--shadow-lg);
+    transition: transform .2s var(--ease-out), opacity .2s ease, border-color .2s ease, box-shadow .2s ease;
   }
-  #colibri-fab:hover { transform: scale(1.06); }
-  #colibri-fab .colibri-svg .ala-izq, #colibri-fab .colibri-svg .ala-der { animation-duration: .35s; }
+  #qinti-fab:hover { transform: scale(1.08); border-color: var(--blue); box-shadow: 0 24px 48px -16px rgba(59,130,246,.5); }
+  #qinti-fab img { width: 58px; height: 58px; border-radius: 50%; }
+  #qinti-fab.oculto { opacity: 0; pointer-events: none; transform: scale(.8); }
 
-  /* Botón de música */
-  #audio-toggle {
-    position: fixed; bottom: 20px; left: 20px; z-index: 1100;
-    width: 46px; height: 46px; border-radius: 50%;
-    background: #fff; border: 1px solid #e0e0e0; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: 18px;
-    box-shadow: 0 3px 10px rgba(0,0,0,.12);
-    transition: transform .2s ease;
+  /* Anillo de pulso continuo: invita a hacer clic sin ser un aleteo falso
+     (es un halo que crece y se desvanece, no un movimiento del personaje). */
+  #qinti-fab::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid var(--blue); opacity: 0;
+    animation: qintiPulso 2.6s ease-out infinite;
   }
-  #audio-toggle:hover { transform: scale(1.06); }
+  @keyframes qintiPulso {
+    0% { transform: scale(1); opacity: .55; }
+    100% { transform: scale(1.45); opacity: 0; }
+  }
+  #qinti-fab-punto {
+    position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--grad-135); border: 2px solid #fff;
+    animation: qintiPuntoLatido 1.8s ease-in-out infinite;
+  }
+  @keyframes qintiPuntoLatido {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #qinti-fab::after, #qinti-fab-punto { animation: none; }
+  }
 
-  /* ---------- Panel de chat ---------- */
-  #chat-panel {
-    position: fixed; bottom: 88px; right: 20px; z-index: 1150;
-    width: 320px; max-width: 90vw; height: 430px; max-height: 70vh;
-    background: #fff; border-radius: 16px; box-shadow: 0 12px 36px rgba(0,0,0,.22);
-    display: flex; flex-direction: column; overflow: hidden;
-    transform: translateY(16px) scale(.97); opacity: 0; visibility: hidden; pointer-events: none;
-    transition: transform .22s ease, opacity .22s ease;
-    border: 1px solid #e5e5e5;
+  /* Contenedor posicionado (mueve a Qinti por el sitio vía transform) —
+     el aleteo va en la <img> interna para que ambos transforms no se
+     pisen entre sí (un elemento no puede tener dos transforms activos:
+     uno de posición vía JS y otro de animación vía CSS a la vez). */
+  #qinti-avatar {
+    position: fixed; top: 0; left: 0; z-index: 1101;
+    width: 60px; height: 60px;
+    opacity: 0; pointer-events: none;
+    transition: transform .65s var(--ease-out), opacity .3s ease;
   }
-  #chat-panel.abierto { transform: translateY(0) scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
-  #chat-panel header {
-    background: #1a2e22; color: #fff; padding: 12px 14px;
-    display: flex; align-items: center; justify-content: space-between;
+  #qinti-avatar.visible { opacity: 1; }
+  #qinti-avatar img {
+    width: 100%; height: 100%; display: block;
+    filter: drop-shadow(0 6px 14px rgba(15,23,42,.28));
   }
-  #chat-panel header .titulo { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
-  #chat-panel header .acciones-header { display: flex; gap: 6px; }
-  #chat-panel header button {
-    background: transparent; border: none; color: #fff; opacity: .85; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; border-radius: 6px;
+
+  #qinti-burbuja {
+    position: fixed; top: 0; left: 0; z-index: 1102;
+    width: 300px; max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 24px); overflow-y: auto;
+    background: #fff; border-radius: 18px 18px 18px 4px;
+    box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+    padding: 16px 16px 14px;
+    font-family: var(--font-qinti);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: transform .65s var(--ease-out), opacity .3s ease;
   }
-  #chat-panel header button:hover { opacity: 1; background: rgba(255,255,255,.12); }
-  #chat-mensajes { flex: 1; overflow-y: auto; padding: 12px 12px 6px; display: flex; flex-direction: column; gap: 8px; }
-  .msg { max-width: 85%; padding: 8px 11px; border-radius: 12px; font-size: 12.5px; line-height: 1.45; }
-  .msg.bot { background: #f0f4f0; color: #1a2e22; align-self: flex-start; border-bottom-left-radius: 4px; }
-  .msg.user { background: #1a7f37; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-  .msg.error { background: #fbe4e4; color: #7a1a1a; align-self: flex-start; border-bottom-left-radius: 4px; }
-  .msg.escribiendo { font-style: italic; color: #888; }
-  #chat-form { display: flex; gap: 6px; padding: 10px; border-top: 1px solid #eee; }
-  #chat-input {
-    flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 12.5px;
-    font-family: inherit; resize: none;
+  #qinti-burbuja.visible { opacity: 1; visibility: visible; pointer-events: auto; }
+  #qinti-burbuja .qinti-guia-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  #qinti-burbuja .qinti-guia-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+  #qinti-burbuja .qinti-guia-nombre { font-weight: 600; font-size: 14.5px; color: var(--ink-900); }
+  #qinti-burbuja .qinti-guia-texto { font-size: 13.5px; line-height: 1.55; color: var(--ink-700); margin: 0 0 10px; }
+  #qinti-burbuja .qinti-actor-lista { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  #qinti-burbuja .qinti-actor-item {
+    display: flex; flex-direction: column; gap: 1px; padding: 8px 10px;
+    background: var(--bg-subtle); border-radius: 10px; border: 1px solid var(--border);
   }
-  #chat-form button {
-    background: #1a7f37; color: #fff; border: none; border-radius: 8px; padding: 0 14px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  #qinti-burbuja .qinti-actor-item strong { font-size: 12.5px; color: var(--ink-900); }
+  #qinti-burbuja .qinti-actor-item span { font-size: 12px; color: var(--ink-500); line-height: 1.4; }
+  #qinti-burbuja .qinti-guia-fila { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #qinti-burbuja .qinti-guia-dots { display: flex; gap: 4px; }
+  #qinti-burbuja .qinti-guia-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong); }
+  #qinti-burbuja .qinti-guia-dots span.activo { background: var(--blue); }
+  #qinti-burbuja button {
+    border: none; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    padding: 8px 14px; font-family: var(--font-qinti);
   }
-  #chat-form button:disabled { opacity: .5; cursor: default; }
+  #qinti-burbuja .btn-siguiente { background: var(--grad-135); color: #fff; }
+  #qinti-burbuja .btn-cerrar-guia { background: transparent; color: var(--ink-500); padding: 8px 6px; }
 
   @media (max-width: 480px) {
-    #chat-panel { right: 12px; bottom: 82px; width: calc(100vw - 24px); }
-    #colibri-fab { right: 14px; bottom: 14px; }
-    #audio-toggle { left: 14px; bottom: 14px; }
+    #qinti-fab { right: 14px; bottom: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #qinti-avatar, #qinti-burbuja, #qinti-fab { transition: opacity .2s ease; }
+  }
+
+  /* ================================================================
+   * QINTI — chat (basado en reglas, sin backend/LLM). Se abre desde el
+   * mismo botón flotante una vez que el recorrido guiado ya se vio.
+   * ================================================================ */
+  #qinti-chat {
+    position: fixed; bottom: 108px; right: 22px; z-index: 1150;
+    width: 340px; max-width: calc(100vw - 32px);
+    height: 460px; max-height: calc(100vh - 130px);
+    background: #fff; border-radius: 18px; box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+    opacity: 0; visibility: hidden; transform: translateY(16px) scale(.97); pointer-events: none;
+    transition: opacity .22s ease, transform .22s var(--ease-out);
+  }
+  #qinti-chat.abierto { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+  #qinti-chat-header {
+    display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+    background: var(--grad-135); color: #fff; flex-shrink: 0;
+  }
+  #qinti-chat-header img { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; }
+  #qinti-chat-header span { font-weight: 700; font-size: 14px; flex: 1; font-family: var(--font-qinti); }
+  #qinti-chat-cerrar { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; opacity: .85; padding: 2px 6px; }
+  #qinti-chat-cerrar:hover { opacity: 1; }
+
+  #qinti-chat-mensajes { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .qinti-msg { max-width: 85%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+  .qinti-msg.bot { background: var(--bg-subtle); color: var(--ink-900); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .qinti-msg.user { background: var(--grad-135); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+  #qinti-chat-sugerencias { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 10px; flex-shrink: 0; }
+  #qinti-chat-sugerencias button {
+    border: 1px solid var(--border); background: #fff; color: var(--ink-700);
+    font-size: 11.5px; padding: 6px 11px; border-radius: var(--radius-full); cursor: pointer;
+    transition: all .15s ease;
+  }
+  #qinti-chat-sugerencias button:hover { border-color: var(--blue); color: var(--blue); }
+
+  #qinti-chat-form { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  #qinti-chat-input {
+    flex: 1; border: 1px solid var(--border); border-radius: var(--radius-full); padding: 8px 14px;
+    font-size: 13px; font-family: inherit;
+  }
+  #qinti-chat-input:focus { outline: none; border-color: var(--blue); }
+  #qinti-chat-form button[type=submit] {
+    background: var(--grad-135); color: #fff; border: none; border-radius: 50%;
+    width: 36px; height: 36px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  @media (max-width: 480px) {
+    #qinti-chat { right: 12px; bottom: 100px; }
   }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <span class="marca-grupo">
-    <span class="logo-mark">
-      <svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
-        <rect width="64" height="64" rx="14" fill="#1a2e22"/>
-        <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
-        <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
-        <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-        <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-        <circle cx="32" cy="22" r="3.4" fill="#ffffff"/>
-        <circle cx="25" cy="31" r="3.4" fill="#ffffff"/>
-        <circle cx="39" cy="31" r="3.4" fill="#ffffff"/>
-      </svg>
-    </span>
-    <span class="marca">SIG Colaborativo RM<small>Piloto — Región Metropolitana</small></span>
-  </span>
-  <nav class="nav-links">
-    <a href="#roles">Roles</a>
-    <a href="visor.html">Visor</a>
-    <a href="panel.html">Panel</a>
-  </nav>
-</div>
-
-<div class="hero-wrap">
-
-  <!-- Paisaje ilustrado: cordillera + río + flora y fauna nativa de la Región Metropolitana -->
-  <div class="paisaje" aria-hidden="true">
-    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gradLejana" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#5c6f62"/>
-          <stop offset="100%" stop-color="#4c5d52"/>
-        </linearGradient>
-        <linearGradient id="gradCercana" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#3f5245"/>
-          <stop offset="100%" stop-color="#2f3f36"/>
-        </linearGradient>
-      </defs>
-
-      <!-- Un ave planeando (aguilucho) sobre la cordillera -->
-      <g class="ave-planeando" opacity="0.5">
-        <path d="M985 44 Q1000 30 1015 44" stroke="#2c3b2f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-        <path d="M990 44 Q1000 37 1010 44" stroke="#2c3b2f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-      </g>
-
-      <!-- Cordillera, capa lejana -->
-      <g class="capa-lejana">
-        <polygon points="0,220 140,90 260,190 380,60 520,200 640,110 760,210 900,70 1040,190 1160,100 1300,200 1440,140 1440,320 0,320"
-          fill="url(#gradLejana)" opacity="0.55"/>
-      </g>
-
-      <!-- Cordillera, capa cercana con nieve -->
-      <g class="capa-cercana">
-        <polygon points="0,260 120,160 220,240 340,120 470,250 600,150 740,245 860,130 1000,240 1140,160 1260,235 1440,190 1440,320 0,320"
-          fill="url(#gradCercana)"/>
-        <polygon points="120,160 140,178 100,178" fill="#eef2ee"/>
-        <polygon points="340,120 362,140 316,140" fill="#eef2ee"/>
-        <polygon points="600,150 620,168 578,168" fill="#eef2ee"/>
-        <polygon points="860,130 882,150 838,150" fill="#eef2ee"/>
-        <polygon points="1140,160 1160,178 1118,178" fill="#eef2ee"/>
-      </g>
-
-      <!-- Río -->
-      <path d="M760 40 C 700 110, 820 150, 740 210 S 640 300, 700 320"
-        fill="none" stroke="#79c2e6" stroke-width="30" stroke-linecap="round" opacity="0.65"/>
-      <path d="M760 40 C 700 110, 820 150, 740 210 S 640 300, 700 320"
-        fill="none" stroke="#a9dcf2" stroke-width="12" stroke-linecap="round" opacity="0.8"/>
-      <path class="rio-brillo" d="M760 40 C 700 110, 820 150, 740 210 S 640 300, 700 320"
-        fill="none" stroke="#eef8fb" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 16" opacity="0.85"/>
-
-      <!-- Flora y fauna en primer plano -->
-      <g opacity="0.97">
-        <!-- pasto / matorral corrido -->
-        <path d="M0 300 Q 60 280 120 300 T 260 300 T 420 296 T 600 302 T 800 296 T 1000 300 T 1200 294 T 1440 300 V320 H0 Z" fill="#215c33"/>
-
-        <!-- Quillay (izquierda) con un tricahue posado -->
-        <rect x="94" y="255" width="6" height="30" fill="#2c3b2f"/>
-        <circle cx="97" cy="248" r="26" fill="#1a7f37"/>
-        <circle cx="78" cy="260" r="18" fill="#22994a"/>
-        <circle cx="118" cy="262" r="18" fill="#22994a"/>
-
-        <!-- Arbolito -->
-        <rect x="228" y="262" width="5" height="24" fill="#2c3b2f"/>
-        <circle cx="230" cy="256" r="20" fill="#22994a"/>
-
-        <!-- Zorro culpeo asomado tras un matorral -->
-        <g transform="translate(850,300)">
-          <g class="zorro">
-            <path d="M-6 10 C -10 0 -6 -10 4 -12 C 14 -10 16 0 10 10 Z" fill="#b5622b"/>
-            <path d="M-4 -10 L-9 -20 L0 -12 Z" fill="#b5622b"/>
-            <path d="M8 -12 L13 -21 L15 -10 Z" fill="#b5622b"/>
-            <path d="M-4 -10 L-8 -18 L-1 -11 Z" fill="#e0b088"/>
-            <path d="M9 -11 L12 -19 L14 -10 Z" fill="#e0b088"/>
-            <circle cx="0" cy="0" r="1.5" fill="#111"/>
-            <circle cx="8" cy="1" r="1.5" fill="#111"/>
-            <path d="M2 8 Q6 12 10 8" stroke="#7a3f18" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-          </g>
-          <ellipse cx="4" cy="14" rx="22" ry="12" fill="#215c33"/>
-          <ellipse cx="-10" cy="16" rx="14" ry="9" fill="#22994a"/>
-          <ellipse cx="18" cy="16" rx="14" ry="9" fill="#1a7f37"/>
-        </g>
-
-        <!-- Palma chilena -->
-        <g transform="translate(520,0)">
-          <path d="M0 286 C -4 260 4 230 0 205" stroke="#5c4a3a" stroke-width="7" fill="none" stroke-linecap="round"/>
-          <g stroke="#1a7f37" stroke-width="4" stroke-linecap="round">
-            <path d="M0 205 L -26 178"/>
-            <path d="M0 205 L -15 172"/>
-            <path d="M0 205 L 0 168"/>
-            <path d="M0 205 L 15 172"/>
-            <path d="M0 205 L 28 178"/>
-            <path d="M0 205 L 36 190"/>
-            <path d="M0 205 L -34 192"/>
-          </g>
-        </g>
-
-        <!-- Puya chilensis (rosetas espinosas con vara florida) -->
-        <g transform="translate(170,300)">
-          <path d="M0 0 L -14 -8 L -2 -2 Z" fill="#3a6b52"/>
-          <path d="M0 0 L 14 -8 L 2 -2 Z" fill="#3a6b52"/>
-          <path d="M0 0 L -10 -16 L -1 -4 Z" fill="#4c8c68"/>
-          <path d="M0 0 L 10 -16 L 1 -4 Z" fill="#4c8c68"/>
-          <line x1="0" y1="-4" x2="0" y2="-46" stroke="#4c8c68" stroke-width="2.5"/>
-          <circle cx="0" cy="-46" r="3" fill="#c9d94a"/>
-          <circle cx="-4" cy="-40" r="2.4" fill="#c9d94a"/>
-          <circle cx="4" cy="-40" r="2.4" fill="#c9d94a"/>
-        </g>
-
-        <!-- Loica en el pastizal -->
-        <g transform="translate(360,300) scale(0.95)">
-          <g class="loica">
-            <ellipse cx="0" cy="0" rx="10" ry="6.5" fill="#3a3a2e"/>
-            <path d="M-7 -2 C -3 -6 3 -6 6 -2 C 2 1 -3 1 -7 -2 Z" fill="#e0592a"/>
-            <circle cx="7" cy="-4" r="3.6" fill="#3a3a2e"/>
-            <path d="M10 -4 L15 -3 L10 -2 Z" fill="#2c2c22"/>
-            <line x1="-2" y1="5" x2="-2" y2="10" stroke="#2c2c22" stroke-width="1.6"/>
-            <line x1="2" y1="5" x2="2" y2="10" stroke="#2c2c22" stroke-width="1.6"/>
-          </g>
-        </g>
-
-        <!-- Quillay (derecha) con un tricahue posado -->
-        <rect x="1180" y="252" width="6" height="32" fill="#2c3b2f"/>
-        <circle cx="1183" cy="244" r="27" fill="#1a7f37"/>
-        <circle cx="1160" cy="258" r="17" fill="#22994a"/>
-        <circle cx="1206" cy="258" r="17" fill="#22994a"/>
-        <g transform="translate(1150,236)">
-          <g class="tricahue">
-            <ellipse cx="0" cy="0" rx="9" ry="7" fill="#4a7c3f"/>
-            <path d="M-9 2 C -14 4 -16 10 -12 14 C -9 10 -8 6 -6 3 Z" fill="#c0392b" opacity="0.85"/>
-            <circle cx="6" cy="-3" r="4.2" fill="#4a7c3f"/>
-            <path d="M9 -3 L15 -1 L9 1 Z" fill="#e0592a"/>
-            <circle cx="8" cy="-4" r="1" fill="#111"/>
-            <path d="M-9 0 Q-16 4 -18 12" stroke="#3a6b52" stroke-width="3" fill="none" stroke-linecap="round"/>
-          </g>
-        </g>
-
-        <!-- Puya chilensis (derecha) -->
-        <g transform="translate(1260,296) scale(0.85)">
-          <path d="M0 0 L -14 -8 L -2 -2 Z" fill="#3a6b52"/>
-          <path d="M0 0 L 14 -8 L 2 -2 Z" fill="#3a6b52"/>
-          <path d="M0 0 L -10 -16 L -1 -4 Z" fill="#4c8c68"/>
-          <path d="M0 0 L 10 -16 L 1 -4 Z" fill="#4c8c68"/>
-          <line x1="0" y1="-4" x2="0" y2="-46" stroke="#4c8c68" stroke-width="2.5"/>
-          <circle cx="0" cy="-46" r="3" fill="#c9d94a"/>
-          <circle cx="-4" cy="-40" r="2.4" fill="#c9d94a"/>
-          <circle cx="4" cy="-40" r="2.4" fill="#c9d94a"/>
-        </g>
-
-        <!-- Palma chilena (derecha) -->
-        <g transform="translate(980,0)">
-          <path d="M0 286 C 4 260 -4 230 0 205" stroke="#5c4a3a" stroke-width="7" fill="none" stroke-linecap="round"/>
-          <g stroke="#1a7f37" stroke-width="4" stroke-linecap="round">
-            <path d="M0 205 L -26 178"/>
-            <path d="M0 205 L -15 172"/>
-            <path d="M0 205 L 0 168"/>
-            <path d="M0 205 L 15 172"/>
-            <path d="M0 205 L 28 178"/>
-            <path d="M0 205 L 36 190"/>
-            <path d="M0 205 L -34 192"/>
-          </g>
-        </g>
-
-        <!-- Arbolito final -->
-        <rect x="1320" y="260" width="5" height="26" fill="#2c3b2f"/>
-        <circle cx="1322" cy="252" r="21" fill="#1a7f37"/>
-      </g>
-
-      <!-- Florecillas de acento (colores de marca) -->
-      <circle cx="230" cy="298" r="3.4" fill="#5a189a"/>
-      <circle cx="980" cy="294" r="4" fill="#1a5c9c"/>
-      <circle cx="90" cy="298" r="3" fill="#5a189a"/>
-    </svg>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#top">
+      <img class="brand-badge qinti-badge" src="assets/img/qinti-gradient.png" alt="Qinti, colibrí guía de Puzle Ecosistémico">
+      <span class="brand-word">Puzle <span class="grad-text">Ecosistémico</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="#top">Inicio</a>
+      <a href='/visor'>Mapa</a>
+      <a href='/panel'>Seguimiento</a>
+      <a href="#roles">Actores</a>
+    </nav>
+    <div class="header-ctas">
+      <a class='btn btn-outline' href='/visor'>Ver el mapa</a>
+      <a class='btn btn-primary hide-mobile' href='/visor?accion=proponer'>Proponer un lugar</a>
+    </div>
   </div>
+</header>
 
-  <!-- fauna decorativa: mariposas revoloteando -->
-  <div class="fauna-flotante f1" style="left:8%; top:14%;" aria-hidden="true">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <path d="M12 12c-2-5-8-6-9-2s3 6 9 4z" fill="#5a189a" opacity="0.75"/>
-      <path d="M12 12c2-5 8-6 9-2s-3 6-9 4z" fill="#1a5c9c" opacity="0.75"/>
-      <line x1="12" y1="9" x2="12" y2="15" stroke="#2c3b2f" stroke-width="1.4"/>
-    </svg>
-  </div>
-  <div class="fauna-flotante f2" style="right:12%; top:22%;" aria-hidden="true">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M12 12c-2-5-8-6-9-2s3 6 9 4z" fill="#70e000" opacity="0.7"/>
-      <path d="M12 12c2-5 8-6 9-2s-3 6-9 4z" fill="#1a7f37" opacity="0.7"/>
-      <line x1="12" y1="9" x2="12" y2="15" stroke="#2c3b2f" stroke-width="1.2"/>
-    </svg>
-  </div>
+<section class="hero" id="top">
+  <div class="hero-blob b1" aria-hidden="true"></div>
+  <div class="hero-blob b2" aria-hidden="true"></div>
+  <div class="hero-blob b3" aria-hidden="true"></div>
 
-  <section class="hero fade-in">
-    <span class="logo-mark grande">
-      <svg viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Plataforma SIG Colaborativa RM">
-        <rect width="64" height="64" rx="16" fill="#1a2e22"/>
-        <path d="M32 12c-8.3 0-15 6.7-15 15 0 11.2 15 25 15 25s15-13.8 15-25c0-8.3-6.7-15-15-15z" fill="none" stroke="#70e000" stroke-width="3"/>
-        <line x1="32" y1="22" x2="25" y2="31" stroke="#ffffff" stroke-width="2"/>
-        <line x1="32" y1="22" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-        <line x1="25" y1="31" x2="39" y2="31" stroke="#ffffff" stroke-width="2"/>
-        <circle cx="32" cy="22" r="3.6" fill="#ffffff"/>
-        <circle cx="25" cy="31" r="3.6" fill="#ffffff"/>
-        <circle cx="39" cy="31" r="3.6" fill="#ffffff"/>
-      </svg>
-    </span>
-    <h1>Cruzamos información geográfica para <span class="resalte">transformar espacios</span> en la Región Metropolitana</h1>
-    <p>
-      Una plataforma que conecta a tres actores: personas y organizaciones que proponen lugares para
-      intervenir (una plaza, un sitio eriazo, una sede social), empresas que quieren financiar proyectos,
-      y municipios que buscan socios y datos para decidir mejor. Cruzamos cada propuesta con capas oficiales
-      para priorizar dónde intervenir primero.
+  <div class="hero-inner">
+    <h1>Hacemos posible proyectos para combatir los efectos del Cambio Climático en la Región Metropolitana.</h1>
+    <p class="lead">
+      Juntamos ideas, organizaciones, instituciones y empresas para hacer esto realidad.
     </p>
-    <span class="region"><span class="dot"></span>Toda la Región Metropolitana · Piloto sin costo</span>
-  </section>
-
-  <div class="como-funciona fade-in d1">
-    <div class="paso">
-      <div class="num">1</div>
-      <p>📍 Propones un lugar en el visor</p>
-      <div class="paso-conector"></div>
-    </div>
-    <div class="paso">
-      <div class="num">2</div>
-      <p>📊 Se prioriza con datos oficiales</p>
-      <div class="paso-conector"></div>
-    </div>
-    <div class="paso">
-      <div class="num">3</div>
-      <p>🤝 Empresas y municipios lo hacen realidad</p>
-    </div>
   </div>
 
-  <div class="capas-strip fade-in d2">
-    <span>Vulnerabilidad social</span>
-    <span>Áreas verdes</span>
-    <span>Islas de calor</span>
-    <span>Corredores biológicos</span>
+  <div class="hero-visual">
+    <div class="hero-card">
+      <img src="assets/img/collage-full.png" alt="Ilustración de cordillera, flora y fauna nativa de la Región Metropolitana" loading="eager">
+    </div>
   </div>
-</div>
+</section>
 
-<main id="roles">
-  <h2 class="fade-in">¿Cómo quieres participar?</h2>
-  <p class="sub fade-in">Elige tu rol para entrar directo a lo que te sirve.</p>
+<section class="features" id="roles">
+  <h2>¿Quién puedes ser en este puzle?</h2>
+  <p class="sub">Cuatro actores, una misma plataforma georreferenciada.</p>
 
-  <div class="roles">
-    <div class="card-rol ciudadano fade-in d1">
-      <span class="icono">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="8" r="3.4" stroke="#1a7f37" stroke-width="1.8"/>
-          <path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2" stroke="#1a7f37" stroke-width="1.8" stroke-linecap="round"/>
+  <div class="features-grid">
+    <div class="feature-card rol-organizacion fade-in d1">
+      <span class="feature-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11Z"/>
+          <circle cx="12" cy="10" r="2.5"/>
         </svg>
       </span>
-      <h3>Ciudadano u organización</h3>
-      <p>Mira las capas oficiales de tu comuna, marca un punto o dibuja un área, y propón dónde debería haber una plaza, una sede social o una intervención.</p>
-      <a href="visor.html">Entrar al visor
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h3>Organizaciones sociales</h3>
+      <p>Presentan su idea en el mapa, buscando a los otros actores que puedan hacerla realidad.</p>
+      <a class='actor-cta' href='/visor?accion=proponer'>Proponer en el mapa
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
 
-    <div class="card-rol empresa fade-in d2">
-      <span class="icono">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="9" width="16" height="10" rx="1.6" stroke="#1a5c9c" stroke-width="1.8"/>
-          <path d="M9 9V7a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v2" stroke="#1a5c9c" stroke-width="1.8"/>
+    <div class="feature-card rol-universidad fade-in d2">
+      <span class="feature-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 2 8l10 5 10-5-10-5Z"/>
+          <path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/>
+          <path d="M22 8v6"/>
         </svg>
       </span>
-      <h3>Empresa</h3>
-      <p>Descubre propuestas ya verificadas, ordenadas por prioridad, y muestra interés en financiar la que más se alinee con tu estrategia de impacto.</p>
-      <a href="panel.html?vista=empresa">Ver oportunidades
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h3>Universidades</h3>
+      <p>Encuentran ideas para "apadrinar": ponen a disposición conocimiento y suman vinculación con el medio.</p>
+      <a class='actor-cta' href='/panel?vista=universidad'>Ver ideas para apadrinar
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
 
-    <div class="card-rol municipio fade-in d3">
-      <span class="icono">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 20h16M6 20v-8m4 8v-8m4 8v-8m4 8v-8M4 12l8-6 8 6" stroke="#5a189a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <div class="feature-card rol-empresa fade-in d3">
+      <span class="feature-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="9" width="16" height="11" rx="1.5"/>
+          <path d="M9 9V6.5A2.5 2.5 0 0 1 11.5 4h1A2.5 2.5 0 0 1 15 6.5V9"/>
         </svg>
       </span>
-      <h3>Municipio / institución pública</h3>
-      <p>Revisa las propuestas de tu comuna, verifícalas oficialmente y encuentra empresas y organizaciones dispuestas a colaborar.</p>
-      <a href="panel.html?vista=municipio">Entrar al panel
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h3>Empresas</h3>
+      <p>Descubren proyectos verificados para financiar, alineados con su estrategia de impacto.</p>
+      <a class='actor-cta' href='/panel?vista=empresa'>Ver oportunidades
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <div class="feature-card rol-municipio fade-in d4">
+      <span class="feature-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </span>
+      <h3>Municipios e instituciones públicas</h3>
+      <p>No solo validan: muestran interés real en desarrollar el proyecto, técnica y/o financieramente.</p>
+      <a class='actor-cta' href='/panel?vista=municipio'>Entrar al panel
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
   </div>
-</main>
+</section>
 
 <footer>
-  Piloto sin costo — Región Metropolitana · Los datos oficiales se cargan progresivamente a medida que las instituciones los entregan.
+  <div class="footer-logos">
+    <img src="assets/img/logo-gobierno-santiago.png" alt="Gobierno de Santiago">
+    <img src="assets/img/logo-hacklab.png" alt="HackLAB Academia — Santiago Región Sustentable">
+  </div>
+  Proyecto desarrollado por profesionales del Gobierno de Santiago en el marco del HackLAB.
 </footer>
 
 <!-- ================================================================
-   COLIBRÍ — degradados compartidos, definidos una sola vez para evitar
-   ids duplicados cuando la plantilla de abajo se clona dos veces
-   (en #colibri-guia y en #colibri-fab).
+   QINTI — recorrido guiado al cargar (hero → actores → footer) +
+   lanzador de chat flotante. No es una sección del sitio: Qinti se
+   mueve junto a cada punto y la burbuja va pegada a su posición.
    ================================================================ -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <linearGradient id="cuerpoGradColibri" x1="30" y1="18" x2="66" y2="46" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#8ef000"/>
-      <stop offset="100%" stop-color="#186b30"/>
-    </linearGradient>
-    <linearGradient id="alaGradColibri" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2f77bd"/>
-      <stop offset="100%" stop-color="#8fd3f4"/>
-    </linearGradient>
-    <linearGradient id="gorjeraGradColibri" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#70e000"/>
-      <stop offset="55%" stop-color="#1a5c9c"/>
-      <stop offset="100%" stop-color="#5a189a"/>
-    </linearGradient>
-    <radialGradient id="brilloColibri" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#a6ff4d"/>
-      <stop offset="100%" stop-color="#1a7f37" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-</svg>
+<button id="qinti-fab" type="button" aria-label="Abrir a Qinti, guía de la plataforma" title="Qinti, tu guía">
+  <img src="assets/img/qinti.png" alt="" class="qinti-flutter">
+  <span id="qinti-fab-punto" aria-hidden="true"></span>
+</button>
 
-<template id="tpl-colibri">
-  <svg class="colibri-svg" viewBox="0 0 90 66" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-    <!-- cola en abanico: cuñas sólidas, no líneas (para que no se lea como patas) -->
-    <g opacity="0.92">
-      <path d="M38 43 Q29 48 32 57 Q39 52 40 44 Z" fill="#5a189a"/>
-      <path d="M45 45 Q43 53 45 59 Q47 53 46 45 Z" fill="#5a189a"/>
-      <path d="M52 43 Q61 48 58 57 Q51 52 50 44 Z" fill="#5a189a"/>
-    </g>
-
-    <!-- alas: base más ancha y aleteo más corto para que nunca desaparezcan por completo -->
-    <path class="ala-izq" d="M35 33 C 20 23, 9 27, 12 40 C 21 40, 30 38, 35 33 Z" fill="url(#alaGradColibri)" stroke="#12325c" stroke-width="0.5" opacity="0.95"/>
-    <path class="ala-der" d="M55 33 C 70 23, 81 27, 78 40 C 69 40, 60 38, 55 33 Z" fill="url(#alaGradColibri)" stroke="#12325c" stroke-width="0.5" opacity="0.95"/>
-
-    <!-- cuerpo y cabeza como una sola silueta continua (mismo espacio de degradado, sin costura) -->
-    <path d="M31 40 C 29 30, 37 22, 47 22 C 55 22, 62 25, 66 28 C 62 30, 57 31, 53 33 C 55 40, 52 48, 43 49 C 35 49, 31 45, 31 40 Z"
-      fill="url(#cuerpoGradColibri)" stroke="#123a1c" stroke-width="0.6" stroke-opacity="0.35"/>
-    <ellipse cx="42" cy="30" rx="12" ry="8" fill="url(#brilloColibri)" opacity="0.5"/>
-
-    <!-- garganta iridiscente: guiño a los tres roles que conecta -->
-    <ellipse cx="55" cy="30" rx="5" ry="3.4" fill="url(#gorjeraGradColibri)" opacity="0.92"/>
-
-    <!-- pico -->
-    <path d="M65 27 Q78 24 82 22" stroke="#e0592a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-
-    <!-- ojo expresivo -->
-    <circle cx="60" cy="24" r="2.5" fill="#fff"/>
-    <circle cx="60.9" cy="24" r="1.4" fill="#111"/>
-    <circle cx="60.3" cy="23.3" r="0.55" fill="#fff"/>
-  </svg>
-</template>
-
-<div id="colibri-guia" aria-hidden="true"></div>
-<div id="burbuja-dialogo" role="status" aria-live="polite">
-  <div id="burbuja-texto"></div>
-  <div class="fila-botones">
-    <button class="btn-saltar" id="btn-saltar-recorrido" type="button">Saltar</button>
-    <button class="btn-siguiente" id="btn-siguiente-recorrido" type="button">Siguiente</button>
+<div id="qinti-avatar" aria-hidden="true">
+  <img class="qinti-flutter" src="assets/img/qinti.png" alt="Qinti">
+</div>
+<div id="qinti-burbuja" role="dialog" aria-label="Guía de Qinti">
+  <div class="qinti-guia-header">
+    <img class="qinti-guia-avatar" src="assets/img/qinti.png" alt="">
+    <span class="qinti-guia-nombre">Qinti</span>
+  </div>
+  <div id="qinti-guia-cuerpo"></div>
+  <div class="qinti-guia-fila">
+    <div class="qinti-guia-dots" id="qinti-guia-dots" aria-hidden="true"></div>
+    <div style="display:flex; gap:6px;">
+      <button class="btn-cerrar-guia" id="qinti-btn-cerrar" type="button">Cerrar</button>
+      <button class="btn-siguiente" id="qinti-btn-siguiente" type="button">Siguiente</button>
+    </div>
   </div>
 </div>
 
-<button id="audio-toggle" type="button" aria-label="Activar o silenciar música ambiental" title="Música ambiental">
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M4 9v6h4l5 4V5L8 9H4z" fill="#1a2e22"/>
-    <line x1="16" y1="9" x2="21" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/>
-    <line x1="21" y1="9" x2="16" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/>
-  </svg>
-</button>
-<audio id="audio-naturaleza" loop preload="none">
-  <!-- Reemplaza esta ruta por tu archivo real (Fase 4 de la guía): un mp3 corto de río/aves en loop -->
-  <source src="audio/naturaleza-rm.mp3" type="audio/mpeg">
-</audio>
-
-<button id="colibri-fab" type="button" aria-label="Abrir chat con el colibrí guía" title="Chatea con Chiri, el colibrí guía"></button>
-
-<div id="chat-panel">
-  <header>
-    <span class="titulo">🐦 Chiri — guía de la plataforma</span>
-    <span class="acciones-header">
-      <button id="btn-repetir-recorrido" type="button" title="Repetir el recorrido guiado" aria-label="Repetir el recorrido guiado">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M4 12a8 8 0 1 1 2.6 5.9" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <path d="M4 17v-5h5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-      </button>
-      <button id="btn-cerrar-chat" type="button" title="Cerrar" aria-label="Cerrar chat">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </span>
-  </header>
-  <div id="chat-mensajes" role="log" aria-live="polite"></div>
-  <form id="chat-form">
-    <textarea id="chat-input" rows="1" placeholder="Pregúntale algo a Chiri…" maxlength="500"></textarea>
-    <button type="submit">Enviar</button>
+<!-- Chat de Qinti: basado en reglas (palabras clave → respuesta fija),
+     sin backend ni LLM — ver nota en la respuesta al usuario sobre esta
+     decisión. Orienta según el tipo de actor y explica las capas del mapa. -->
+<div id="qinti-chat" role="dialog" aria-label="Chat con Qinti">
+  <div id="qinti-chat-header">
+    <img src="assets/img/qinti.png" alt="">
+    <span>Qinti</span>
+    <button id="qinti-chat-cerrar" type="button" aria-label="Cerrar chat">&times;</button>
+  </div>
+  <div id="qinti-chat-mensajes" role="log" aria-live="polite"></div>
+  <div id="qinti-chat-sugerencias"></div>
+  <form id="qinti-chat-form">
+    <input type="text" id="qinti-chat-input" placeholder="Pregúntale algo a Qinti..." autocomplete="off" maxlength="300">
+    <button type="submit" aria-label="Enviar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12h16M13 5l7 7-7 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
   </form>
 </div>
 
 <script>
 /* ============================================================
- * CONFIG
+ * QINTI — recorrido guiado: cada paso apunta a un rincón real del
+ * sitio (selector); Qinti y su burbuja se reposicionan ahí.
  * ============================================================ */
-// Pega aquí la URL de tu Supabase Edge Function "chat-colibri" una vez
-// desplegada (ver /supabase-chat-colibri/DEPLOY.md). Mientras esté vacía,
-// el chat muestra un mensaje explicando que falta configurarlo.
-const CHAT_API_URL = "";
-
-/* ============================================================
- * Insertar el SVG del colibrí en sus dos contenedores
- * ============================================================ */
-const tplColibri = document.getElementById('tpl-colibri');
-document.getElementById('colibri-guia').appendChild(tplColibri.content.cloneNode(true));
-document.getElementById('colibri-fab').appendChild(tplColibri.content.cloneNode(true));
-
-/* ============================================================
- * RECORRIDO GUIADO
- * ============================================================ */
-const colibriGuia = document.getElementById('colibri-guia');
-const burbuja = document.getElementById('burbuja-dialogo');
-const burbujaTexto = document.getElementById('burbuja-texto');
-const btnSiguiente = document.getElementById('btn-siguiente-recorrido');
-const btnSaltar = document.getElementById('btn-saltar-recorrido');
-
-const recorrido = [
-  { selector: '.hero', mensajes: [
-      '¡Hola! Soy Chiri, el colibrí guía de esta plataforma 🌿',
-      'Cruzamos propuestas ciudadanas con datos oficiales para priorizar dónde intervenir en la Región Metropolitana.',
-      '¿Te muestro cómo funciona? Vamos a dar una vuelta rápida.'
-    ] },
-  { selector: '.como-funciona', mensajes: [ 'Así de simple: propones un lugar, lo priorizamos con datos, y empresas o municipios lo hacen realidad.' ] },
-  { selector: '.card-rol.ciudadano', mensajes: [ 'Si eres ciudadano u organización, aquí entras al visor para proponer un lugar en tu comuna.' ] },
-  { selector: '.card-rol.empresa', mensajes: [ 'Si representas una empresa, aquí ves oportunidades ya verificadas, listas para financiar.' ] },
-  { selector: '.card-rol.municipio', mensajes: [ 'Y si eres municipio, aquí revisas y verificas oficialmente las propuestas de tu comuna. ¡Eso es todo! Puedes preguntarme lo que quieras cuando quieras.' ] },
+const qintiPasos = [
+  {
+    selector: '.hero-inner .lead', fallback: '#top',
+    html: '<p class="qinti-guia-texto">¡Hola! Soy Qinti 🐦 Ayudo a conectar ideas para enfrentar el cambio climático en la Región Metropolitana con quienes pueden hacerlas realidad.</p>'
+  },
+  {
+    selector: '.features h2', fallback: '#roles',
+    html: `
+      <p class="qinti-guia-texto">¿Cómo me usas? Depende de quién eres:</p>
+      <div class="qinti-actor-lista">
+        <div class="qinti-actor-item"><strong>Organización social</strong><span>Presenta tu idea en el mapa y encuentra a los demás actores.</span></div>
+        <div class="qinti-actor-item"><strong>Universidad</strong><span>Descubre ideas para apadrinar con conocimiento y vinculación con el medio.</span></div>
+        <div class="qinti-actor-item"><strong>Empresa</strong><span>Encuentra proyectos verificados listos para financiar.</span></div>
+        <div class="qinti-actor-item"><strong>Municipio / institución pública</strong><span>Valida propuestas y suma interés técnico o financiero.</span></div>
+      </div>
+    `
+  },
+  {
+    selector: '.feature-card.rol-municipio', fallback: '#roles',
+    html: '<p class="qinti-guia-texto">¿Eres otro tipo de actor y no encajas en esas categorías? No hay problema: escríbeme por este mismo chat y te ayudo a encontrar tu lugar en el puzle.</p>'
+  },
+  {
+    selector: 'footer', fallback: 'body',
+    html: '<p class="qinti-guia-texto">Una última cosa: cuando haya novedades importantes — nuevas ideas, cambios de estado — te aviso por aquí. Puedes cerrarme cuando quieras y volver a abrirme desde el botón flotante.</p>'
+  }
 ];
 
-let pasoActual = 0;
-let subMensajeActual = 0;
-let recorridoActivo = false;
+const qintiAvatar = document.getElementById('qinti-avatar');
+const qintiBurbuja = document.getElementById('qinti-burbuja');
+const qintiCuerpo = document.getElementById('qinti-guia-cuerpo');
+const qintiDots = document.getElementById('qinti-guia-dots');
+const qintiBtnSiguiente = document.getElementById('qinti-btn-siguiente');
+const qintiBtnCerrar = document.getElementById('qinti-btn-cerrar');
+const qintiFab = document.getElementById('qinti-fab');
 
-function posicionarEn(selector) {
-  const el = document.querySelector(selector);
-  if (!el) return null;
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  return el;
-}
+let qintiPasoActual = 0;
 
-// Espera a que el scroll suave se estabilice (deja de moverse), con un tope de
-// seguridad. No usamos el evento scrollend porque su soporte y su temporización
-// son inconsistentes entre navegadores; el sondeo de scrollY es más confiable.
+// Espera a que el scroll suave se estabilice antes de posicionar a Qinti,
+// para no calcular su ubicación contra un elemento que todavía se está
+// moviendo por el scrollIntoView.
 function esperarFinDeScroll() {
   const inicioY = window.scrollY;
   return new Promise((resolve) => {
-    let seMovio = false;
-    let ultimoY = inicioY;
-    let quieto = 0;
-    let ticks = 0;
+    let seMovio = false, ultimoY = inicioY, quieto = 0, ticks = 0;
     const intervalo = window.setInterval(() => {
       ticks++;
       const actual = window.scrollY;
       if (!seMovio && Math.abs(actual - inicioY) > 1) seMovio = true;
       quieto = Math.abs(actual - ultimoY) < 1 ? quieto + 1 : 0;
       ultimoY = actual;
-      // Si nunca se movió y ya dimos tiempo de sobra, asumimos que no hacía falta scroll.
-      const sinMovimientoTrasEsperar = !seMovio && ticks >= 4;
-      const seEstabilizoTrasMoverse = seMovio && quieto >= 3;
-      if (sinMovimientoTrasEsperar || seEstabilizoTrasMoverse) {
+      if ((!seMovio && ticks >= 4) || (seMovio && quieto >= 3)) {
         window.clearInterval(intervalo);
         resolve();
       }
     }, 50);
-    window.setTimeout(() => { window.clearInterval(intervalo); resolve(); }, 1500);
+    window.setTimeout(() => { window.clearInterval(intervalo); resolve(); }, 1200);
   });
 }
 
-async function mostrarPaso() {
-  const paso = recorrido[pasoActual];
-  const el = posicionarEn(paso.selector);
+function qintiRenderDots() {
+  qintiDots.innerHTML = qintiPasos.map((_, i) =>
+    `<span class="${i === qintiPasoActual ? 'activo' : ''}"></span>`).join('');
+}
+
+function qintiPosicionar(el) {
+  const rect = el ? el.getBoundingClientRect() : { left: window.innerWidth / 2 - 30, top: 90, width: 60, height: 40 };
+  const x = Math.min(window.innerWidth - 76, Math.max(12, rect.left + rect.width - 20));
+  const y = Math.min(window.innerHeight - 170, Math.max(12, rect.top - 24));
+  qintiAvatar.style.transform = `translate(${x}px, ${y}px)`;
+  qintiAvatar.classList.add('visible');
+
+  // La altura real de la burbuja varía según el paso (el paso con los 4
+  // perfiles es mucho más alto que uno de un solo párrafo): se mide el
+  // contenido ya insertado en vez de asumir una altura fija, para decidir
+  // si conviene abrir hacia abajo o hacia arriba del punto de anclaje.
+  const bx = Math.min(window.innerWidth - 316, Math.max(12, x - 100));
+  const alturaBurbuja = qintiBurbuja.offsetHeight || 160;
+  let by = y + 68;
+  if (by + alturaBurbuja > window.innerHeight - 10) by = y - alturaBurbuja - 8;
+  by = Math.max(12, Math.min(by, window.innerHeight - alturaBurbuja - 12));
+  qintiBurbuja.style.transform = `translate(${bx}px, ${by}px)`;
+  qintiBurbuja.classList.add('visible');
+}
+
+async function qintiMostrarPaso() {
+  const paso = qintiPasos[qintiPasoActual];
+  const el = document.querySelector(paso.selector) || document.querySelector(paso.fallback || 'body');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   await esperarFinDeScroll();
-
-  const rect = el ? el.getBoundingClientRect() : { left: window.innerWidth / 2 - 30, top: 80, width: 60 };
-  const xColibri = Math.min(window.innerWidth - 80, Math.max(10, rect.left + rect.width - 30));
-  const yColibri = Math.min(window.innerHeight - 150, Math.max(70, rect.top - 10));
-  colibriGuia.style.transform = `translate(${xColibri}px, ${yColibri}px)`;
-  colibriGuia.classList.add('visible');
-
-  const xBurbuja = Math.min(window.innerWidth - 276, Math.max(10, xColibri - 90));
-  const alturaBurbujaEstimada = 150;
-  let yBurbuja = yColibri + 66;
-  if (yBurbuja + alturaBurbujaEstimada > window.innerHeight - 10) {
-    yBurbuja = Math.max(10, yColibri - alturaBurbujaEstimada);
-  }
-  burbuja.style.transform = `translate(${xBurbuja}px, ${yBurbuja}px)`;
-  burbuja.classList.add('visible');
-  burbujaTexto.textContent = paso.mensajes[subMensajeActual];
-
-  const esUltimoMensajeGlobal = pasoActual === recorrido.length - 1 && subMensajeActual === paso.mensajes.length - 1;
-  btnSiguiente.textContent = esUltimoMensajeGlobal ? 'Empezar' : 'Siguiente';
+  qintiCuerpo.innerHTML = paso.html;
+  qintiRenderDots();
+  qintiBtnSiguiente.textContent = qintiPasoActual === qintiPasos.length - 1 ? 'Entendido' : 'Siguiente';
+  qintiPosicionar(el);
 }
 
-function avanzarRecorrido() {
-  const paso = recorrido[pasoActual];
-  if (subMensajeActual < paso.mensajes.length - 1) {
-    subMensajeActual++;
-    burbujaTexto.textContent = paso.mensajes[subMensajeActual];
-    const esUltimoMensajeGlobal = pasoActual === recorrido.length - 1 && subMensajeActual === paso.mensajes.length - 1;
-    btnSiguiente.textContent = esUltimoMensajeGlobal ? 'Empezar' : 'Siguiente';
-    return;
-  }
-  if (pasoActual < recorrido.length - 1) {
-    pasoActual++;
-    subMensajeActual = 0;
-    mostrarPaso();
+function qintiAbrir() {
+  qintiFab.classList.add('oculto');
+  qintiMostrarPaso();
+}
+
+function qintiCerrar() {
+  qintiAvatar.classList.remove('visible');
+  qintiBurbuja.classList.remove('visible');
+  qintiFab.classList.remove('oculto');
+  try { localStorage.setItem('puzle_qinti_visto', '1'); } catch (e) {}
+}
+
+qintiBtnSiguiente.addEventListener('click', () => {
+  if (qintiPasoActual < qintiPasos.length - 1) {
+    qintiPasoActual++;
+    qintiMostrarPaso();
   } else {
-    terminarRecorrido();
+    qintiCerrar();
   }
-}
-
-function iniciarRecorrido() {
-  pasoActual = 0;
-  subMensajeActual = 0;
-  recorridoActivo = true;
-  mostrarPaso();
-}
-
-function terminarRecorrido() {
-  recorridoActivo = false;
-  colibriGuia.classList.remove('visible');
-  burbuja.classList.remove('visible');
-  try { localStorage.setItem('sigrm_recorrido_visto', '1'); } catch (e) {}
-}
-
-btnSiguiente.addEventListener('click', avanzarRecorrido);
-btnSaltar.addEventListener('click', terminarRecorrido);
-
-// Recorrido automático solo en la primera visita
-let yaVistoRecorrido = false;
-try { yaVistoRecorrido = localStorage.getItem('sigrm_recorrido_visto') === '1'; } catch (e) {}
-if (!yaVistoRecorrido) {
-  window.setTimeout(iniciarRecorrido, 900);
-} else {
-  colibriGuia.classList.remove('visible');
-}
-
-/* ============================================================
- * MÚSICA AMBIENTAL
- * ============================================================ */
-const audioEl = document.getElementById('audio-naturaleza');
-const audioBtn = document.getElementById('audio-toggle');
-let audioActivo = false;
-try { audioActivo = localStorage.getItem('sigrm_audio_activo') === '1'; } catch (e) {}
-
-const iconoAudioOn = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#1a2e22"/><path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/><path d="M19.3 6a9 9 0 0 1 0 12" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/></svg>';
-const iconoAudioOff = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#1a2e22"/><line x1="16" y1="9" x2="21" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/><line x1="21" y1="9" x2="16" y2="14" stroke="#1a2e22" stroke-width="1.8" stroke-linecap="round"/></svg>';
-function actualizarBotonAudio() {
-  audioBtn.innerHTML = audioActivo ? iconoAudioOn : iconoAudioOff;
-}
-actualizarBotonAudio();
-
-audioBtn.addEventListener('click', () => {
-  audioActivo = !audioActivo;
-  if (audioActivo) {
-    audioEl.play().catch(() => {
-      // Si el navegador bloquea la reproducción (o falta el archivo de audio real), no rompemos la página.
-      console.warn('No se pudo reproducir el audio ambiental. ¿Ya agregaste el archivo en /audio?');
-    });
-  } else {
-    audioEl.pause();
-  }
-  try { localStorage.setItem('sigrm_audio_activo', audioActivo ? '1' : '0'); } catch (e) {}
-  actualizarBotonAudio();
 });
-// Nota: nunca se reproduce automáticamente al cargar la página (política de autoplay de los navegadores
-// y buena práctica): el usuario siempre activa el sonido con este botón.
+qintiBtnCerrar.addEventListener('click', qintiCerrar);
+
+let qintiYaVisto = false;
+try { qintiYaVisto = localStorage.getItem('puzle_qinti_visto') === '1'; } catch (e) {}
+if (!qintiYaVisto) {
+  window.setTimeout(qintiAbrir, 900);
+}
 
 /* ============================================================
- * CHAT DEL COLIBRÍ
+ * QINTI — chat basado en reglas (palabras clave → respuesta fija).
+ * NO hay backend ni LLM: no existía ninguno antes de este cambio, y
+ * conectar uno real requeriría una API key gestionada del lado
+ * servidor (p. ej. una Edge Function de Supabase) — eso es una
+ * decisión aparte, no algo que se pueda resolver solo en el cliente
+ * sin exponer una key. Este motor cubre orientación por tipo de actor
+ * y explica cada capa del mapa con respuestas curadas.
  * ============================================================ */
-const colibriFab = document.getElementById('colibri-fab');
-const chatPanel = document.getElementById('chat-panel');
-const chatMensajes = document.getElementById('chat-mensajes');
-const chatForm = document.getElementById('chat-form');
-const chatInput = document.getElementById('chat-input');
-const btnCerrarChat = document.getElementById('btn-cerrar-chat');
-const btnRepetirRecorrido = document.getElementById('btn-repetir-recorrido');
+function normalizarTexto(t) {
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+}
 
-let historialChat = [];
-let chatIniciado = false;
+const QINTI_TEMAS = [
+  {
+    palabras: ['que es esto', 'que es puzle', 'de que se trata', 'para que sirve', 'objetivo del proyecto', 'que es la plataforma', 'que hace este sitio'],
+    respuesta: 'Puzle Ecosistémico conecta organizaciones sociales, universidades, empresas y municipios de la Región Metropolitana para hacer realidad proyectos que combaten el cambio climático: las organizaciones proponen ideas en un mapa, y los demás actores las descubren, apadrinan, financian o desarrollan.'
+  },
+  {
+    palabras: ['organizacion social', 'soy una organizacion', 'junta de vecinos', 'quiero proponer', 'como propongo', 'tengo una idea', 'mi comunidad'],
+    respuesta: 'Si eres una organización social, entra al Mapa y usa el botón "Proponer un lugar": marcas un punto o dibujas un área, cuentas qué te gustaría que pasara ahí, y tu idea queda visible para que universidades, empresas y municipios la encuentren.'
+  },
+  {
+    palabras: ['soy universidad', 'apadrinar', 'vinculacion con el medio', 'investigacion', 'facultad'],
+    respuesta: 'Las universidades entran a Seguimiento → pestaña Universidades, donde encuentran ideas y proyectos ya verificados para "apadrinar": pueden aportar conocimiento técnico y sumar vinculación con el medio.'
+  },
+  {
+    palabras: ['soy empresa', 'financiar', 'invertir', 'financiamiento', 'estrategia de impacto'],
+    respuesta: 'Como empresa puedes buscar iniciativas para apoyar de dos formas: en Seguimiento → pestaña Empresas, donde ves ideas y proyectos ya verificados ordenados por pertinencia, o directamente en el mapa, explorando los puntos y proyectos institucionales. En cualquiera de los dos puedes mostrar interés en financiar el que más se alinee con tu estrategia de impacto.'
+  },
+  {
+    palabras: ['soy municipio', 'institucion publica', 'validar propuesta', 'aprobar propuesta', 'alcaldia'],
+    respuesta: 'Los municipios entran a Seguimiento → pestaña Municipios: ahí validan (aprueban o rechazan) las ideas ciudadanas de su comuna y, además, pueden mostrar interés real en desarrollar un proyecto técnica y/o financieramente.'
+  },
+  {
+    palabras: ['no encajo', 'otro tipo de actor', 'no soy ninguno de esos', 'no se donde entro'],
+    respuesta: 'Si no encajas en esas 4 categorías, cuéntame tu caso aquí mismo y te ayudo a encontrar tu lugar en el puzle — igual puedes explorar el Mapa y Seguimiento mientras tanto.'
+  },
+  {
+    palabras: ['como muestro interes', 'como financio', 'como apadrino', 'mostrar interes'],
+    respuesta: 'Desde una tarjeta o ficha (en el Mapa o en Seguimiento) hay un botón de interés — al presionarlo dejas un mensaje breve y queda registrado. Para propuestas ciudadanas además se notifica por correo a la organización.'
+  },
+  {
+    palabras: ['datos personales', 'privacidad', 'mis datos', 'rut'],
+    respuesta: 'Nunca exponemos datos personales (nombre, correo, teléfono) de quien propone una idea — solo el nombre de la organización. El RUT que se pide al mostrar interés es para identificar al actor de forma segura, no se muestra públicamente.'
+  },
+  {
+    palabras: ['capas', 'capas del mapa', 'que muestra el mapa', 'informacion geografica', 'datos geograficos', 'que datos tiene el mapa'],
+    respuesta: 'El Mapa organiza su información geográfica en 4 grupos: Límites Comunales, Territorio (áreas verdes, red hídrica, lagos, temperatura, subcuencas), Proyectos (Bosques de Bolsillo, EHL Fase 1, Maipo Resiliente) y Conservación (sitios prioritarios de biodiversidad) — más la capa de Propuestas ciudadanas verificadas. Pregúntame por alguna en particular y te la explico.'
+  },
+  {
+    palabras: ['limites comunales', 'limite de la comuna', 'bordes de comuna'],
+    respuesta: '"Límites Comunales" dibuja el borde de cada comuna de la Región Metropolitana — sirve como referencia para ubicar todo lo demás y para filtrar el mapa por comuna.'
+  },
+  {
+    palabras: ['areas verdes', 'parques', 'plazas del mapa'],
+    respuesta: '"Áreas verdes 2024 (INE)" muestra los parques, plazas y otras áreas verdes catastradas oficialmente por el INE en toda la región.'
+  },
+  {
+    palabras: ['rios', 'esteros', 'red hidrografica', 'cursos de agua'],
+    respuesta: '"Red hidrográfica - Ríos y esteros RM" muestra los cursos de agua naturales (ríos y esteros) de la Región Metropolitana.'
+  },
+  {
+    palabras: ['lagos', 'lagunas', 'embalses'],
+    respuesta: '"Lagos, lagunas y embalses RM" muestra los cuerpos de agua estancada de la región — naturales y artificiales (embalses).'
+  },
+  {
+    palabras: ['temperatura', 'calor', 'heat watch', 'isla de calor', 'islas de calor'],
+    respuesta: '"Temperatura ambiental (Heat Watch Santiago)" muestra cómo varía la temperatura en la ciudad a distintas horas del día (mañana/tarde/atardecer) — ayuda a identificar islas de calor urbano.'
+  },
+  {
+    palabras: ['subcuencas', 'cuenca hidrografica'],
+    respuesta: '"Subcuencas hidrográficas RM" delimita las subcuencas que drenan el agua de la región — útil para entender cómo se conecta el territorio a través del agua.'
+  },
+  {
+    palabras: ['bosques de bolsillo', 'bosque de bolsillo'],
+    respuesta: '"Bosques de Bolsillo" son pequeñas áreas reforestadas dentro de la ciudad — el mapa muestra dónde están ubicadas.'
+  },
+  {
+    palabras: ['ehl', 'estrategias hidricas', 'fase 1'],
+    respuesta: '"Estrategias Hídricas Locales - Fase 1" es un programa institucional con cerca de 230 fichas de proyectos de gestión del agua a nivel local, cada una con su comuna, estado y costo estimado. Puedes verlas en el mapa (capa "Proyectos") o en Seguimiento.'
+  },
+  {
+    palabras: ['maipo resiliente', 'programa maipo'],
+    respuesta: '"Programa Maipo Resiliente" es otro conjunto de fichas de proyectos institucionales, enfocado en la resiliencia hídrica de la cuenca del Maipo — con proyectos en distintos estados: propuesto, en diseño avanzado o ya implementado.'
+  },
+  {
+    palabras: ['sitios prioritarios', 'biodiversidad', 'conservacion'],
+    respuesta: '"Sitios Prioritarios para la Conservación de la Biodiversidad" marca los lugares identificados como más relevantes para conservar especies y ecosistemas nativos de la región.'
+  },
+  {
+    palabras: ['propuestas ciudadanas en el mapa', 'ideas ciudadanas mapa', 'puntos del mapa', 'pines del mapa'],
+    respuesta: 'La capa "Propuestas ciudadanas" muestra en el mapa las ideas ya verificadas (por la comunidad o el municipio) — al hacer click en un punto se abre su ficha con la fecha y los datos de la propuesta, sin exponer datos personales de quien la propuso.'
+  }
+];
 
-function agregarMensaje(texto, tipo) {
+function qintiBuscarRespuesta(texto) {
+  const normalizado = normalizarTexto(texto);
+  let mejor = null, mejorPuntaje = 0;
+  QINTI_TEMAS.forEach((tema) => {
+    const puntaje = tema.palabras.filter((p) => normalizado.includes(p)).length;
+    if (puntaje > mejorPuntaje) { mejorPuntaje = puntaje; mejor = tema; }
+  });
+  return mejor ? mejor.respuesta : null;
+}
+
+const QINTI_SUGERENCIAS = ['¿Qué es esto?', 'Soy una organización', 'Soy una empresa', '¿Qué capas tiene el mapa?'];
+
+const qintiChat = document.getElementById('qinti-chat');
+const qintiChatMensajes = document.getElementById('qinti-chat-mensajes');
+const qintiChatSugerencias = document.getElementById('qinti-chat-sugerencias');
+const qintiChatForm = document.getElementById('qinti-chat-form');
+const qintiChatInput = document.getElementById('qinti-chat-input');
+let qintiChatIniciado = false;
+
+function qintiAgregarMensaje(texto, tipo) {
   const div = document.createElement('div');
-  div.className = 'msg ' + tipo;
+  div.className = 'qinti-msg ' + tipo;
   div.textContent = texto;
-  chatMensajes.appendChild(div);
-  chatMensajes.scrollTop = chatMensajes.scrollHeight;
-  return div;
+  qintiChatMensajes.appendChild(div);
+  qintiChatMensajes.scrollTop = qintiChatMensajes.scrollHeight;
 }
 
-function abrirChat() {
-  if (recorridoActivo) terminarRecorrido();
-  chatPanel.classList.add('abierto');
-  if (!chatIniciado) {
-    chatIniciado = true;
-    agregarMensaje('¡Hola! Soy Chiri 🐦 Pregúntame sobre cómo proponer un lugar, cómo financiar un proyecto o cómo funciona la verificación municipal.', 'bot');
-  }
-  chatInput.focus();
-}
-
-colibriFab.addEventListener('click', () => {
-  if (chatPanel.classList.contains('abierto')) {
-    chatPanel.classList.remove('abierto');
-  } else {
-    abrirChat();
-  }
-});
-btnCerrarChat.addEventListener('click', () => chatPanel.classList.remove('abierto'));
-btnRepetirRecorrido.addEventListener('click', () => {
-  chatPanel.classList.remove('abierto');
-  iniciarRecorrido();
-});
-
-chatForm.addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const pregunta = chatInput.value.trim();
-  if (!pregunta) return;
-  chatInput.value = '';
-  agregarMensaje(pregunta, 'user');
-  historialChat.push({ role: 'user', content: pregunta });
-
-  if (!CHAT_API_URL) {
-    agregarMensaje('Todavía estoy despertando por aquí. Muy pronto voy a poder responderte, mientras tanto explora el visor o el panel desde el menú de arriba.', 'error');
-    return;
-  }
-
-  const elEscribiendo = agregarMensaje('escribiendo…', 'bot escribiendo');
-  const botonEnviar = chatForm.querySelector('button[type="submit"]');
-  botonEnviar.disabled = true;
-
-  try {
-    const resp = await fetch(CHAT_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pregunta, historial: historialChat.slice(-8) })
-    });
-    const data = await resp.json();
-    elEscribiendo.remove();
-
-    if (!resp.ok || data.error) {
-      agregarMensaje(data.error || 'El colibrí está descansando, intenta de nuevo en un momento.', 'error');
-      return;
+function qintiMostrarSugerencias() {
+  qintiChatSugerencias.innerHTML = QINTI_SUGERENCIAS.map((s) => `<button type="button">${s}</button>`).join('') +
+    '<button type="button" data-especial="recorrido">Ver el recorrido guiado</button>';
+  qintiChatSugerencias.querySelectorAll('button').forEach((btn) => {
+    if (btn.dataset.especial === 'recorrido') {
+      btn.addEventListener('click', () => { qintiCerrarChat(); qintiPasoActual = 0; qintiAbrir(); });
+    } else {
+      btn.addEventListener('click', () => qintiEnviarMensaje(btn.textContent));
     }
-    agregarMensaje(data.respuesta || 'No tengo una respuesta por ahora.', 'bot');
-    historialChat.push({ role: 'assistant', content: data.respuesta || '' });
-  } catch (err) {
-    elEscribiendo.remove();
-    agregarMensaje('No pude conectarme en este momento. Revisa tu conexión e intenta de nuevo.', 'error');
-    console.error(err);
-  } finally {
-    botonEnviar.disabled = false;
+  });
+}
+
+function qintiEnviarMensaje(texto) {
+  texto = (texto || '').trim();
+  if (!texto) return;
+  qintiAgregarMensaje(texto, 'user');
+  qintiChatInput.value = '';
+  const respuesta = qintiBuscarRespuesta(texto);
+  window.setTimeout(() => {
+    if (respuesta) {
+      qintiAgregarMensaje(respuesta, 'bot');
+    } else {
+      qintiAgregarMensaje('No tengo una respuesta clara para eso todavía. Puedes preguntarme sobre cómo participar según tu perfil, o qué muestra alguna capa del mapa.', 'bot');
+      qintiMostrarSugerencias();
+    }
+  }, 300);
+}
+
+function qintiAbrirChat() {
+  qintiChat.classList.add('abierto');
+  if (!qintiChatIniciado) {
+    qintiChatIniciado = true;
+    qintiAgregarMensaje('¡Hola! Soy Qinti 🐦 Puedo orientarte sobre cómo usar la plataforma o explicarte qué muestra el mapa. ¿En qué te ayudo?', 'bot');
+    qintiMostrarSugerencias();
   }
+  qintiChatInput.focus();
+}
+function qintiCerrarChat() { qintiChat.classList.remove('abierto'); }
+
+document.getElementById('qinti-chat-cerrar').addEventListener('click', qintiCerrarChat);
+qintiChatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  qintiEnviarMensaje(qintiChatInput.value);
 });
 
-chatInput.addEventListener('keydown', (ev) => {
-  if (ev.key === 'Enter' && !ev.shiftKey) {
-    ev.preventDefault();
-    chatForm.requestSubmit();
-  }
+// El botón flotante abre el chat (no reinicia el recorrido guiado — ese
+// queda disponible como sugerencia dentro del propio chat).
+qintiFab.addEventListener('click', () => {
+  if (qintiChat.classList.contains('abierto')) qintiCerrarChat();
+  else qintiAbrirChat();
 });
 </script>
 
