@@ -376,7 +376,7 @@
   </div>
 
   <div id="vista-empresa" style="display:none">
-    <p class="vista-intro">Descubre ideas ya verificadas y proyectos institucionales (EHL Fase 1 / Maipo Resiliente), ordenados por pertinencia, y muestra interés en financiar el que más se alinee con tu estrategia de impacto.</p>
+    <p class="vista-intro">Descubre ideas ciudadanas y proyectos institucionales (EHL Fase 1 / Maipo Resiliente), ordenados por pertinencia, y muestra interés en financiar el que más se alinee con tu estrategia de impacto.</p>
     <div class="toolbar">
       <label for="filtro-comuna-empresa">Comuna:</label>
       <select id="filtro-comuna-empresa"></select>
@@ -384,6 +384,7 @@
       <select id="filtro-estado-empresa">
         <option value="Todos">Todos</option>
         <optgroup label="Ideas ciudadanas">
+          <option value="sin_verificar">Sin verificar</option>
           <option value="verificado_social">Verificado (social)</option>
           <option value="verificado_municipal">Verificado (municipio)</option>
         </optgroup>
@@ -420,6 +421,7 @@
       <select id="filtro-estado-universidad">
         <option value="Todos">Todos</option>
         <optgroup label="Ideas ciudadanas">
+          <option value="sin_verificar">Sin verificar</option>
           <option value="verificado_social">Verificado (social)</option>
           <option value="verificado_municipal">Verificado (municipio)</option>
         </optgroup>
@@ -585,11 +587,20 @@ function normalizarClave(texto) {
 }
 const PROGRAMA_ORIGEN_LABEL = {
   'ehl fase 1': 'EHL Fase 1',
-  'estrategias hidricas locales - fase 1': 'EHL Fase 1',
-  'estrategias hidricas locales fase 1': 'EHL Fase 1',
-  'maipo resiliente': 'Maipo Resiliente',
-  'programa maipo resiliente': 'Maipo Resiliente'
+  'maipo resiliente': 'Maipo Resiliente'
 };
+// capa_features.atributos.programa_origen trae variantes que el nombre
+// de la capa no anticipa (ej. "Maipo Resiliente comunal" / "Maipo
+// Resiliente regional", no solo "Maipo Resiliente" a secas) — sin este
+// colapso a clave canónica, tanto el filtro "Programa" del panel como el
+// badge de la ficha dejaban esos proyectos fuera silenciosamente (el
+// filtro comparaba con igualdad estricta contra "maipo resiliente").
+function programaCanonico(programaOrigen) {
+  const clave = normalizarClave(programaOrigen);
+  if (clave.startsWith('maipo resiliente')) return 'maipo resiliente';
+  if (clave.startsWith('ehl') || clave.includes('estrategias hidricas')) return 'ehl fase 1';
+  return clave;
+}
 const ESTADO_INSTITUCIONAL_LABEL = {
   propuesto: 'Propuesto',
   'diseno avanzado': 'Diseño avanzado',
@@ -653,7 +664,7 @@ function estadoFiltrable(item) {
   return item.origen === 'ciudadana' ? item.estado : normalizarClave(item.estado);
 }
 function programaFiltrable(item) {
-  return item.origen === 'ciudadana' ? 'ciudadana' : normalizarClave(item.programaOrigen);
+  return item.origen === 'ciudadana' ? 'ciudadana' : programaCanonico(item.programaOrigen);
 }
 // Algunos proyectos institucionales traen varias comunas en un solo
 // campo separadas por coma (p.ej. programas regionales tipo "Alhué,
@@ -671,7 +682,7 @@ function pasaFiltros(item, { comunaSel, estadoSel, programaSel }) {
 }
 function labelPrograma(item) {
   if (item.origen === 'ciudadana') return null;
-  return PROGRAMA_ORIGEN_LABEL[normalizarClave(item.programaOrigen)] || item.programaOrigen || 'Programa institucional';
+  return PROGRAMA_ORIGEN_LABEL[programaCanonico(item.programaOrigen)] || item.programaOrigen || 'Programa institucional';
 }
 function labelEstadoInstitucional(item) {
   const clave = normalizarClave(item.estado);
@@ -879,16 +890,17 @@ function renderUniversidad() {
   });
 }
 
-// Empresas y universidades comparten el mismo criterio de listado: ideas
-// ciudadanas ya verificadas + TODOS los proyectos institucionales
-// (capas 13/14 — son fichas oficiales, no pasan por verificación).
-// Difieren en el copy del botón de interés y en qué se notifica al
-// organizarlo. Paginado con "Cargar más" porque institucionales solo ya
-// suman ~500 filas.
+// Empresas y universidades comparten el mismo criterio de listado: TODAS
+// las ideas ciudadanas salvo las rechazadas (ya no se exige que estén
+// verificadas — con un piloto recién partiendo, exigir verificación
+// dejaba la lista vacía) + TODOS los proyectos institucionales (capas
+// 13/14 — son fichas oficiales, no pasan por verificación). Difieren en
+// el copy del botón de interés y en qué se notifica al organizarlo.
+// Paginado con "Cargar más" porque institucionales solo ya suman ~500 filas.
 function renderOportunidades({ contenedor, cargarMasEl, clavePagina, comunaSel, estadoSel, programaSel, orden, modo, textoBotonInteres, vacio }) {
   const filtro = { comunaSel, estadoSel, programaSel };
   const ciudadanas = PROPUESTAS
-    .filter(p => p.estado === 'verificado_social' || p.estado === 'verificado_municipal')
+    .filter(p => p.estado !== 'rechazado')
     .filter(p => pasaFiltros({ ...p, origen: 'ciudadana' }, filtro))
     .map(p => ({ ...p, origen: 'ciudadana' }));
   const institucionales = PROYECTOS_INSTITUCIONALES.filter(p => pasaFiltros(p, filtro));
@@ -1471,7 +1483,7 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['sin verificar', 'verificado social', 'verificado municipal', 'que significan los estados', 'que significa el estado', 'badge'],
-    respuesta: () => 'Una idea ciudadana pasa por: "Sin verificar" (recién llegada) → "Verificado (social)" (la comunidad la respalda) → "Verificado (municipio)" (el municipio la aprobó oficialmente) — o "Rechazado" si no procede. Empresas y universidades solo ven las que ya están verificadas.'
+    respuesta: () => 'Una idea ciudadana pasa por: "Sin verificar" (recién llegada) → "Verificado (social)" (la comunidad la respalda) → "Verificado (municipio)" (el municipio la aprobó oficialmente) — o "Rechazado" si no procede. Empresas y universidades ven todas las ideas, estén o no verificadas todavía; solo se ocultan las rechazadas.'
   },
   {
     palabras: ['propuesto', 'diseno avanzado', 'implementado', 'estado del proyecto institucional'],

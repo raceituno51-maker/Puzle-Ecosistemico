@@ -1091,7 +1091,7 @@ const COLORES_FIJOS_POR_CAPA = {
 };
 
 // Etiquetas y colores para la capa de "Propuestas ciudadanas" (tabla
-// propuestas, solo las ya verificadas — ver cargarPropuestas()).
+// propuestas, todas las que tengan geom — ver cargarPropuestas()).
 const TIPO_INTERVENCION_LABEL = {
   plaza: 'Plaza',
   sitio_eriazo: 'Sitio eriazo',
@@ -1243,7 +1243,7 @@ function construirFichaProyectoInstitucional(props) {
   return wrap;
 }
 
-// Popup de una propuesta ciudadana ya verificada: tipo de intervención,
+// Popup de una propuesta ciudadana (verificada o no): tipo de intervención,
 // comuna/estado/fecha/puntaje, la descripción escrita por la persona y,
 // si existe, la minuta de contexto territorial generada al proponerla.
 function construirPopupPropuesta(props) {
@@ -2688,7 +2688,7 @@ async function cargarPropuestas() {
   // avise si ya existe una propuesta verificada cerca de una nueva. Queda
   // excluida del filtro por comuna (ver aplicarFiltroComuna) porque su
   // estilo por estado y su popup no pasan por crearCapaLeaflet.
-  capaDatos['propuestas'] = { geojson, label: 'Propuestas ciudadanas verificadas', esPropuestas: true };
+  capaDatos['propuestas'] = { geojson, label: 'Propuestas ciudadanas', esPropuestas: true };
 
   agregarEncabezadoSeccion('Propuestas ciudadanas');
   const row = document.createElement('label');
@@ -3454,11 +3454,11 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['soy universidad', 'apadrinar', 'vinculacion con el medio', 'investigacion', 'facultad'],
-    respuesta: 'Las universidades entran a Seguimiento → pestaña Universidades, donde encuentran ideas y proyectos ya verificados para "apadrinar": pueden aportar conocimiento técnico y sumar vinculación con el medio.'
+    respuesta: 'Las universidades entran a Seguimiento → pestaña Universidades, donde encuentran ideas y proyectos para "apadrinar" (verificados o no): pueden aportar conocimiento técnico y sumar vinculación con el medio.'
   },
   {
     palabras: ['soy empresa', 'financiar', 'invertir', 'financiamiento', 'estrategia de impacto'],
-    respuesta: 'Como empresa puedes buscar iniciativas para apoyar de dos formas: en Seguimiento → pestaña Empresas, donde ves ideas y proyectos ya verificados ordenados por pertinencia, o directamente en este mapa, explorando los puntos y proyectos institucionales. En cualquiera de los dos puedes mostrar interés en financiar el que más se alinee con tu estrategia de impacto.'
+    respuesta: 'Como empresa puedes buscar iniciativas para apoyar de dos formas: en Seguimiento → pestaña Empresas, donde ves ideas y proyectos (verificados o no) ordenados por pertinencia, o directamente en este mapa, explorando los puntos y proyectos institucionales. En cualquiera de los dos puedes mostrar interés en financiar el que más se alinee con tu estrategia de impacto.'
   },
   {
     palabras: ['soy municipio', 'institucion publica', 'validar propuesta', 'aprobar propuesta', 'alcaldia'],
@@ -3478,7 +3478,7 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['capas', 'capas del mapa', 'que muestra el mapa', 'informacion geografica', 'datos geograficos', 'que datos tiene el mapa'],
-    respuesta: 'Este mapa organiza su información en 4 grupos (panel "Capas", arriba a la derecha): Límites Comunales, Territorio (áreas verdes, red hídrica, lagos, temperatura, subcuencas), Proyectos (Bosques de Bolsillo, EHL Fase 1, Maipo Resiliente) y Conservación (sitios prioritarios de biodiversidad) — más la capa de Propuestas ciudadanas verificadas. Pregúntame por alguna en particular y te la explico.'
+    respuesta: 'Este mapa organiza su información en 4 grupos (panel "Capas", arriba a la derecha): Límites Comunales, Territorio (áreas verdes, red hídrica, lagos, temperatura, subcuencas), Proyectos (Bosques de Bolsillo, EHL Fase 1, Maipo Resiliente) y Conservación (sitios prioritarios de biodiversidad) — más la capa de Propuestas ciudadanas. Pregúntame por alguna en particular y te la explico.'
   },
   {
     palabras: ['limites comunales', 'limite de la comuna', 'bordes de comuna'],
@@ -3522,7 +3522,7 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['propuestas ciudadanas en el mapa', 'ideas ciudadanas mapa', 'puntos del mapa', 'pines del mapa'],
-    respuesta: 'La capa "Propuestas ciudadanas" muestra las ideas ya verificadas (por la comunidad o el municipio) — al hacer click en un punto se abre su ficha con la fecha y los datos de la propuesta, sin exponer datos personales de quien la propuso.'
+    respuesta: 'La capa "Propuestas ciudadanas" muestra todas las ideas propuestas en el mapa, estén o no verificadas todavía — al hacer click en un punto se abre su ficha con la fecha y los datos de la propuesta, sin exponer datos personales de quien la propuso.'
   }
 ];
 
