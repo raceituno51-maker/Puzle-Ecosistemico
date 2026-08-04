@@ -93,12 +93,22 @@
      resultó no renderizar de forma confiable entre navegadores. ---------- */
   .qinti-badge { display: block; flex-shrink: 0; }
 
+  /* La foto original mira hacia la derecha; se refleja para que "mire"
+     hacia el contenido de la página (izquierda) en vez de hacia afuera
+     de la pantalla. Se aplica por src (no por clase) para cubrir todas
+     las fotos de Qinti, animadas o no, sin tocar el logo-badge (que es
+     otra imagen, ya una silueta simétrica). */
+  img[src$="qinti.png"] { transform: scaleX(-1); }
+
   /* Aleteo honesto: no fingimos alas separadas (no hay cuadros de animación
      reales), solo un flotar/inclinar sutil. Únicamente en tamaños grandes
-     donde Qinti actúa como personaje/guía/chat — nunca en el logo chico. */
+     donde Qinti actúa como personaje/guía/chat — nunca en el logo chico.
+     El scaleX(-1) se repite en cada keyframe porque la animación reemplaza
+     el transform completo del elemento (no se puede combinar con el de
+     la regla base de arriba). */
   @keyframes qintiFlutter {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-6px) rotate(2deg); }
+    0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+    50% { transform: scaleX(-1) translateY(-6px) rotate(2deg); }
   }
   .qinti-flutter { animation: qintiFlutter 1.8s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) {
@@ -289,15 +299,15 @@
    * a cada punto de interés en vez de quedar fija en una esquina.
    * ================================================================ */
   #qinti-fab {
-    position: fixed; bottom: 22px; right: 22px; z-index: 1100;
-    width: 76px; height: 76px; border-radius: 50%;
+    position: fixed; bottom: 22px; right: 22px; z-index: 2500;
+    width: 100px; height: 100px; border-radius: 50%;
     background: #fff; border: 2px solid transparent; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     box-shadow: var(--shadow-lg);
     transition: transform .2s var(--ease-out), opacity .2s ease, border-color .2s ease, box-shadow .2s ease;
   }
   #qinti-fab:hover { transform: scale(1.08); border-color: var(--blue); box-shadow: 0 24px 48px -16px rgba(59,130,246,.5); }
-  #qinti-fab img { width: 58px; height: 58px; border-radius: 50%; }
+  #qinti-fab img { width: 76px; height: 76px; border-radius: 50%; }
   #qinti-fab.oculto { opacity: 0; pointer-events: none; transform: scale(.8); }
 
   /* Anillo de pulso continuo: invita a hacer clic sin ser un aleteo falso
@@ -312,7 +322,7 @@
     100% { transform: scale(1.45); opacity: 0; }
   }
   #qinti-fab-punto {
-    position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%;
+    position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%;
     background: var(--grad-135); border: 2px solid #fff;
     animation: qintiPuntoLatido 1.8s ease-in-out infinite;
   }
@@ -329,8 +339,8 @@
      pisen entre sí (un elemento no puede tener dos transforms activos:
      uno de posición vía JS y otro de animación vía CSS a la vez). */
   #qinti-avatar {
-    position: fixed; top: 0; left: 0; z-index: 1101;
-    width: 60px; height: 60px;
+    position: fixed; top: 0; left: 0; z-index: 2500;
+    width: 78px; height: 78px;
     opacity: 0; pointer-events: none;
     transition: transform .65s var(--ease-out), opacity .3s ease;
   }
@@ -341,7 +351,7 @@
   }
 
   #qinti-burbuja {
-    position: fixed; top: 0; left: 0; z-index: 1102;
+    position: fixed; top: 0; left: 0; z-index: 2510;
     width: 300px; max-width: calc(100vw - 32px);
     max-height: calc(100vh - 24px); overflow-y: auto;
     background: #fff; border-radius: 18px 18px 18px 4px;
@@ -386,7 +396,7 @@
    * mismo botón flotante una vez que el recorrido guiado ya se vio.
    * ================================================================ */
   #qinti-chat {
-    position: fixed; bottom: 108px; right: 22px; z-index: 1150;
+    position: fixed; bottom: 130px; right: 22px; z-index: 2550;
     width: 340px; max-width: calc(100vw - 32px);
     height: 460px; max-height: calc(100vh - 130px);
     background: #fff; border-radius: 18px; box-shadow: var(--shadow-lg); border: 1px solid var(--border);
@@ -428,7 +438,7 @@
     width: 36px; height: 36px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
   }
   @media (max-width: 480px) {
-    #qinti-chat { right: 12px; bottom: 100px; }
+    #qinti-chat { right: 12px; bottom: 122px; }
   }
 </style>
 </head>
@@ -662,7 +672,7 @@ function qintiRenderDots() {
 
 function qintiPosicionar(el) {
   const rect = el ? el.getBoundingClientRect() : { left: window.innerWidth / 2 - 30, top: 90, width: 60, height: 40 };
-  const x = Math.min(window.innerWidth - 76, Math.max(12, rect.left + rect.width - 20));
+  const x = Math.min(window.innerWidth - 94, Math.max(12, rect.left + rect.width - 20));
   const y = Math.min(window.innerHeight - 170, Math.max(12, rect.top - 24));
   qintiAvatar.style.transform = `translate(${x}px, ${y}px)`;
   qintiAvatar.classList.add('visible');
@@ -775,27 +785,27 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['areas verdes', 'parques', 'plazas del mapa'],
-    respuesta: '"Áreas verdes 2024 (INE)" muestra los parques, plazas y otras áreas verdes catastradas oficialmente por el INE en toda la región.'
+    respuesta: '"Áreas Verdes 2024 (INE)" muestra los parques, plazas y otras áreas verdes catastradas oficialmente por el INE en toda la región.'
   },
   {
     palabras: ['rios', 'esteros', 'red hidrografica', 'cursos de agua'],
-    respuesta: '"Red hidrográfica - Ríos y esteros RM" muestra los cursos de agua naturales (ríos y esteros) de la Región Metropolitana.'
+    respuesta: '"Red Hidrográfica - Ríos y esteros" muestra los cursos de agua naturales (ríos y esteros) de la Región Metropolitana.'
   },
   {
     palabras: ['lagos', 'lagunas', 'embalses'],
-    respuesta: '"Lagos, lagunas y embalses RM" muestra los cuerpos de agua estancada de la región — naturales y artificiales (embalses).'
+    respuesta: '"Lagos, lagunas y embalses" muestra los cuerpos de agua estancada de la región — naturales y artificiales (embalses).'
   },
   {
     palabras: ['temperatura', 'calor', 'heat watch', 'isla de calor', 'islas de calor'],
-    respuesta: '"Temperatura ambiental (Heat Watch Santiago)" muestra cómo varía la temperatura en la ciudad a distintas horas del día (mañana/tarde/atardecer) — ayuda a identificar islas de calor urbano.'
+    respuesta: '"Temperatura Ambiental (Stgo Hot)" muestra cómo varía la temperatura en la ciudad a distintas horas del día (mañana/tarde/atardecer) — ayuda a identificar islas de calor urbano.'
   },
   {
     palabras: ['subcuencas', 'cuenca hidrografica'],
-    respuesta: '"Subcuencas hidrográficas RM" delimita las subcuencas que drenan el agua de la región — útil para entender cómo se conecta el territorio a través del agua.'
+    respuesta: '"Cuencas Hidrográficas" delimita las subcuencas que drenan el agua de la región — útil para entender cómo se conecta el territorio a través del agua.'
   },
   {
     palabras: ['bosques de bolsillo', 'bosque de bolsillo'],
-    respuesta: '"Bosques de Bolsillo" son pequeñas áreas reforestadas dentro de la ciudad — el mapa muestra dónde están ubicadas.'
+    respuesta: '"Programa Bosques de Bolsillo" son pequeñas áreas reforestadas dentro de la ciudad — el mapa muestra dónde están ubicadas.'
   },
   {
     palabras: ['ehl', 'estrategias hidricas', 'fase 1'],
@@ -874,7 +884,7 @@ function qintiAbrirChat() {
   qintiChat.classList.add('abierto');
   if (!qintiChatIniciado) {
     qintiChatIniciado = true;
-    qintiAgregarMensaje('¡Hola! Soy Qinti 🐦 Puedo orientarte sobre cómo usar la plataforma o explicarte qué muestra el mapa. ¿En qué te ayudo?', 'bot');
+    qintiAgregarMensaje('¡Hola! Soy Qinti 🐦 Bienvenido a Puzle Ecosistémico. Puedo ayudarte a encontrar tu lugar según quién eres (organización social, universidad, empresa o municipio), o explicarte de qué se trata la plataforma. ¿En qué te ayudo?', 'bot');
     qintiMostrarSugerencias();
   }
   qintiChatInput.focus();
@@ -888,7 +898,11 @@ qintiChatForm.addEventListener('submit', (e) => {
 });
 
 // El botón flotante abre el chat (no reinicia el recorrido guiado — ese
-// queda disponible como sugerencia dentro del propio chat).
+// queda disponible como sugerencia dentro del propio chat). Esta página
+// ya tiene su propio recorrido guiado automático (qintiAbrir, más
+// arriba) que cumple el rol de "guía al entrar al sitio" — abrir además
+// el chat automáticamente lo duplicaría y quedarían las dos burbujas
+// superpuestas.
 qintiFab.addEventListener('click', () => {
   if (qintiChat.classList.contains('abierto')) qintiCerrarChat();
   else qintiAbrirChat();

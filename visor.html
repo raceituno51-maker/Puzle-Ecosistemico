@@ -28,13 +28,16 @@
     --violet: #7C6FF0;
     --grad-135: linear-gradient(135deg, var(--teal) 0%, var(--blue) 52%, var(--violet) 100%);
   }
+  /* Modo oscuro con la misma familia de la marca (azul-violeta profundo,
+     no un gris neutro genérico): --surface-1 es el mismo #0F172A que usa
+     el resto del sitio (index.html/panel.html) como su tono más oscuro. */
   [data-tema="oscuro"] {
-    --surface-2: #20242b;
-    --surface-1: #2b3038;
-    --text-primary: #f0f0f0;
-    --text-secondary: #a3a9b3;
-    --border-color: #3a3f48;
-    --border-strong: #545a64;
+    --surface-2: #182036;
+    --surface-1: #0F172A;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --border-color: #2A3550;
+    --border-strong: #3D4A6B;
   }
 
   html, body {
@@ -468,18 +471,21 @@
    * según el tipo de actor y explica las capas del mapa.
    * ================================================================ */
   #qinti-fab {
-    position: fixed; z-index: 1100; bottom: 24px; right: 24px;
-    width: 76px; height: 76px; border-radius: 50%;
+    position: fixed; z-index: 2500; bottom: 24px; right: 24px;
+    width: 100px; height: 100px; border-radius: 50%;
     background: var(--surface-2); border: 2px solid transparent; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 20px 40px -12px rgba(0,0,0,.35);
     transition: transform .2s ease, opacity .2s ease, border-color .2s ease;
   }
   #qinti-fab:hover { transform: scale(1.08); border-color: var(--blue); }
-  #qinti-fab img { width: 58px; height: 58px; border-radius: 50%; }
+  #qinti-fab img { width: 76px; height: 76px; border-radius: 50%; }
+  /* La foto original mira hacia la derecha; se refleja para que "mire"
+     hacia el contenido en vez de hacia afuera de la pantalla. */
+  img[src$="qinti.png"] { transform: scaleX(-1); }
   @keyframes qintiFlutter {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-6px) rotate(2deg); }
+    0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+    50% { transform: scaleX(-1) translateY(-6px) rotate(2deg); }
   }
   .qinti-flutter { animation: qintiFlutter 1.8s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) { .qinti-flutter { animation: none; } }
@@ -490,7 +496,7 @@
   }
   @keyframes qintiPulso { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(1.45); opacity: 0; } }
   #qinti-fab-punto {
-    position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%;
+    position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%;
     background: var(--grad-135); border: 2px solid var(--surface-2);
     animation: qintiPuntoLatido 1.8s ease-in-out infinite;
   }
@@ -498,7 +504,7 @@
   @media (prefers-reduced-motion: reduce) { #qinti-fab::after, #qinti-fab-punto { animation: none; } }
 
   #qinti-chat {
-    position: fixed; z-index: 1150; bottom: 110px; right: 24px;
+    position: fixed; z-index: 2550; bottom: 132px; right: 24px;
     width: 340px; max-width: calc(100vw - 32px);
     height: 460px; max-height: calc(100vh - 140px);
     background: var(--surface-2); color: var(--text-primary);
@@ -535,7 +541,7 @@
   }
   @media (max-width: 480px) {
     #qinti-fab { right: 14px; bottom: 14px; }
-    #qinti-chat { right: 12px; bottom: 100px; }
+    #qinti-chat { right: 12px; bottom: 122px; }
   }
 </style>
 </head>
@@ -1100,13 +1106,15 @@ const TIPO_INTERVENCION_LABEL = {
   otro: 'Otro'
 };
 const ESTADO_PROPUESTA_LABEL = {
+  sin_verificar: 'Sin verificar',
   verificado_social: 'Verificado por la comunidad',
   verificado_municipal: 'Verificado por el municipio'
 };
-const ESTADO_PROPUESTA_COLOR = {
-  verificado_social: '#1a7f37',
-  verificado_municipal: '#5e548e'
-};
+// Un solo color para todos los puntos/polígonos de "Ideas Ciudadanas",
+// sin distinguir por estado — el mismo morado que usa la herramienta de
+// dibujo al proponer un lugar (ver drawControlPoligono), para que el
+// punto se vea igual en el mapa desde que se propone.
+const COLOR_IDEAS_CIUDADANAS = '#7C3AED';
 
 // Etiquetas para los proyectos institucionales de las capas 13/14
 // (Estrategias Hídricas Locales - Fase 1 / Programa Maipo Resiliente).
@@ -1252,6 +1260,7 @@ function construirPopupPropuesta(props) {
   const estadoLabel = ESTADO_PROPUESTA_LABEL[props.estado] || props.estado;
 
   const campos = [
+    ['Organización', props.nombre_organizacion],
     ['Comuna', props.comuna],
     ['Estado', estadoLabel],
     ['Fecha', props.created_at ? new Date(props.created_at).toLocaleDateString('es-CL') : null],
@@ -1266,6 +1275,11 @@ function construirPopupPropuesta(props) {
     ? `<div style="margin-bottom:8px;">${escaparHTML(props.descripcion)}</div>` : '';
   const contexto = props.contexto_territorial
     ? `<div style="font-size:11.5px; color:var(--text-secondary); font-style:italic;">${escaparHTML(props.contexto_territorial)}</div>` : '';
+  // El link solo existe si la ficha ya terminó de generarse y subirse
+  // (ver subirFichaPdfPropuesta) — no bloquea el guardado de la propuesta,
+  // así que para envíos muy recientes puede faltar por unos segundos.
+  const fichaPdf = props.ficha_pdf_url
+    ? `<div style="margin-top:8px;"><a href="${escaparHTML(props.ficha_pdf_url)}" target="_blank" rel="noopener">Ver ficha completa (PDF)</a></div>` : '';
 
   return `
     <div class="ficha-popup">
@@ -1273,6 +1287,7 @@ function construirPopupPropuesta(props) {
       ${filas ? `<table>${filas}</table>` : ''}
       ${descripcion}
       ${contexto}
+      ${fichaPdf}
     </div>
   `;
 }
@@ -1732,7 +1747,7 @@ function crearSimboloHachurado(color, idSufijo, angulo) {
 // (se muestra vacía mientras tanto).
 function agregarCapaSubcuencas(entradaSubcuencas) {
   const geojsonSubcuencas = (entradaSubcuencas && entradaSubcuencas.geojson) || { type: 'FeatureCollection', features: [] };
-  const nombreSubcuencas = (entradaSubcuencas && entradaSubcuencas.capa.nombre) || 'Subcuencas hidrográficas RM';
+  const nombreSubcuencas = (entradaSubcuencas && entradaSubcuencas.capa.nombre) || 'Cuencas Hidrográficas';
   const clavesSubcuencas = ['NOM_SUBC', 'nombre', 'nom_subc'];
 
   // El patrón debe agregarse al mapa antes de poder usarse como
@@ -2159,10 +2174,10 @@ function calcularContextoTerritorial(geomGeoJSON) {
 // pensado para lenguaje ciudadano, no un informe técnico. Si una capa
 // nueva no está en este mapa, se usa su nombre tal cual como respaldo.
 const NOMBRE_AMIGABLE_CAPA = {
-  'Áreas verdes 2024 (INE)': 'un área verde',
-  'Bosques de Bolsillo': 'un bosque de bolsillo',
-  'Red hidrográfica - Ríos y esteros RM': 'un río o estero',
-  'Lagos, lagunas y embalses RM': 'un lago o laguna',
+  'Áreas Verdes 2024 (INE)': 'un área verde',
+  'Programa Bosques de Bolsillo': 'un bosque de bolsillo',
+  'Red Hidrográfica - Ríos y esteros': 'un río o estero',
+  'Lagos, lagunas y embalses': 'un lago o laguna',
   'Estrategias Hídricas Locales - Fase 1': 'un proyecto de Estrategias Hídricas Locales',
   'Programa Maipo Resiliente': 'un proyecto del Programa Maipo Resiliente'
 };
@@ -2520,6 +2535,11 @@ function seccionParaCapa(id) {
   return seccion ? seccion.titulo : 'Territorio';
 }
 
+// titulo de sección -> su .capas-seccion-contenido ya creado, para poder
+// sumarle filas después (ver "Ideas Ciudadanas" en cargarPropuestas) sin
+// tener que abrir una sección nueva.
+const seccionesContenido = {};
+
 // Cada sección es un acordeón: un encabezado clickeable más un contenedor
 // colapsable con sus filas/controles (agregados vía agregarAlPanel, ver
 // más arriba). Todas las secciones arrancan desplegadas al entrar al
@@ -2598,6 +2618,10 @@ async function cargarCapas() {
     if (capasDeSeccion.length === 0) return;
 
     agregarEncabezadoSeccion(seccion.titulo);
+    // Se guarda el contenedor de cada sección ya creada para que
+    // cargarPropuestas() pueda sumar "Ideas Ciudadanas" dentro de
+    // "Proyectos" en vez de abrir su propia sección aparte al final.
+    seccionesContenido[seccion.titulo] = seccionContenidoActual;
     if (seccion.titulo === 'Límites Comunales' && filtroComunaFila) {
       agregarAlPanel(filtroComunaFila);
     }
@@ -2609,7 +2633,7 @@ async function cargarCapas() {
         return;
       }
 
-      if (capa.nombre === 'Temperatura ambiental (Heat Watch Santiago)') {
+      if (capa.nombre === 'Temperatura Ambiental (Stgo Hot)') {
         agregarCapaTemperaturaHorario('capa_' + capa.id, capa.nombre, geojson);
         return;
       }
@@ -2641,15 +2665,15 @@ async function cargarCapas() {
   poblarFiltroComuna();
 }
 
-// Capa de "Propuestas ciudadanas": trae, vía la función propuesta_geojson
-// (RLS aplica igual que en el cliente: solo llegan las verificado_social /
-// verificado_municipal, o las propias), las propuestas ya validadas y las
-// dibuja como una capa más en el mapa, en su propia sección del panel.
-// Se llama después de cargarCapas() para que la sección quede al final.
+// Capa "Ideas Ciudadanas": trae, vía la función propuestas_geojson (RLS
+// permite leer todas menos las rechazadas), los puntos/polígonos que las
+// organizaciones sociales van proponiendo, y los dibuja como una capa más
+// dentro de la sección "Proyectos" del panel. Se llama después de
+// cargarCapas() porque necesita que esa sección ya exista.
 async function cargarPropuestas() {
   const { data, error } = await sb.rpc('propuestas_geojson');
   if (error) {
-    console.warn('No se pudieron cargar las propuestas ciudadanas:', error.message);
+    console.warn('No se pudieron cargar las ideas ciudadanas:', error.message);
     return;
   }
   if (!data || data.length === 0) return;
@@ -2665,18 +2689,18 @@ async function cargarPropuestas() {
         estado: p.estado,
         score: p.score,
         contexto_territorial: p.contexto_territorial,
-        created_at: p.created_at
+        created_at: p.created_at,
+        nombre_organizacion: p.nombre_organizacion,
+        ficha_pdf_url: p.ficha_pdf_url
       },
       geometry: p.geometry
     }))
   };
 
-  const colorPorFeature = (feature) => ESTADO_PROPUESTA_COLOR[feature.properties.estado] || '#888888';
-
   const layer = L.geoJSON(geojson, {
-    style: (feature) => ({ color: colorPorFeature(feature), weight: 2, fillColor: colorPorFeature(feature), fillOpacity: 0.3 }),
+    style: () => ({ color: COLOR_IDEAS_CIUDADANAS, weight: 2, fillColor: COLOR_IDEAS_CIUDADANAS, fillOpacity: 0.3 }),
     pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-      radius: 7, color: colorPorFeature(feature), fillColor: colorPorFeature(feature), fillOpacity: 0.85, weight: 2
+      radius: 7, color: COLOR_IDEAS_CIUDADANAS, fillColor: COLOR_IDEAS_CIUDADANAS, fillOpacity: 0.85, weight: 2
     }),
     onEachFeature: (feature, featureLayer) => {
       featureLayer.bindPopup(construirPopupPropuesta(feature.properties));
@@ -2688,17 +2712,22 @@ async function cargarPropuestas() {
   // avise si ya existe una propuesta verificada cerca de una nueva. Queda
   // excluida del filtro por comuna (ver aplicarFiltroComuna) porque su
   // estilo por estado y su popup no pasan por crearCapaLeaflet.
-  capaDatos['propuestas'] = { geojson, label: 'Propuestas ciudadanas', esPropuestas: true };
+  capaDatos['propuestas'] = { geojson, label: 'Ideas Ciudadanas', esPropuestas: true };
 
-  agregarEncabezadoSeccion('Propuestas ciudadanas');
+  // Va dentro de "Proyectos" (junto a Bosques de Bolsillo / EHL Fase 1 /
+  // Maipo Resiliente), no en su propia sección — si por algún motivo esa
+  // sección no llegó a crearse (ninguna de esas 3 capas tenía datos), se
+  // crea recién acá como respaldo para que "Ideas Ciudadanas" no quede sin
+  // dónde mostrarse.
+  seccionContenidoActual = seccionesContenido['Proyectos'];
+  if (!seccionContenidoActual) agregarEncabezadoSeccion('Proyectos');
+  // Sin conteo ni leyenda: las demás capas de "Proyectos" (Bosques de
+  // Bolsillo, EHL Fase 1, Maipo Resiliente) tampoco llevan ninguno de los
+  // dos, y ahora que todos los puntos/polígonos usan el mismo morado no
+  // hace falta explicar una distinción de colores que ya no existe.
   const row = document.createElement('label');
-  row.innerHTML = `<input type="checkbox" data-capa="propuestas"> ${crearSimboloCapa(ESTADO_PROPUESTA_COLOR.verificado_social, geojson)} <span>Propuestas verificadas (${data.length})</span>`;
+  row.innerHTML = `<input type="checkbox" data-capa="propuestas"> ${crearSimboloCapa(COLOR_IDEAS_CIUDADANAS, geojson)} <span>Ideas Ciudadanas</span>`;
   agregarAlPanel(row);
-
-  const leyenda = document.createElement('div');
-  leyenda.style.cssText = 'font-size:10.5px; color:var(--text-secondary); margin:2px 0 4px 22px;';
-  leyenda.innerHTML = `<span style="color:${ESTADO_PROPUESTA_COLOR.verificado_social}">●</span> Comunidad&nbsp;&nbsp;<span style="color:${ESTADO_PROPUESTA_COLOR.verificado_municipal}">●</span> Municipio`;
-  agregarAlPanel(leyenda);
 }
 
 cargarCapas().then(cargarPropuestas);
@@ -3023,10 +3052,11 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
     if (codigo) {
       mostrarPantallaGracias(codigo, datosPropuesta);
       limpiarFormularioPropuesta();
-      // El correo se envía en segundo plano; si falla, la propuesta ya
-      // quedó guardada y el código ya se le mostró al usuario en pantalla.
+      // El correo y la ficha PDF se generan en segundo plano; si fallan, la
+      // propuesta ya quedó guardada y el código ya se le mostró al usuario.
       sb.functions.invoke('enviar-confirmacion-propuesta', { body: { codigo_seguimiento: codigo } })
         .catch((err) => console.error('No se pudo enviar el correo de confirmación:', err));
+      subirFichaPdfPropuesta({ codigo, ...datosPropuesta });
     }
   } finally {
     btnEnviar.disabled = false;
@@ -3323,68 +3353,214 @@ function archivoAJpgComprimido(archivo, anchoMaximoPx) {
   });
 }
 
-// Genera un PDF simple con el resumen de la propuesta, usando jsPDF
-// (cargado vía CDN, sin dependencias de build).
-async function generarPdfPropuesta(p) {
+// Arma el documento jsPDF con el resumen de la propuesta (usado tanto
+// para el botón "Descargar PDF" como para la ficha que se sube a Storage
+// y queda enlazada desde el popup del mapa — ver subirFichaPdfPropuesta).
+// Paleta de marca reutilizada en la ficha (mismos tonos que el resto del
+// sitio: --teal/--blue/--violet para acentos, y los tonos ya oscurecidos
+// para texto legible sobre blanco que usan los badges de panel.html).
+const PDF_TEAL = [14, 165, 163];
+const PDF_BLUE = [59, 130, 246];
+const PDF_VIOLET = [124, 111, 240];
+const PDF_TEAL_TEXTO = [11, 122, 120];   // = #0B7A78, badge "Verificado (social)"
+const PDF_AZUL_TEXTO = [29, 78, 216];    // = #1D4ED8, chip de interesados
+const PDF_INK = [15, 23, 42];            // = --ink-900
+const PDF_INK_SUAVE = [71, 85, 105];
+
+function pdfMezclarColor(a, b, t) {
+  return [0, 1, 2].map((i) => Math.round(a[i] + (b[i] - a[i]) * t));
+}
+
+// Aproxima en el PDF el mismo degradé de marca (135deg, teal→blue→violet)
+// que usan los botones y el header del sitio, dibujando muchas franjas
+// verticales angostas — jsPDF no tiene relleno con gradiente nativo.
+function pdfBandaDegradada(doc, x, y, ancho, alto) {
+  const pasos = 90;
+  const anchoFranja = ancho / pasos;
+  for (let i = 0; i < pasos; i++) {
+    const t = i / (pasos - 1);
+    const color = t <= 0.52
+      ? pdfMezclarColor(PDF_TEAL, PDF_BLUE, t / 0.52)
+      : pdfMezclarColor(PDF_BLUE, PDF_VIOLET, (t - 0.52) / 0.48);
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.rect(x + i * anchoFranja, y, anchoFranja + 0.6, alto, 'F');
+  }
+}
+
+// Carga un asset propio (logo, foto de Qinti) y lo reduce a un canvas
+// antes de exportarlo — igual de necesario que archivoAJpgComprimido
+// para las fotos de usuario: qinti.png por sí solo pesa 1600x1600px
+// (~1.2MB) y, sin reducir, jsPDF lo incrusta prácticamente sin comprimir
+// (una ficha de prueba llegó a pesar 11.8MB). Se mantiene PNG (no JPEG)
+// para conservar la transparencia del logo/la foto recortada.
+function cargarImagenComoDataUrl(url, anchoMaximoPx = 240, colorSolido = null) {
+  return new Promise((resolve) => {
+    fetch(url)
+      .then((r) => r.blob())
+      .then((blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          const escala = Math.min(1, anchoMaximoPx / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * escala);
+          canvas.height = Math.round(img.height * escala);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          // Recolorea a un color sólido conservando la silueta (alpha) —
+          // el logo de Qinti trae su propio degradé azul/teal, que se
+          // pierde por falta de contraste sobre la banda degradada del
+          // encabezado (comparten los mismos tonos). "source-in" solo
+          // pinta donde ya había píxeles opacos, así que la forma del
+          // colibrí queda intacta.
+          if (colorSolido) {
+            ctx.globalCompositeOperation = 'source-in';
+            ctx.fillStyle = colorSolido;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          resolve({ dataUrl: canvas.toDataURL('image/png'), ancho: canvas.width, alto: canvas.height });
+          URL.revokeObjectURL(objectUrl);
+        };
+        img.onerror = () => resolve(null);
+        img.src = objectUrl;
+      })
+      .catch(() => resolve(null));
+  });
+}
+
+async function construirDocPdfPropuesta(p) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const margen = 14;
+  const margen = 16;
+  const anchoPagina = doc.internal.pageSize.getWidth();
   const altoPagina = doc.internal.pageSize.getHeight();
+  const anchoUtil = anchoPagina - margen * 2;
   let y = 20;
-  const salto = (lineas) => { y += lineas * 7; };
-  const titulo = (texto) => {
-    doc.setFont(undefined, 'bold'); doc.setFontSize(12);
-    doc.text(texto, margen, y); salto(1);
-    doc.setFont(undefined, 'normal'); doc.setFontSize(10);
+
+  const asegurarEspacio = (altoMm) => {
+    if (y + altoMm > altoPagina - 22) { doc.addPage(); y = 20; }
   };
+  const salto = (lineas) => { y += lineas * 7; };
+  const tituloSeccion = (texto) => {
+    asegurarEspacio(14);
+    doc.setFont(undefined, 'bold'); doc.setFontSize(12); doc.setTextColor(...PDF_TEAL_TEXTO);
+    doc.text(texto, margen, y);
+    y += 2.5;
+    doc.setDrawColor(...PDF_TEAL); doc.setLineWidth(0.6);
+    doc.line(margen, y, margen + anchoUtil, y);
+    y += 6;
+    doc.setFont(undefined, 'normal'); doc.setFontSize(10); doc.setTextColor(...PDF_INK);
+  };
+  // Fila compacta "Etiqueta: valor" (para datos cortos de una línea).
   const parrafo = (etiqueta, valor) => {
-    doc.setFont(undefined, 'bold');
+    doc.setFont(undefined, 'bold'); doc.setTextColor(...PDF_AZUL_TEXTO);
     doc.text(`${etiqueta}:`, margen, y);
-    doc.setFont(undefined, 'normal');
-    const lineas = doc.splitTextToSize(String(valor || '—'), 180 - 45);
-    doc.text(lineas, margen + 45, y);
+    doc.setFont(undefined, 'normal'); doc.setTextColor(...PDF_INK);
+    const lineas = doc.splitTextToSize(String(valor || '—'), anchoUtil - 48);
+    doc.text(lineas, margen + 48, y);
     salto(Math.max(1, lineas.length));
   };
-  // Ancho fijo (mm) para el screenshot y las fotos; alto se calcula
-  // preservando su aspect ratio real. Agrega una página nueva si lo que
-  // queda de la actual no alcanza para la imagen completa.
-  const ANCHO_IMAGEN_MM = 120;
+  // Texto justificado para respuestas largas (descripción, motivo,
+  // contexto territorial) — jsPDF justifica automáticamente pasando
+  // maxWidth + align:'justify' (excepto la última línea de cada párrafo,
+  // como en cualquier texto justificado).
+  const parrafoLargo = (etiqueta, valor) => {
+    const texto = String(valor || '—');
+    const lineas = doc.splitTextToSize(texto, anchoUtil);
+    asegurarEspacio(6 + lineas.length * 5 + 3);
+    doc.setFont(undefined, 'bold'); doc.setTextColor(...PDF_AZUL_TEXTO);
+    doc.text(`${etiqueta}:`, margen, y);
+    y += 5.5;
+    doc.setFont(undefined, 'normal'); doc.setTextColor(...PDF_INK);
+    doc.text(texto, margen, y, { maxWidth: anchoUtil, align: 'justify' });
+    y += lineas.length * 5 + 3;
+  };
+  // Etiqueta corta en forma de "chip" (rect redondeado de color), para
+  // los campos categóricos (tipo de organización / de intervención).
+  const chip = (etiqueta, texto, colorFondo, colorTexto) => {
+    asegurarEspacio(10);
+    doc.setFont(undefined, 'bold'); doc.setFontSize(10); doc.setTextColor(...PDF_AZUL_TEXTO);
+    doc.text(`${etiqueta}:`, margen, y);
+    doc.setFontSize(9);
+    const anchoTexto = doc.getTextWidth(texto);
+    const x = margen + 48, alto = 6.5, padX = 3.5;
+    doc.setFillColor(...colorFondo);
+    doc.roundedRect(x, y - alto + 1.8, anchoTexto + padX * 2, alto, 1.6, 1.6, 'F');
+    doc.setTextColor(...colorTexto);
+    doc.text(texto, x + padX, y);
+    doc.setFontSize(10);
+    salto(1);
+  };
+  // Ancho fijo (mm) para el screenshot y las fotos, con un marco delgado
+  // de color de marca; alto se calcula preservando su aspect ratio real.
+  const ANCHO_IMAGEN_MM = anchoUtil;
   const agregarImagen = (dataUrl, anchoPx, altoPx) => {
     if (!dataUrl) return;
     const altoMm = ANCHO_IMAGEN_MM * (altoPx / anchoPx);
-    if (y + altoMm > altoPagina - 20) { doc.addPage(); y = 20; }
+    asegurarEspacio(altoMm + 2);
+    doc.setDrawColor(...PDF_TEAL); doc.setLineWidth(0.4);
+    doc.rect(margen, y, ANCHO_IMAGEN_MM, altoMm);
     doc.addImage(dataUrl, 'JPEG', margen, y, ANCHO_IMAGEN_MM, altoMm);
     y += altoMm + 8;
   };
 
-  doc.setFontSize(16); doc.setFont(undefined, 'bold');
-  doc.text('Resumen de propuesta', margen, y); salto(1.5);
-  doc.setFontSize(11); doc.setTextColor(26, 127, 55);
-  doc.text(`Código de seguimiento: ${p.codigo}`, margen, y); salto(1.5);
-  doc.setTextColor(0, 0, 0); doc.setFontSize(10);
+  // ---------- Encabezado con degradé de marca ----------
+  const ALTO_BANDA = 30;
+  pdfBandaDegradada(doc, 0, 0, anchoPagina, ALTO_BANDA);
 
-  titulo('Organización');
+  const [logoPuzle, fotoQinti] = await Promise.all([
+    cargarImagenComoDataUrl('assets/img/qinti-gradient.png', 240, '#ffffff'),
+    cargarImagenComoDataUrl('assets/img/qinti.png')
+  ]);
+  if (logoPuzle) {
+    const alto = 15, ancho = alto * (logoPuzle.ancho / logoPuzle.alto);
+    doc.addImage(logoPuzle.dataUrl, 'PNG', margen, 7.5, ancho, alto);
+    doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold'); doc.setFontSize(14);
+    doc.text('Puzle Ecosistémico', margen + ancho + 5, 17.5);
+  }
+  if (fotoQinti) {
+    const alto = 24, ancho = alto * (fotoQinti.ancho / fotoQinti.alto);
+    doc.addImage(fotoQinti.dataUrl, 'PNG', anchoPagina - margen - ancho, 3, ancho, alto);
+  }
+
+  y = ALTO_BANDA + 14;
+  doc.setTextColor(...PDF_INK); doc.setFont(undefined, 'bold'); doc.setFontSize(17);
+  doc.text('Ficha de propuesta ciudadana', margen, y);
+  y += 9;
+
+  // Código de seguimiento como "pill" (mismo criterio visual que un
+  // badge de estado en panel.html: fondo tenue del color, texto sólido).
+  doc.setFontSize(11); doc.setFont(undefined, 'bold');
+  const textoCodigo = `Código de seguimiento: ${p.codigo}`;
+  const anchoCodigo = doc.getTextWidth(textoCodigo);
+  doc.setFillColor(224, 242, 241);
+  doc.roundedRect(margen, y - 6, anchoCodigo + 10, 9, 2, 2, 'F');
+  doc.setTextColor(...PDF_TEAL_TEXTO);
+  doc.text(textoCodigo, margen + 5, y);
+  y += 11;
+  doc.setFont(undefined, 'normal'); doc.setFontSize(10); doc.setTextColor(...PDF_INK);
+
+  tituloSeccion('Organización');
   parrafo('Nombre', p.nombre_organizacion);
   const tipoOrgTexto = p.tipo_organizacion === 'otro' && p.tipo_organizacion_otro
     ? p.tipo_organizacion_otro
     : (TIPO_ORGANIZACION_LABEL[p.tipo_organizacion] || p.tipo_organizacion);
-  parrafo('Tipo', tipoOrgTexto);
+  chip('Tipo', tipoOrgTexto, [219, 234, 254], PDF_AZUL_TEXTO);
   salto(0.5);
 
-  titulo('La propuesta');
-  parrafo('Tipo de intervención', TIPO_INTERVENCION_LABEL[p.tipo_intervencion] || p.tipo_intervencion);
-  parrafo('Qué se propone', p.descripcion);
-  parrafo('Por qué es importante', p.motivo_importancia);
+  tituloSeccion('La propuesta');
+  chip('Tipo de intervención', TIPO_INTERVENCION_LABEL[p.tipo_intervencion] || p.tipo_intervencion, [224, 242, 241], PDF_TEAL_TEXTO);
   parrafo('Comuna', p.comuna || 'No detectada automáticamente');
   salto(0.5);
+  parrafoLargo('Qué se propone', p.descripcion);
+  parrafoLargo('Por qué es importante', p.motivo_importancia);
 
   if (p.contexto_territorial) {
-    titulo('Descripción del territorio (automática)');
-    parrafo('Contexto', p.contexto_territorial);
-    salto(0.5);
+    tituloSeccion('Descripción del territorio (automática)');
+    parrafoLargo('Contexto', p.contexto_territorial);
   }
 
-  titulo('Ubicación en el mapa');
+  tituloSeccion('Ubicación en el mapa');
   const screenshot = await generarScreenshotMapa(p.geom);
   if (screenshot) {
     agregarImagen(screenshot.dataUrl, screenshot.ancho, screenshot.alto);
@@ -3394,14 +3570,66 @@ async function generarPdfPropuesta(p) {
 
   const fotos = p.fotosArchivos || [];
   if (fotos.length) {
-    titulo(`Fotos adjuntas (${fotos.length})`);
+    tituloSeccion(`Fotos adjuntas (${fotos.length})`);
     for (const archivo of fotos) {
       const foto = await archivoAJpgComprimido(archivo, 900);
       if (foto) agregarImagen(foto.dataUrl, foto.ancho, foto.alto);
     }
   }
 
+  // ---------- Pie de página (todas las páginas) ----------
+  const logoGS = await cargarImagenComoDataUrl('assets/img/logo-gobierno-santiago.png');
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for (let pagina = 1; pagina <= totalPaginas; pagina++) {
+    doc.setPage(pagina);
+    const yPie = altoPagina - 14;
+    doc.setDrawColor(...PDF_INK_SUAVE); doc.setLineWidth(0.2);
+    doc.line(margen, yPie - 4, anchoPagina - margen, yPie - 4);
+    if (logoGS) {
+      const altoLogo = 7, anchoLogo = altoLogo * (logoGS.ancho / logoGS.alto);
+      doc.addImage(logoGS.dataUrl, 'PNG', margen, yPie - 3, anchoLogo, altoLogo);
+      doc.setFont(undefined, 'normal'); doc.setFontSize(8); doc.setTextColor(...PDF_INK_SUAVE);
+      doc.text('Gobierno de Santiago — Puzle Ecosistémico', margen + anchoLogo + 4, yPie + 2.5);
+    }
+    doc.setFontSize(8); doc.setTextColor(...PDF_INK_SUAVE);
+    doc.text(`Página ${pagina} de ${totalPaginas}`, anchoPagina - margen, yPie + 2.5, { align: 'right' });
+  }
+
+  return doc;
+}
+
+async function generarPdfPropuesta(p) {
+  const doc = await construirDocPdfPropuesta(p);
   doc.save(`${p.codigo}.pdf`);
+}
+
+// Genera la misma ficha y la sube a Storage (bucket público
+// "fichas-propuestas") justo después de guardar la propuesta, para que
+// quede enlazada desde el popup del mapa aunque quien la propuso nunca
+// vuelva a esta página. Se llama en segundo plano (no bloquea el
+// "Gracias por tu propuesta"): si falla, la propuesta ya quedó guardada
+// igual, solo no habrá link a la ficha en el mapa.
+async function subirFichaPdfPropuesta(p) {
+  try {
+    const doc = await construirDocPdfPropuesta(p);
+    const blob = doc.output('blob');
+    const ruta = `${p.codigo}.pdf`;
+    // Sin upsert: cada codigo_seguimiento es único, así que siempre es un
+    // INSERT nuevo — con upsert:true, Storage arma un ON CONFLICT DO UPDATE
+    // que además exige permiso de UPDATE sobre el bucket (no solo INSERT),
+    // y eso no está permitido acá (ver migración de este bucket).
+    const { error: errorSubida } = await sb.storage.from('fichas-propuestas').upload(ruta, blob, {
+      contentType: 'application/pdf'
+    });
+    if (errorSubida) throw errorSubida;
+    const { data } = sb.storage.from('fichas-propuestas').getPublicUrl(ruta);
+    const { error: errorRpc } = await sb.rpc('actualizar_ficha_pdf_propuesta', {
+      p_codigo_seguimiento: p.codigo, p_url: data.publicUrl
+    });
+    if (errorRpc) throw errorRpc;
+  } catch (e) {
+    console.warn('No se pudo generar/subir la ficha PDF de la propuesta:', e);
+  }
 }
 
 </script>
@@ -3478,7 +3706,7 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['capas', 'capas del mapa', 'que muestra el mapa', 'informacion geografica', 'datos geograficos', 'que datos tiene el mapa'],
-    respuesta: 'Este mapa organiza su información en 4 grupos (panel "Capas", arriba a la derecha): Límites Comunales, Territorio (áreas verdes, red hídrica, lagos, temperatura, subcuencas), Proyectos (Bosques de Bolsillo, EHL Fase 1, Maipo Resiliente) y Conservación (sitios prioritarios de biodiversidad) — más la capa de Propuestas ciudadanas. Pregúntame por alguna en particular y te la explico.'
+    respuesta: 'Este mapa organiza su información en 4 grupos (panel "Capas", arriba a la derecha): Límites Comunales, Territorio (áreas verdes, red hídrica, lagos, temperatura, subcuencas), Proyectos (Bosques de Bolsillo, EHL Fase 1, Maipo Resiliente, Ideas Ciudadanas) y Conservación (sitios prioritarios de biodiversidad). Pregúntame por alguna en particular y te la explico.'
   },
   {
     palabras: ['limites comunales', 'limite de la comuna', 'bordes de comuna'],
@@ -3486,27 +3714,27 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['areas verdes', 'parques', 'plazas del mapa'],
-    respuesta: '"Áreas verdes 2024 (INE)" muestra los parques, plazas y otras áreas verdes catastradas oficialmente por el INE en toda la región.'
+    respuesta: '"Áreas Verdes 2024 (INE)" muestra los parques, plazas y otras áreas verdes catastradas oficialmente por el INE en toda la región.'
   },
   {
     palabras: ['rios', 'esteros', 'red hidrografica', 'cursos de agua'],
-    respuesta: '"Red hidrográfica - Ríos y esteros RM" muestra los cursos de agua naturales (ríos y esteros) de la Región Metropolitana.'
+    respuesta: '"Red Hidrográfica - Ríos y esteros" muestra los cursos de agua naturales (ríos y esteros) de la Región Metropolitana.'
   },
   {
     palabras: ['lagos', 'lagunas', 'embalses'],
-    respuesta: '"Lagos, lagunas y embalses RM" muestra los cuerpos de agua estancada de la región — naturales y artificiales (embalses).'
+    respuesta: '"Lagos, lagunas y embalses" muestra los cuerpos de agua estancada de la región — naturales y artificiales (embalses).'
   },
   {
     palabras: ['temperatura', 'calor', 'heat watch', 'isla de calor', 'islas de calor'],
-    respuesta: '"Temperatura ambiental (Heat Watch Santiago)" muestra cómo varía la temperatura en la ciudad a distintas horas del día (mañana/tarde/atardecer) — usa el control deslizante de esa capa para moverte entre horarios.'
+    respuesta: '"Temperatura Ambiental (Stgo Hot)" muestra cómo varía la temperatura en la ciudad a distintas horas del día (mañana/tarde/atardecer) — usa el control deslizante de esa capa para moverte entre horarios.'
   },
   {
     palabras: ['subcuencas', 'cuenca hidrografica'],
-    respuesta: '"Subcuencas hidrográficas RM" delimita las subcuencas que drenan el agua de la región — útil para entender cómo se conecta el territorio a través del agua.'
+    respuesta: '"Cuencas Hidrográficas" delimita las subcuencas que drenan el agua de la región — útil para entender cómo se conecta el territorio a través del agua.'
   },
   {
     palabras: ['bosques de bolsillo', 'bosque de bolsillo'],
-    respuesta: '"Bosques de Bolsillo" son pequeñas áreas reforestadas dentro de la ciudad — el mapa muestra dónde están ubicadas.'
+    respuesta: '"Programa Bosques de Bolsillo" son pequeñas áreas reforestadas dentro de la ciudad — el mapa muestra dónde están ubicadas.'
   },
   {
     palabras: ['ehl', 'estrategias hidricas', 'fase 1'],
@@ -3522,7 +3750,7 @@ const QINTI_TEMAS = [
   },
   {
     palabras: ['propuestas ciudadanas en el mapa', 'ideas ciudadanas mapa', 'puntos del mapa', 'pines del mapa'],
-    respuesta: 'La capa "Propuestas ciudadanas" muestra todas las ideas propuestas en el mapa, estén o no verificadas todavía — al hacer click en un punto se abre su ficha con la fecha y los datos de la propuesta, sin exponer datos personales de quien la propuso.'
+    respuesta: 'La capa "Ideas Ciudadanas" (dentro de Proyectos) muestra todas las ideas propuestas en el mapa, estén o no verificadas todavía — al hacer click en un punto se abre su ficha con la fecha y los datos de la propuesta, sin exponer datos personales de quien la propuso.'
   }
 ];
 
@@ -3598,6 +3826,8 @@ qintiChatForm.addEventListener('submit', (e) => {
   qintiEnviarMensaje(qintiChatInput.value);
 });
 
+// Qinti se abre solo al entrar al mapa, como guía de bienvenida.
+qintiAbrirChat();
 </script>
 </body>
 </html>

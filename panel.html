@@ -227,18 +227,21 @@
    * Empresas/Universidades) y del estado real de admin/propuestas.
    * ================================================================ */
   #qinti-fab {
-    position: fixed; z-index: 1100; bottom: 24px; right: 24px;
-    width: 76px; height: 76px; border-radius: 50%;
+    position: fixed; z-index: 2500; bottom: 24px; right: 24px;
+    width: 100px; height: 100px; border-radius: 50%;
     background: #fff; border: 2px solid transparent; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 20px 40px -12px rgba(0,0,0,.35);
     transition: transform .2s ease, opacity .2s ease, border-color .2s ease;
   }
   #qinti-fab:hover { transform: scale(1.08); border-color: var(--blue); }
-  #qinti-fab img { width: 58px; height: 58px; border-radius: 50%; }
+  #qinti-fab img { width: 76px; height: 76px; border-radius: 50%; }
+  /* La foto original mira hacia la derecha; se refleja para que "mire"
+     hacia el contenido en vez de hacia afuera de la pantalla. */
+  img[src$="qinti.png"] { transform: scaleX(-1); }
   @keyframes qintiFlutter {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-6px) rotate(2deg); }
+    0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+    50% { transform: scaleX(-1) translateY(-6px) rotate(2deg); }
   }
   .qinti-flutter { animation: qintiFlutter 1.8s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) { .qinti-flutter { animation: none; } }
@@ -249,7 +252,7 @@
   }
   @keyframes qintiPulso { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(1.45); opacity: 0; } }
   #qinti-fab-punto {
-    position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%;
+    position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%;
     background: var(--grad-135); border: 2px solid #fff;
     animation: qintiPuntoLatido 1.8s ease-in-out infinite;
   }
@@ -257,7 +260,7 @@
   @media (prefers-reduced-motion: reduce) { #qinti-fab::after, #qinti-fab-punto { animation: none; } }
 
   #qinti-chat {
-    position: fixed; z-index: 1150; bottom: 110px; right: 24px;
+    position: fixed; z-index: 2550; bottom: 132px; right: 24px;
     width: 340px; max-width: calc(100vw - 32px);
     height: 460px; max-height: calc(100vh - 140px);
     background: #fff; color: var(--ink-900);
@@ -294,7 +297,7 @@
   }
   @media (max-width: 480px) {
     #qinti-fab { right: 14px; bottom: 14px; }
-    #qinti-chat { right: 12px; bottom: 100px; }
+    #qinti-chat { right: 12px; bottom: 122px; }
   }
 </style>
 </head>
@@ -1629,6 +1632,9 @@ qintiChatForm.addEventListener('submit', (e) => {
     if (qintiChat.classList.contains('abierto')) qintiMostrarSugerencias();
   });
 });
+
+// Qinti se abre solo al entrar a la página, como guía de bienvenida.
+qintiAbrirChat();
 </script>
 </body>
 </html>
